@@ -4,13 +4,55 @@ import struct
 
 
 class SeismicModel1D:
-    def __init__(self):
-        self.vp = []
-        self.vs = []
-        self.rho = []
-        self.h = []
+    def __init__(self, vp=[], vs=[], rho=[], h=[]):
+        # values as 1D model
+        self.vp = vp
+        self.vs = vs
+        self.rho = rho
+        self.h = h
+
+    def get_number_of_layers(self):
+        return len(self.vp)
+
+    def get_depths(self):
+        depths = [0]
+
+        for h in self.h:
+            depths.append(h)
+
+            depths[-1] = depths[-1] + depths[-2]
+
+        return depths
+
+    def get_param(self, param_name, index_finish=None, index_start=0):
+        param = []
+
+        if param_name.lower() == 'vp':
+            param = self.vp
+
+        elif param_name.lower() == 'vs':
+            param = self.vs
+
+        elif param_name.lower() == 'rho':
+            param = self.rho
+
+        elif param_name.lower() == 'h':
+            param = self.h
+
+        if index_finish is None:
+            return param[index_start:]
+
+        else:
+            return param[index_start:index_finish]
+
+    def get_max_boundary_depth(self):
+        return np.sum(self.h)
 
     def get_model_from_columns(self, vp_column, vs_column, rho_column, dz):
+        # self.vp1D = vp_column
+        # self.vs1D = vs_column
+        # self.rho1D = rho_column
+
         # parsing depths
         vp_column_s = shift(vp_column, 1, cval=vp_column[0])
         vs_column_s = shift(vs_column, 1, cval=vs_column[0])
@@ -66,6 +108,26 @@ class SeismicModel1D:
         self.vs = vs1d
         self.rho = rho1d
         self.h = h1d
+
+    def find_nearest_value(self, val_list, h_list, h_cur):
+        h_list = np.append([0], h_list)
+        h_nearest = h_list[h_cur >= h_list][-1]
+        nearest_index = h_list.tolist().index(h_nearest)
+
+        return val_list[nearest_index]
+
+    def get_1D_regular_grid(self, param, h_max, dh):
+        nz = int(h_max / dh)
+        axesz = [i*dh for i in range(nz)]
+
+        hh = list(self.h)
+
+        for i in range(1, len(hh)):
+            hh[i] += hh[i-1]
+
+        values_col = [self.find_nearest_value(self.get_param(param), hh, axsz) for axsz in axesz]
+
+        return values_col, axesz
 
 
 class SeismicModel2D:

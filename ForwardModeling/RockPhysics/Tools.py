@@ -7,3 +7,6 @@ def vp_from_KGRho(K, G, rho):
 
 def vs_from_GRho(G, rho):
     return np.sqrt(G/rho)
+
+def G_from_KPoissonRatio(K, nu):
+    return K / (2*(nu + 1))

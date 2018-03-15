@@ -1,18 +1,21 @@
 import cmath
 import numpy as np
 
+from Objects.Rays import Ray1D
+
+
 def eq_to_solve(p, v, h, x_2):
     number_of_layers = len(v)
     xx = 0
 
     for i in range(2 * (number_of_layers - 1)):
 
-            if i > number_of_layers - 1:
-                jj = 2 * number_of_layers - 1 - i
+            if i > number_of_layers - 2:
+                jj = 2 * number_of_layers - 3 - i
             else:
                 jj = i
 
-            xx = xx + (p * v(jj) * h(jj)) / cmath.sqrt(1 - p * p * v[jj] * v[jj])
+            xx = xx + (p * v[jj] * h[jj]) / cmath.sqrt(1 - p * p * v[jj] * v[jj])
 
     res = xx - x_2
 
@@ -25,26 +28,29 @@ def deriv_eq_to_solve(p, v, h):
 
     for i in range(2 * (number_of_layers - 1)):
 
-        if i > number_of_layers - 1:
-            j = 2 * number_of_layers - 1 - i
+        if i > number_of_layers - 2:
+            j = 2 * number_of_layers - 3 - i
         else:
             j = i
 
-        xx = xx + (v[j] * h[j]) / cmath.sqrt((1 - p * p * v[j] * v[j]) ** 3)
+        a1 = (v[j] * h[j])
+        a2 = cmath.sqrt(pow((1 - p * p * v[j] * v[j]), 3))
+        xx = xx + a1 / a2
+
 
     res = xx
 
     return res
 
 
-def solve_for_p(p_start, v, h, x_2, tol):
+def solve_for_p(p_start, v, h, x_2, tol=0.1):
     pn = p_start
-    pn1 = 0
+
     while True:
         if pn.imag != 0:
-            alpha = cmath.asin(pn * v[1])
-            alpha = alpha / 2
-            pn = cmath.sin(alpha) / v[1]
+            alpha = cmath.asin(pn * v[0])
+            alpha = alpha / 100
+            pn = cmath.sin(alpha) / v[0]
 
         pn1 = pn - eq_to_solve(pn, v, h, x_2) / deriv_eq_to_solve(pn, v, h)
         res = abs(eq_to_solve(pn1, v, h, x_2))
@@ -55,7 +61,7 @@ def solve_for_p(p_start, v, h, x_2, tol):
 
     p = pn1
 
-    return p
+    return p.real
 
 
 def forward_rtrc(v, h, p):
@@ -67,9 +73,9 @@ def forward_rtrc(v, h, p):
 
     for i in range(2 * (number_of_layers - 1)):
 
-        if i > number_of_layers - 1:
-            jj = 2 * number_of_layers - 1 - i
-            dz = -h(jj)
+        if i > number_of_layers - 2:
+            jj = 2 * number_of_layers - 3 - i
+            dz = -h[jj]
         else:
             jj = i
             dz = h[jj]
@@ -80,3 +86,21 @@ def forward_rtrc(v, h, p):
         t = t + np.sqrt(dx * dx + dz * dz) / v[jj]
 
     return x, z, t
+
+
+def calculate_rays(observ, model, velocity_type='vp'):
+    rays = []
+    p = np.sin(np.pi / 4) / model.get_param(velocity_type, index_start=0, index_finish=1)[0]
+    for i in range(1, model.get_number_of_layers()):
+        for source in observ.sources:
+            for receiver in observ.receivers:
+                p_start = p
+
+                p = solve_for_p(p_start, model.get_param(velocity_type, index_finish=i+1), model.get_param('h', index_finish=i), receiver.x)
+
+                x, z, t = forward_rtrc(model.get_param(velocity_type, index_finish=i+1), model.get_param('h', index_finish=i), p)
+                rays.append(Ray1D(x, z, t, p))
+
+    return rays
+
+
