@@ -26,8 +26,17 @@ def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=[1], 
     '''
 
     # Осреднение упругих модулей скелета
-    Km_ = voigt(Km, Vm)
-    Gm_ = voigt(Gm, Vm)
+    if type(Km) == np.ndarray:
+        Km_ = voigt(Km, Vm)
+
+    else:
+        Km_ = Km
+
+    if type(Gm) == np.ndarray:
+        Gm_ = voigt(Gm, Vm)
+
+    else:
+        Gm_ = Gm
 
     # Кол-во твердого матрикса
     phi_m = 1 - phi
@@ -38,15 +47,20 @@ def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=[1], 
 
     if phi > 0:
         # Создание дыр в "сухой" породе
-        Km_list, Gm_list, phi_list = DEM(Km_, Gm_, np.array([0]), np.array([0]), np.array([alpha]), np.array([0.9]))
-        Km_inter = interpolate.interp1d(Km_list, phi_list)
-        Gm_inter = interpolate.interp1d(Gm_list, phi_list)
+        Km_list, Gm_list, phi_list = DEM(Km_, Gm_, np.array([0]), np.array([0]), np.array([alpha]), np.array([phi]))
+        # Km_inter = interpolate.interp1d(Km_list, phi_list)
+        # Gm_inter = interpolate.interp1d(Gm_list, phi_list)
 
-        K_dry = Km_inter(phi)
-        G_dry = Gm_inter(phi)
+        K_dry = Km_list[-1]
+        G_dry = Gm_list[-1]
 
-        # Заливаем флюид по Гассману
-        K_res = Gassmann.Ks(K_dry, Km_, Kf, phi)
+        if Kf > 0:
+            # Заливаем флюид по Гассману
+            K_res = Gassmann.Ks(K_dry, Km_, Kf, phi)
+
+        else:
+            K_res = K_dry
+
         G_res = G_dry
 
     else:
@@ -69,7 +83,7 @@ def model_calculation_mp_helper(args):
     return simple_model_1(*args)
 
 
-def model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=None, mp_cond=True):
+def model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=None, mp_cond=False):
 
     result_models = []
 

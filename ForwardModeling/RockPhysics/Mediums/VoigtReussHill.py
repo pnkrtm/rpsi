@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def voigt(m: np.ndarray, f: np.ndarray):
+def voigt(m, f):
     '''
     Осреднение по Войгту
     :param m: Массив K или G
@@ -11,7 +11,7 @@ def voigt(m: np.ndarray, f: np.ndarray):
     return np.sum(m*f)
 
 
-def reuss(m: np.ndarray, f: np.ndarray):
+def reuss(m, f):
     '''
     Осреднение по Рёссу
     :param m: Массив K или G
@@ -21,7 +21,7 @@ def reuss(m: np.ndarray, f: np.ndarray):
     return 1/np.sum(f/m)
 
 
-def hill(m: np.ndarray, f: np.ndarray):
+def hill(m, f):
     '''
     Осреднение по Рёссу
     :param m: Массив K или G

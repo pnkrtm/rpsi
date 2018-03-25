@@ -24,5 +24,5 @@ class Ray1D(Ray):
     def get_x_finish(self):
         return self.x_points[-1]
 
-    def get_reflection_depth(self):
+    def get_reflection_z(self):
         return max(self.z_points)
