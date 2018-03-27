@@ -199,13 +199,15 @@ def inverse_universal(optimizers, error, params_all, params_to_optimize, data_st
 
         try:
             result_model = optimizers[0].optimize(func_to_optimize_universal, data_start, args)
+            start_model = result_model
 
         except ErrorAchievedException as e:
-            print('======  LBFGS optimization started! =======')
-            helper.in_use = False
             start_model = e.model
 
-            result_model = optimizers[1].optimize(func_to_optimize_universal, start_model, data_start, args)
+        print('======  LBFGS optimization started! =======')
+        helper.in_use = False
+
+        result_model = optimizers[1].optimize(func_to_optimize_universal, start_model, data_start, args)
 
     return result_model
 

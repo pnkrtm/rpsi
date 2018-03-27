@@ -1,5 +1,6 @@
 import json
 import os
+import numpy as np
 
 parameters_invers_1 = [
     'Km',
@@ -92,7 +93,7 @@ def read_input_file(file_name):
     return nlayers, params_all_dict, params_to_optimize, bounds_to_optimize
 
 
-def write_output_file(folder, params_all_, inversed_model, params_to_optimize):
+def write_output_file(folder, params_all_, inversed_model, params_to_optimize, inverse_duration=None):
 
     print(inversed_model)
 
@@ -105,11 +106,23 @@ def write_output_file(folder, params_all_, inversed_model, params_to_optimize):
         file_name = folder + '/result_{}'.format(int(current_files_numbers[-1]) + 1)
 
     rows = []
+    errs = []
     for m, p in zip(inversed_model, params_to_optimize):
         key = list(p.keys())[0]
         val = list(p.values())[0]
-        rows.append('{}_observed[{}] = {}, {}_inversed[{}] = {}\n'.format(key, val, params_all_[key][val],
+        true_val = params_all_[key][val]
+
+        if true_val != 0:
+            errs.append(abs((true_val - m) / true_val))
+
+        rows.append('{}_true[{}] = {}, {}_inversed[{}] = {}\n'.format(key, val, true_val,
                                                                         key, val, m))
+    if not inverse_duration is None:
+        rows.append('Inversion duration: {} min\n'.format(inverse_duration))
+
+    err_average = np.average(errs)
+
+    rows.append('Difference between true values and inverted values: {}\n'.format(err_average))
 
     with open(file_name, 'w') as f:
         f.writelines(rows)

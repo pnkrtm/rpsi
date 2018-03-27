@@ -1,5 +1,6 @@
 import argparse
 import sys
+import time
 sys.path.append('../')
 
 from Inversion.DataIO import read_input_file, write_output_file
@@ -31,11 +32,13 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
         forward(**forward_input_params)
 
     optimizers = [
-        DifferentialEvolution(popsize=4, maxiter=10, atol=1000, init='random', polish=True),
+        DifferentialEvolution(popsize=6, maxiter=10, atol=1000, init='random', polish=False),
         LBFGSBOptimization()
     ]
 
     error = 0.1
+
+    inversion_start_time = time.time()
 
     inversed_model = inverse_universal(optimizers, error, forward_input_params, params_to_optimize, bounds_to_optimize,
                                        rays_observed_p, rays_observed_s,
@@ -45,9 +48,12 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
                                        use_reflection_p=use_reflection_p, use_reflection_s=use_reflection_s
                                        )
 
-    # print(inversed_model)
+    inversion_end_time = time.time()
+    inversion_duration = (inversion_end_time - inversion_start_time) / 60
 
-    write_output_file(input_folder, params_all_dict, inversed_model, params_to_optimize)
+    print('Inversion duration: {} min'.format(inversion_duration))
+
+    write_output_file(input_folder, params_all_dict, inversed_model, params_to_optimize, inversion_duration)
 
 
 if __name__ == '__main__':
