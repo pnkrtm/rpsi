@@ -1,7 +1,8 @@
 import numpy as np
+from numpy import linalg
 import time
 
-from ForwardModeling.ForwardProcessing1D import forward
+from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
 from Inversion.Optimizations import DifferentialEvolution
 from Inversion.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException
@@ -100,6 +101,57 @@ def func_to_optimize_universal(model_opt, params_all, params_to_optimize,
         raise ErrorAchievedException(model_opt)
 
     return error
+
+
+def func_to_optimize_seismogram_universal(model_opt, params_all, params_to_optimize,
+                seismogram_observed_p, seismogram_observed_s,
+                use_p_waves, use_s_waves, helper):
+
+    params_all_ = {}
+
+    for key in list(params_all.keys()):
+        if type(params_all[key]) == type([]):
+            params_all_[key] = params_all[key].copy()
+
+        else:
+            params_all_[key] = params_all[key]
+
+    for m, p in zip(model_opt, params_to_optimize):
+        params_all_[list(p.keys())[0]][list(p.values())[0]] = m
+
+    seismogram_p, seismogram_s = forward_with_trace_calcing(**params_all_)
+
+    errs = []
+
+    if use_p_waves:
+        p1 = seismogram_p.get_values_matrix()
+        p2 = seismogram_observed_p.get_values_matrix()
+        diff_p = p1 - p2
+        np.nan_to_num(diff_p, False)
+        # diff_p = (seismogram_p.get_values_matrix() - seismogram_observed_p.get_values_matrix())
+        errs.append(linalg.norm(diff_p))
+
+    if use_s_waves:
+        s1 = seismogram_s.get_values_matrix()
+        s2 = seismogram_observed_s.get_values_matrix()
+        diff_s = s1 - s2
+        np.nan_to_num(diff_s, False)
+        # diff_s = np.abs(seismogram_s.get_values_matrix() - seismogram_observed_s.get_values_matrix())
+        errs.append(linalg.norm(diff_s))
+
+    error_start_time = time.time()
+
+    error = np.average(errs)
+
+    print(np.average(errs))
+
+    helper.add_error(error)
+
+    if helper.need_to_stop():
+        raise ErrorAchievedException(model_opt)
+
+    return error
+
 
 
 def func_to_optimize(model_opt, nlayers, Km, Gm, Ks, Gs, h, x_rec,
@@ -209,6 +261,32 @@ def inverse_universal(optimizers, error, params_all, params_to_optimize, data_st
 
         result_model = optimizers[1].optimize(func_to_optimize_universal, start_model, data_start, args)
 
+
     return result_model
 
+
+def inverse_universal_shots(optimizers, error, params_all, params_to_optimize, data_start,
+                            seismogram_observed_p, seismogram_observed_s,
+                            opt_type='de',
+                            use_p_waves=True, use_s_waves=True):
+    if opt_type == 'de':
+        helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error)
+
+        args = (params_all, params_to_optimize,
+                seismogram_observed_p, seismogram_observed_s,
+                use_p_waves, use_s_waves, helper)
+
+        try:
+            result_model = optimizers[0].optimize(func_to_optimize_seismogram_universal, data_start, args)
+            start_model = result_model
+
+        except ErrorAchievedException as e:
+            start_model = e.model
+
+        print('======  LBFGS optimization started! =======')
+        helper.in_use = False
+
+        result_model = optimizers[1].optimize(func_to_optimize_seismogram_universal, start_model, data_start, args)
+
+    return result_model
 

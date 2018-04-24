@@ -99,7 +99,7 @@ def calculate_rays_for_layer(model, observ, velocity_type, layer_index):
 
         x, z, t = forward_rtrc(model.get_param(velocity_type, index_finish=layer_index + 1), model.get_param('h', index_finish=layer_index),
                                p)
-        rays.append(Ray1D(x, z, t, p))
+        rays.append(Ray1D(x, z, t, p, receiver.x))
 
     return rays
 

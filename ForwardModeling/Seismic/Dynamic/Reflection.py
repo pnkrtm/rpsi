@@ -429,7 +429,7 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i):
     reflection_amplitudes = [zoeppritz_element(
         model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
         model.vp[i], model.vs[i], model.rho[i],
-        a, element) for a in angles]
+        a / np.pi * 180, element) for a in angles]
 
     return ReflectionCurve(reflection_amplitudes, offsets, angles, d)
 

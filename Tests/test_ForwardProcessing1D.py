@@ -1,6 +1,6 @@
 import numpy as np
 
-from ForwardModeling.ForwardProcessing1D import forward
+from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
 from ForwardModeling.RockPhysics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
 
 def get_model_1():
@@ -167,14 +167,21 @@ def get_model_1():
 def main():
     Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
     nlayers = 8
-    dx = 500
-    nx = 50
+    dx = 50
+    nx = 20
     x_rec = [i*dx for i in range(1, nx)]
 
-    forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+    # forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+    #         display_stat=True, visualize_res=True,
+    #         calc_rays_p=True, calc_rays_s=True,
+    #         calc_reflection_p=True, calc_reflection_s=True
+    #         )
+
+    forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+                               dt=3e-03, trace_len=1500,
             display_stat=True, visualize_res=False,
-            calc_rays_p=True, calc_rays_s=True,
-            calc_reflection_p=False, calc_reflection_s=False
+            use_p_waves=True, use_s_waves=True,
+                               visualize_seismograms=True
             )
 
 

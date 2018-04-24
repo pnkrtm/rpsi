@@ -41,3 +41,38 @@ def visualize_reflection_amplitudes(plt, reflections, absc='angle'):
         plt.plot(x, y)
 
 
+def visualize_seismogram(plt, seism, normalize=False, fill_negative=False, wigles=True):
+
+    x = seism.get_time_range()
+    offsets = seism.get_offsets()
+
+    if wigles:
+        i = 0
+
+        for offset in offsets:
+            offset /= 30
+            y = np.array(seism.traces[i].values)
+
+            if normalize:
+                max_y = max(y)
+                y /= max_y
+                # y *= 10
+
+            y += offset
+            plt.plot(y, x, 'k-')
+            if fill_negative:
+                plt.fill_betweenx(x, offset, y, where= y>offset, color='k')
+            i += 1
+
+        plt.set_ylim(x[-1], 0)
+
+    else:
+        values = np.array([t.values for t in seism.traces]).T
+
+        x_vals = offsets[::-1]
+        y_vals = seism.traces[0].times
+
+        plt.imshow(values, extent=([min(x_vals), max(x_vals), max(y_vals), min(y_vals)]),
+                   aspect='auto', cmap='Greys')
+
+

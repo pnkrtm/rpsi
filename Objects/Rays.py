@@ -10,11 +10,12 @@ class Ray():
 
 
 class Ray1D(Ray):
-    def __init__(self, x_points=[], z_points=[], time=-1, p=-1):
+    def __init__(self, x_points=[], z_points=[], time=-1, p=-1, offset=-1):
         super().__init__()
 
         self.x_points = x_points
         self.z_points = z_points
+        self.offset = offset
         self.time = time
         self.p = p
 
