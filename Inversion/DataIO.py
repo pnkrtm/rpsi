@@ -86,24 +86,47 @@ def read_input_file(file_name):
 
                 if layer[pc][pe]['optimize']:
                     params_to_optimize.append({key: layer['index']})
-                    bounds_to_optimize.append((layer[pc][pe]['min'], layer[pc][pe]['max']))
+                    bounds_to_optimize.append(np.array([layer[pc][pe]['min'], layer[pc][pe]['max']]))
 
     del(params_all_dict['h'][-1])
 
-    return nlayers, params_all_dict, params_to_optimize, bounds_to_optimize
+    return nlayers, params_all_dict, params_to_optimize, np.array(bounds_to_optimize)
+
+
+def read_inversion_result_file(file_name):
+    with open(file_name, 'r') as f:
+        rows = f.readlines()
+
+    params_optimized = []
+    vals = []
+
+    for r in rows[:-2]:
+        rr = r.split(', ')
+        rr = rr[1].split(' = ')
+        rr = rr[0].split('[')
+        param = r.split(', ')[1].split(' = ')[0].split('[')[0][:-9]
+        index = float(r.split(', ')[1].split(' = ')[0].split('[')[1][:-1])
+        value = float(r.split(', ')[1].split(' = ')[1])
+
+        params_optimized.append({param: index})
+        vals.append(value)
+
+    return params_optimized, vals
+
 
 
 def write_output_file(folder, params_all_, inversed_model, params_to_optimize, inverse_duration=None):
 
     print(inversed_model)
 
-    current_files_numbers = [f.split('_')[-1] for f in os.listdir(folder) if 'result' in f.lower()]
+    current_files_numbers = [int(f.split('_')[-1]) for f in os.listdir(folder) if 'result' in f.lower()]
+    current_files_numbers.sort()
 
     if len(current_files_numbers) == 0:
         file_name = folder + '/result_1'
 
     else:
-        file_name = folder + '/result_{}'.format(int(current_files_numbers[-1]) + 1)
+        file_name = folder + '/result_{}'.format(current_files_numbers[-1] + 1)
 
     rows = []
     errs = []

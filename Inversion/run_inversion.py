@@ -1,12 +1,13 @@
 import argparse
 import sys
 import time
+import multiprocessing as mp
 sys.path.append('../')
 
 from Inversion.DataIO import read_input_file, write_output_file
 import numpy as np
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from Inversion.Optimizations import LBFGSBOptimization, DifferentialEvolution
+from Inversion.Optimizations import LBFGSBOptimization, DifferentialEvolution, DifferentialEvolution_parallel
 from Inversion.Inversion1D import inverse_universal, inverse_universal_shots
 
 
@@ -19,7 +20,9 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
     x_rec = [i * dx for i in range(1, nx)]
 
     optimizers = [
-        DifferentialEvolution(popsize=6, maxiter=10, atol=1000, init='random', polish=False),
+        # DifferentialEvolution(popsize=6, maxiter=10, atol=1000, init='random', polish=False),
+        # DifferentialEvolution_parallel(popsize=12, maxiter=20, init='random', polish=False),
+        DifferentialEvolution_parallel(polish=False),
         LBFGSBOptimization()
     ]
 
@@ -50,6 +53,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
                                            use_rays_p=use_rays_p, use_rays_s=use_rays_s,
                                            use_reflection_p=use_reflection_p, use_reflection_s=use_reflection_s
                                            )
+
+
 
     elif forward_type == 1:
 
@@ -82,6 +87,11 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
     print('Inversion duration: {} min'.format(inversion_duration))
 
     write_output_file(input_folder, params_all_dict, inversed_model, params_to_optimize, inversion_duration)
+
+
+def visualize_results(input_folder, dx, nx, use_rays_p, use_rays_s,
+        use_reflection_p, use_reflection_s, forward_type):
+    pass
 
 
 if __name__ == '__main__':

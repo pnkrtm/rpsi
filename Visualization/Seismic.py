@@ -1,33 +1,59 @@
 import numpy as np
+import itertools
 
 
-def visualize_model1D(plt, model, max_depth, dz, vel_type):
-    vp_grid, z_values = model.get_1D_regular_grid(vel_type, max_depth, dz)
-    ncolumns = len(vp_grid)
+def visualize_model1D(plt, model, observe, max_depth, dz, vel_type, only_boundaries=False):
 
-    vp_grid = np.array([vp_grid] * ncolumns).T
-    plt.imshow(vp_grid, extent=([min(z_values), max(z_values), max(z_values), min(z_values)]), aspect='auto')
+    if only_boundaries:
+        xmin = 0
+        xmax = observe.xmax
+
+        depths = model.get_depths()
+
+        for d in depths:
+            plt.plot([xmin, xmax], [d, d], 'k', linewidth=1)
+
+    else:
+        vp_grid, z_values = model.get_1D_regular_grid(vel_type, max_depth, dz)
+        ncolumns = len(vp_grid)
+
+        vp_grid = np.array([vp_grid] * ncolumns).T
+        plt.imshow(vp_grid, extent=([min(z_values), max(z_values), max(z_values), min(z_values)]), aspect='auto', cmap='jet')
 
 
-def visualize_rays_model_1D(plt, rays):
+def visualize_model_wellogs(plt, model, vel_type, linestyle='-', linewidth=4, legend_label='default label'):
+    v = model.get_param(vel_type)
+    v = list(itertools.chain(*zip(v, v)))
+
+    depths = model.get_depths()[1:]
+    depths = list(itertools.chain(*zip(depths, depths)))
+    depths = np.append([0], depths)
+    depths = np.append(depths, depths[-1] + 300)
+
+    plt.plot(v, depths, linestyle, linewidth=linewidth, label=legend_label)
+
+
+def visualize_rays_model_1D(plt, rays, linewidth=1):
     for ray in rays:
-        plt.plot(ray.x_points, ray.z_points)
+        plt.plot(ray.x_points, ray.z_points, 'k', linewidth=linewidth)
 
 
-def visualize_time_curves(plt, model, rays, observe):
+def visualize_time_curves(plt, model, rays, observe, linewidth=4):
     x = observe.get_x_geometry()
 
     depths = model.get_depths()
+    i = 1
 
     for d in depths[1:]:
         rays_ = [r for r in rays if r.get_reflection_z() == d]
         times = [r.time for r in rays_]
 
-        plt.plot(x, times)
+        plt.plot(x, times, label='Граница {}'.format(i), linewidth=linewidth)
+        i += 1
 
 
-def visualize_reflection_amplitudes(plt, reflections, absc='angle'):
-
+def visualize_reflection_amplitudes(plt, reflections, absc='angle', linewidth=4):
+    i = 1
     for r in reflections:
 
         if absc == 'angle':
@@ -38,7 +64,8 @@ def visualize_reflection_amplitudes(plt, reflections, absc='angle'):
 
         y = [ampl.real for ampl in r.amplitudes]
 
-        plt.plot(x, y)
+        plt.plot(x, y, label='Граница {}'.format(i), linewidth=linewidth)
+        i += 1
 
 
 def visualize_seismogram(plt, seism, normalize=False, fill_negative=False, wigles=True):

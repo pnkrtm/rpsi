@@ -1,9 +1,11 @@
 import numpy as np
+import multiprocessing as mp
+import gc
 from numpy import linalg
 import time
 
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from Inversion.Optimizations import DifferentialEvolution
+from Inversion.Optimizations import DifferentialEvolution, DifferentialEvolution_parallel
 from Inversion.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException
 
@@ -44,11 +46,58 @@ def get_reflection_differences(reflection_observed, reflection_synthetic, weight
     return  np.average(diffs_1)
 
 
-def func_to_optimize_universal(model_opt, params_all, params_to_optimize,
+def func_to_optimize_universal_mp_helper(args):
+
+    return func_to_optimize_universal(**args)
+
+
+def func_to_optimize_universal(model_opt, params_all, params_to_optimize, params_bounds,
                 rays_observed_p, rays_observed_s,
                 reflection_observed_p, reflection_observed_s,
                 use_rays_p, use_rays_s,
-                use_reflection_p, use_reflection_s, helper):
+                use_reflection_p, use_reflection_s, helper, parallel, pool):
+
+    if parallel:
+        # определние величины популяции
+        njobs = int(len(model_opt) / len(model_opt[0]))
+
+        input_args = []
+
+        for i in range(njobs):
+            model_opt_ = model_opt[i, :]
+            # model_opt_ = model_opt_ * (params_bounds[:,1] - params_bounds[:,0]) + params_bounds[:,0]
+
+            input_args.append(
+                {
+                    'model_opt': model_opt_,
+                    'params_all': params_all,
+                    'params_to_optimize': params_to_optimize,
+                    'params_bounds': params_bounds,
+                    'rays_observed_p': rays_observed_p,
+                    'rays_observed_s': rays_observed_s,
+                    'reflection_observed_p': reflection_observed_p,
+                    'reflection_observed_s': reflection_observed_s,
+                    'use_rays_p': use_rays_p,
+                    'use_rays_s': use_rays_s,
+                    'use_reflection_p': use_reflection_p,
+                    'use_reflection_s': use_reflection_s,
+                    'helper': helper,
+                    'parallel': False,
+                    'pool': None
+                }
+            )
+
+
+
+        # with mp.Pool(processes=nproc) as pool:
+        result_errors = pool.map(func_to_optimize_universal_mp_helper, input_args)
+
+        gc.collect()
+
+        return result_errors
+
+    # model_opt_2 = np.array(model_opt) * (params_bounds[:,1] - params_bounds[:,0]) + params_bounds[:,0]
+    model_opt_2 = model_opt
 
     params_all_ = {}
 
@@ -59,7 +108,7 @@ def func_to_optimize_universal(model_opt, params_all, params_to_optimize,
         else:
             params_all_[key] = params_all[key]
 
-    for m, p in zip(model_opt, params_to_optimize):
+    for m, p in zip(model_opt_2, params_to_optimize):
         params_all_[list(p.keys())[0]][list(p.values())[0]] = m
 
     observe, model, rays_p, rays_s, reflection_p, reflection_s = forward(**params_all_)
@@ -234,20 +283,35 @@ def inverse(nlayers, Km, Gm, Ks, Gs, h, x_rec,
     return result_model
 
 
-def inverse_universal(optimizers, error, params_all, params_to_optimize, data_start,
+def inverse_universal(optimizers, error, params_all, params_to_optimize, params_bounds,
                     rays_observed_p, rays_observed_s,
                     reflection_observed_p, reflection_observed_s,
                     opt_type='de',
                     use_rays_p=True, use_rays_s=True, use_reflection_p=False, use_reflection_s=False):
 
     if opt_type == 'de':
+        # data_start = [[0.000001, 1] for i in range(len(params_bounds))]
+        data_start = params_bounds
         helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error)
 
-        args = (params_all, params_to_optimize,
+        if type(optimizers[0]) == DifferentialEvolution_parallel:
+            parallel = True
+            helper.in_use = False
+
+            ncpu = mp.cpu_count()
+            nproc = int(ncpu * 2)
+
+            pool = mp.Pool(nproc)
+
+        else:
+            parallel = False
+            pool = None
+
+        args = [params_all, params_to_optimize, params_bounds,
                 rays_observed_p, rays_observed_s,
                 reflection_observed_p, reflection_observed_s,
                 use_rays_p, use_rays_s,
-                use_reflection_p, use_reflection_s, helper)
+                use_reflection_p, use_reflection_s, helper, parallel, pool]
 
         try:
             result_model = optimizers[0].optimize(func_to_optimize_universal, data_start, args)
@@ -256,10 +320,19 @@ def inverse_universal(optimizers, error, params_all, params_to_optimize, data_st
         except ErrorAchievedException as e:
             start_model = e.model
 
+        finally:
+            if pool:
+                pool.close()
+                pool.join()
+
         print('======  LBFGS optimization started! =======')
         helper.in_use = False
 
-        result_model = optimizers[1].optimize(func_to_optimize_universal, start_model, data_start, args)
+        args[-2] = False
+
+        result_model = optimizers[1].optimize(func_to_optimize_universal, start_model, params_bounds, tuple(args))
+
+        # result_model = np.array(result_model) * (params_bounds[:, 1] - params_bounds[:, 0]) + params_bounds[:, 0]
 
 
     return result_model

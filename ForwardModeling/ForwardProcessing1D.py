@@ -10,7 +10,7 @@ from Objects.Observation import Observation, Source, Receiver
 from Objects.Seismogram import Trace, Seismogram
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays, calculate_rays_for_layer
 from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections, calculate_reflection_for_depth
-from Visualization.Seismic import visualize_model1D, visualize_rays_model_1D, visualize_time_curves, \
+from Visualization.Seismic import visualize_model1D, visualize_model_wellogs, visualize_rays_model_1D, visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram
 
 
@@ -97,13 +97,18 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         disp_func('Drawing results...')
         fig, axes = plt.subplots(nrows=3, ncols=2)
 
-        visualize_model1D(axes[2, 0], model, max_depth, dz, 'vp')
+        # visualize_model_wellogs(axes[2, 0], model, 'vp')
+        visualize_model1D(axes[2, 0], model, observe, max_depth, dz, 'vp', only_boundaries=True)
         visualize_rays_model_1D(axes[2, 0], rays_p)
-        axes[2, 0].set_title('model and rays for p-waves')
+        axes[2, 0].invert_yaxis()
+        # axes[2, 0].set_title('model and rays for p-waves')
 
-        visualize_model1D(axes[2, 1], model, max_depth, dz, 'vs')
+
+        # visualize_model_wellogs(axes[2, 0], model, 'vs')
+        visualize_model1D(axes[2, 1], model, observe, max_depth, dz, 'vs', only_boundaries=True)
         visualize_rays_model_1D(axes[2, 1], rays_s)
-        axes[2, 1].set_title('model and rays for s-waves')
+        axes[2, 1].invert_yaxis()
+        # axes[2, 1].set_title('model and rays for s-waves')
 
         visualize_time_curves(axes[1, 0], model, rays_p, observe)
         axes[1, 0].set_title('time curves for p-waves')
@@ -123,6 +128,28 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
     return observe, model, rays_p, rays_s, reflections_p, reflections_s
 
 
+def create_seismogram(seismogram, rays, reflections, observe, times, dt):
+    for rec in observe.receivers:
+        offset = rec.x
+        rays_ = [r for r in rays if abs(r.get_x_finish() - offset) <= 0.2]
+        trace_i = np.zeros(len(times))
+
+        for ray in rays_:
+            ampl_curve = [r for r in reflections if float(r.boundary_z) == float(ray.get_reflection_z())][0]
+            reflection_index = int(ray.time / dt)
+            r_coeff = ampl_curve.get_amplitude_by_offset(offset)
+
+            if reflection_index < len(trace_i):
+                trace_i[reflection_index] = r_coeff.real
+
+        signal = ricker(50, 4)
+        signal /= max(signal)
+
+        trace_values = np.convolve(trace_i, signal)
+
+        seismogram.add_trace(Trace(trace_values, dt, offset))
+
+
 def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec, dt, trace_len,
             display_stat=False, visualize_res=False,
             use_p_waves=True, use_s_waves=True,
@@ -137,27 +164,6 @@ def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, r
 
     seismogram_p = None
     seismogram_s = None
-
-    def create_seismogram(seismogram, rays, reflections, observe, times, dt):
-        for rec in observe.receivers:
-            offset = rec.x
-            rays_ = [r for r in rays if abs(r.get_x_finish() - offset) <= 0.2]
-            trace_i = np.zeros(len(times))
-
-            for ray in rays_:
-                ampl_curve = [r for r in reflections if float(r.boundary_z) == float(ray.get_reflection_z())][0]
-                reflection_index = int(ray.time / dt)
-                r_coeff = ampl_curve.get_amplitude_by_offset(offset)
-
-                if reflection_index < len(trace_i):
-                    trace_i[reflection_index] = r_coeff.real
-
-            signal = ricker(50, 4)
-            signal /= max(signal)
-
-            trace_values = np.convolve(trace_i, signal)
-
-            seismogram.add_trace(Trace(trace_values, dt, offset))
 
 
     if use_p_waves:

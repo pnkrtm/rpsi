@@ -19,3 +19,11 @@ class Observation:
 
     def get_x_geometry(self):
         return [rec.x for rec in self.receivers]
+
+    @property
+    def xmin(self):
+        return self.receivers[0].x
+
+    @property
+    def xmax(self):
+        return self.receivers[-1].x

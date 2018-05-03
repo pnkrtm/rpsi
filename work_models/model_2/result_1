@@ -1,0 +1,26 @@
+Kf_true[0] = 0, Kf_inversed[0] = 1.0147248024720184
+rho_f_true[0] = 0, rho_f_inversed[0] = 1.1366352421282313
+phi_true[0] = 0, phi_inversed[0] = 0.002075017602291261
+Kf_true[1] = 0, Kf_inversed[1] = 2.770136854403869
+rho_f_true[1] = 0, rho_f_inversed[1] = 2.8011911738729087
+phi_true[1] = 0, phi_inversed[1] = 0.019200662118581124
+Kf_true[2] = 0, Kf_inversed[2] = 2.718800507343741
+rho_f_true[2] = 0, rho_f_inversed[2] = 1.7690927347004655
+phi_true[2] = 0, phi_inversed[2] = 0.01687570626952705
+Kf_true[3] = 0, Kf_inversed[3] = 1.2129174321143479
+rho_f_true[3] = 0, rho_f_inversed[3] = 0.229066076423737
+phi_true[3] = 0.15, phi_inversed[3] = 0.17010083035574253
+Kf_true[4] = 2.41, Kf_inversed[4] = 1.6373343511016614
+rho_f_true[4] = 0.95, rho_f_inversed[4] = 0.3335287044033327
+phi_true[4] = 0.1, phi_inversed[4] = 0.11617508461239597
+Kf_true[5] = 2, Kf_inversed[5] = 1.2097054133176661
+rho_f_true[5] = 1, rho_f_inversed[5] = 1.540095792489708
+phi_true[5] = 0.07, phi_inversed[5] = 0.09455698712136049
+Kf_true[6] = 0, Kf_inversed[6] = 1.7584439054647485
+rho_f_true[6] = 0, rho_f_inversed[6] = 2.2746357052563333
+phi_true[6] = 0, phi_inversed[6] = 0.02425973094841708
+Kf_true[7] = 0, Kf_inversed[7] = 2.769752913427291
+rho_f_true[7] = 0, rho_f_inversed[7] = 2.283532080831605
+phi_true[7] = 0, phi_inversed[7] = 0.025793760200024312
+Inversion duration: 69.74334936936697 min
+Difference between true values and inverted values: inf
