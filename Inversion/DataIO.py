@@ -114,19 +114,26 @@ def read_inversion_result_file(file_name):
     return params_optimized, vals
 
 
+def get_results_files_list(folder):
+    current_files_numbers = [int(f.split('_')[-1]) for f in os.listdir(folder) if 'result' in f.lower() and not 'average' in f.lower()]
+    current_files_numbers.sort()
 
-def write_output_file(folder, params_all_, inversed_model, params_to_optimize, inverse_duration=None):
+    return current_files_numbers
+
+def write_output_file(folder, params_all_, inversed_model, params_to_optimize, inverse_duration=None, file_name=None):
 
     print(inversed_model)
 
-    current_files_numbers = [int(f.split('_')[-1]) for f in os.listdir(folder) if 'result' in f.lower()]
-    current_files_numbers.sort()
+    if file_name is None:
+        current_files_numbers = get_results_files_list(folder)
 
-    if len(current_files_numbers) == 0:
-        file_name = folder + '/result_1'
+        if len(current_files_numbers) == 0:
+            file_name = 'result_1'
 
-    else:
-        file_name = folder + '/result_{}'.format(current_files_numbers[-1] + 1)
+        else:
+            file_name = 'result_{}'.format(current_files_numbers[-1] + 1)
+
+    file_name = os.path.join(folder, file_name)
 
     rows = []
     errs = []

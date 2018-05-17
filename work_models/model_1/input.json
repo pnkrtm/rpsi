@@ -314,7 +314,7 @@
 				},
                 "fluid": {
                   "K": {
-                    "value": 2.41,
+                    "value": 1.8,
                     "optimize": true,
                     "min": 0,
                     "max": 3
@@ -380,7 +380,7 @@
 				},
                 "fluid": {
                   "K": {
-                    "value": 2,
+                    "value": 2.2,
                     "optimize": true,
                     "min": 0,
                     "max": 3

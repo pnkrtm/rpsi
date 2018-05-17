@@ -10,10 +10,10 @@ phi_true[2] = 0, phi_inversed[2] = 0.01687570626952705
 Kf_true[3] = 0, Kf_inversed[3] = 1.2129174321143479
 rho_f_true[3] = 0, rho_f_inversed[3] = 0.229066076423737
 phi_true[3] = 0.15, phi_inversed[3] = 0.17010083035574253
-Kf_true[4] = 2.41, Kf_inversed[4] = 1.6373343511016614
+Kf_true[4] = 1.8, Kf_inversed[4] = 1.2229053244742698
 rho_f_true[4] = 0.95, rho_f_inversed[4] = 0.3335287044033327
 phi_true[4] = 0.1, phi_inversed[4] = 0.11617508461239597
-Kf_true[5] = 2, Kf_inversed[5] = 1.2097054133176661
+Kf_true[5] = 2.2, Kf_inversed[5] = 1.330675954649433
 rho_f_true[5] = 1, rho_f_inversed[5] = 1.540095792489708
 phi_true[5] = 0.07, phi_inversed[5] = 0.09455698712136049
 Kf_true[6] = 0, Kf_inversed[6] = 1.7584439054647485

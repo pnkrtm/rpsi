@@ -6,9 +6,9 @@ Kf_true[2] = 0, Kf_inversed[2] = 1.558479343372289
 rho_f_true[2] = 0, rho_f_inversed[2] = 2.794638963300713
 Kf_true[3] = 0, Kf_inversed[3] = 0.0
 rho_f_true[3] = 0, rho_f_inversed[3] = 0.0
-Kf_true[4] = 2.41, Kf_inversed[4] = 2.4054453261112707
+Kf_true[4] = 1.8, Kf_inversed[4] = 1.7965981688797872
 rho_f_true[4] = 0.95, rho_f_inversed[4] = 0.9493284943088427
-Kf_true[5] = 2, Kf_inversed[5] = 1.9990772122448686
+Kf_true[5] = 2.2, Kf_inversed[5] = 2.1989849334693554
 rho_f_true[5] = 1, rho_f_inversed[5] = 0.9998596488125383
 Kf_true[6] = 0, Kf_inversed[6] = 2.010876295831957
 rho_f_true[6] = 0, rho_f_inversed[6] = 1.9746384279894502

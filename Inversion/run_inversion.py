@@ -21,8 +21,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
 
     optimizers = [
         # DifferentialEvolution(popsize=6, maxiter=10, atol=1000, init='random', polish=False),
-        # DifferentialEvolution_parallel(popsize=12, maxiter=20, init='random', polish=False),
-        DifferentialEvolution_parallel(polish=False),
+        DifferentialEvolution_parallel(popsize=6, maxiter=10, init='random', strategy='best1bin', polish=False),
+        # DifferentialEvolution_parallel(polish=False),
         LBFGSBOptimization()
     ]
 
