@@ -126,14 +126,21 @@ def get_averaged_model(input_folder):
     return params_optimized_, values_optimized_mean
 
 
-
-
-def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
+def main(input_folder, dx, nx, use_rays_p, use_rays_s, noise=False, result_number=None):
     input_file_name = input_folder + '/input.json'
     result_file_name = input_folder + '/result_{}'.format(result_number)
     nlayers, params_all_dict, params_to_optimize, bounds_to_optimize = read_input_file(input_file_name)
-    params_optimized, values_optimized = get_averaged_model(input_folder)
+    if result_number:
+        pictures_folder = os.path.join(input_folder, 'pictures_{}'.format(result_number))
+        params_optimized, values_optimized = read_inversion_result_file(result_file_name)
+
+    else:
+        pictures_folder = os.path.join(input_folder, 'pictures')
+        params_optimized, values_optimized = get_averaged_model(input_folder)
     # params_optimized, values_optimized = read_inversion_result_file(result_file_name)
+
+    if not os.path.exists(pictures_folder):
+        os.makedirs(pictures_folder)
 
     # without seismograms forwarding
     x_rec = [i * dx for i in range(1, nx)]
@@ -143,7 +150,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
         'display_stat': False,
         'visualize_res': False,
         'calc_reflection_p': use_rays_p,
-        'calc_reflection_s': use_rays_s
+        'calc_reflection_s': use_rays_s,
+        'noise': noise
     }
 
     forward_input_params.update(params_all_dict)
@@ -160,6 +168,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
     for m, p in zip(values_optimized, params_to_optimize):
         params_all_[list(p.keys())[0]][list(p.values())[0]] = m
 
+    params_all_['noise'] = False
+
     observe_1, model_1, rays_p_1, rays_s_1, reflection_p_1, reflection_s_1 = forward(**forward_input_params)
     observe_2, model_2, rays_p_2, rays_s_2, reflection_p_2, reflection_s_2 = forward(**params_all_)
 
@@ -173,7 +183,7 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
     plt.ylabel('глубина, м')
     plt.xlabel('скорость, м/с')
     plt.tight_layout()
-    plt.savefig(os.path.join(input_folder, 'pictures/vp_average.png'))
+    plt.savefig(os.path.join(pictures_folder, 'vp_average.png'))
     plt.close()
 
     visualize_model_wellogs(plt, model_1, 'vs', legend_label='истиная модель')
@@ -183,7 +193,7 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
     plt.ylabel('глубина, м')
     plt.xlabel('скорость, м/с')
     plt.tight_layout()
-    plt.savefig(os.path.join(input_folder, 'pictures/vs_average.png'))
+    plt.savefig(os.path.join(pictures_folder, 'vs_average.png'))
     plt.close()
 
     visualize_model_wellogs(plt, model_1, 'rho', legend_label='истиная модель')
@@ -193,7 +203,17 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
     plt.ylabel('глубина, м')
     plt.xlabel('плотность, кг/м3')
     plt.tight_layout()
-    plt.savefig(os.path.join(input_folder, 'pictures/rho_average.png'))
+    plt.savefig(os.path.join(pictures_folder, 'rho_average.png'))
+    plt.close()
+
+    visualize_model_wellogs(plt, model_1, 'phi', legend_label='истиная модель')
+    visualize_model_wellogs(plt, model_2, 'phi', legend_label='результат подбора', linestyle='--')
+    plt.gca().invert_yaxis()
+    plt.title('phi', fontsize=18)
+    plt.ylabel('глубина, м')
+    plt.xlabel('пористость')
+    plt.tight_layout()
+    plt.savefig(os.path.join(pictures_folder, 'phi_average.png'))
     plt.close()
 
     # visualize_model_wellogs(plt, model_2, 'vs', legend_label='vs, m/s')
@@ -217,7 +237,7 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
         plt.ylabel('к-т отражения')
         plt.xlabel('угол падения, рад')
         plt.tight_layout()
-        plt.savefig(os.path.join(input_folder, 'pictures/amplitudes_vp_{}.png'.format(i)))
+        plt.savefig(os.path.join(pictures_folder, 'amplitudes_vp_{}.png'.format(i)))
         plt.close()
 
         visualize_time_curves(plt, model_1, rays_p_1, observe_1, depth_index=i)
@@ -226,7 +246,7 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
         plt.ylabel('время, сек')
         plt.xlabel('удаление, м')
         plt.tight_layout()
-        plt.savefig(os.path.join(input_folder, 'pictures/times_vp_{}.png'.format(i)))
+        plt.savefig(os.path.join(pictures_folder, 'times_vp_{}.png'.format(i)))
         plt.close()
 
         visualize_reflection_amplitudes(plt, reflection_s_1, reflection_index=i, absc='angle')
@@ -235,7 +255,7 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
         plt.ylabel('амплитуда')
         plt.xlabel('угол падения, рад')
         plt.tight_layout()
-        plt.savefig(os.path.join(input_folder, 'pictures/amplitudes_vs_{}.png'.format(i)))
+        plt.savefig(os.path.join(pictures_folder, 'amplitudes_vs_{}.png'.format(i)))
         plt.close()
 
         visualize_time_curves(plt, model_1, rays_s_1, observe_1, depth_index=i)
@@ -244,7 +264,7 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
         plt.ylabel('время, сек')
         plt.xlabel('удаление, м')
         plt.tight_layout()
-        plt.savefig(os.path.join(input_folder, 'pictures/times_vs_{}.png'.format(i)))
+        plt.savefig(os.path.join(pictures_folder, 'times_vs_{}.png'.format(i)))
         plt.close()
     # # plt.legend()
     # plt.show()
@@ -274,13 +294,13 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, result_number=1):
 
 
 if __name__ == '__main__':
-    input_folder = '../work_models/'
+    input_folder = '../work_models/tmp/'
     dx = 20
     nx = 80
     use_rays_p = True
     use_rays_s = True
-    result_number = 10
-    model_number = 4
+    result_number = None
+    model_number = '4_3'
     plot_histogram_by_all_results(input_folder + 'model_{}/'.format(model_number))
-    main(input_folder + 'model_{}/'.format(model_number), dx, nx, use_rays_p, use_rays_s, result_number)
+    main(input_folder + 'model_{}/'.format(model_number), dx, nx, use_rays_p, use_rays_s, noise, result_number)
     write_averaged_result(input_folder + 'model_{}/'.format(model_number))

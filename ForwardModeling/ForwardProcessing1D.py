@@ -3,6 +3,7 @@ from scipy.signal import ricker
 import time
 import matplotlib.pyplot as plt
 import multiprocessing as mp
+import random as rnd
 
 from ForwardModeling.RockPhysics.Models import model_calculation, simple_model_1
 from Objects.Models.Models import SeismicModel1D
@@ -14,10 +15,32 @@ from Visualization.Seismic import visualize_model1D, visualize_model_wellogs, vi
     visualize_reflection_amplitudes, visualize_seismogram
 
 
+def add_noise_rays(rays, depths):
+    for d in depths[1:]:
+        rays_ = [r for r in rays if r.get_reflection_z() == d]
+        times_ = np.array([r.time for r in rays_])
+        mean_time = np.mean(times_)
+
+        for r in rays_:
+            percent_coeff = 0.1
+            # погрешность как среднее время, помноженное на 10 %
+            value = mean_time * percent_coeff
+            # погрешность в 50 мс
+            value = 0.05
+
+            random_noise = (2*rnd.random() - 1)* value
+            r.time += random_noise
+
+
+# def add_noise_amplitudes(reflection):
+
+
+
+
 def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
             display_stat=False, visualize_res=True,
             calc_rays_p=True, calc_rays_s=True,
-            calc_reflection_p=True, calc_reflection_s=True):
+            calc_reflection_p=True, calc_reflection_s=True, noise=False):
 
     '''
 
@@ -50,7 +73,7 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     disp_func('Rockphysics model calculated!')
 
-    model = SeismicModel1D(vp, vs, rho, h)
+    model = SeismicModel1D(vp, vs, rho, h, phi)
     sources = [Source(0, 0, 0)]
     receivers = [Receiver(x) for x in x_rec]
     observe = Observation(sources, receivers)
@@ -64,9 +87,15 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         disp_func('Calculating p-rays...')
         rays_p = calculate_rays(observe, model, 'vp')
 
+        if noise:
+            add_noise_rays(rays_p, model.get_depths())
+
     if calc_rays_s:
         disp_func('Calculating s-rays...')
         rays_s = calculate_rays(observe, model, 'vs')
+
+        if noise:
+            add_noise_rays(rays_s, model.get_depths())
 
     disp_func('Rays calculated!')
 

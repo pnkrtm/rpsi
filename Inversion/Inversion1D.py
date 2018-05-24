@@ -10,32 +10,56 @@ from Inversion.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException
 
 
-def get_time_differences(rays_observed, rays_synthetic, weights=None):
+def get_time_differences(rays_observed, rays_synthetic, weights=None, metrics='rmse'):
     times_observed = np.array([r.time for r in rays_observed])
     times_synthetic = np.array([r.time for r in rays_synthetic])
 
     if weights is None:
-        weights = [1]*len(times_observed)
+        weights = 1
 
-    diffs = np.abs(times_observed - times_synthetic) / times_observed
-    err = np.average(diffs, weights=weights)
+    if weights and not isinstance(weights, list) and not isinstance(weights, np.ndarray):
+        weights = [weights]*len(times_observed)
+
+    if metrics == 'mae':
+        diffs = np.abs(times_observed - times_synthetic) / times_observed
+        err = np.average(diffs, weights=weights)
+
+    elif metrics == 'rmse':
+        diffs = (times_observed - times_synthetic)**2 / times_observed**2
+        err = np.average(diffs)
+        err = np.sqrt(err)
 
     return err
 
 
-def get_reflection_differences(reflection_observed, reflection_synthetic, weights=None):
+def get_reflection_differences(reflection_observed, reflection_synthetic, weights=None, metrics='rmse'):
     ampl_obs_real = np.array([ampl.real for ampl in reflection_observed.amplitudes])
     ampl_obs_imag = np.array([ampl.imag for ampl in reflection_observed.amplitudes])
 
     ampl_syn_real = np.array([ampl.real for ampl in reflection_synthetic.amplitudes])
     ampl_syn_imag = np.array([ampl.imag for ampl in reflection_synthetic.amplitudes])
 
+    if weights is None:
+        weights = 1
+
+    if weights and not isinstance(weights, list) and not isinstance(weights, np.ndarray):
+        weights = [weights]*len(ampl_obs_real)
+
+
     # if weights is None:
     #     weights = [1]*len(ampl_obs_real)
 
-    diffs_1 = [abs((r - s) / r) for r, s in zip(ampl_obs_real, ampl_syn_real) if not np.isnan(r) and not np.isnan(s)]
+    if metrics == 'mae':
+        diffs_1 = [abs((r - s) / r) for r, s in zip(ampl_obs_real, ampl_syn_real) if not np.isnan(r) and not np.isnan(s)]
+        diffs_1 = [d for d in diffs_1 if not np.isnan(d)]
+        err = np.average(diffs_1)
 
-    diffs_1 = [d for d in diffs_1 if not np.isnan(d)]
+    elif metrics == 'rmse':
+        diffs_1 = [(r - s)**2 / r**2 for r, s in zip(ampl_obs_real, ampl_syn_real) if not np.isnan(r) and not np.isnan(s)]
+        diffs_1 = np.average(diffs_1)
+        err = np.sqrt(diffs_1)
+
+
 
     # diffs_2 = [abs(r - s) / r for r, s in zip(ampl_obs_imag, ampl_syn_imag) if not np.isnan(r) and not np.isnan(s)]
     #
@@ -43,7 +67,7 @@ def get_reflection_differences(reflection_observed, reflection_synthetic, weight
 
     # return (np.average(diffs_1) + np.average(diffs_2)) / 2
 
-    return  np.average(diffs_1)
+    return  err
 
 
 def func_to_optimize_universal_mp_helper(args):
@@ -55,7 +79,7 @@ def func_to_optimize_universal(model_opt, params_all, params_to_optimize, params
                 rays_observed_p, rays_observed_s,
                 reflection_observed_p, reflection_observed_s,
                 use_rays_p, use_rays_s,
-                use_reflection_p, use_reflection_s, helper, parallel, pool):
+                use_reflection_p, use_reflection_s, helper, parallel, pool, layer_weights=None):
 
     if parallel:
         # определние величины популяции
@@ -119,28 +143,70 @@ def func_to_optimize_universal(model_opt, params_all, params_to_optimize, params
 
     errs = []
 
+    # weights for depths params
+    xp = [0, len(depths) - 1]
+    fp = [0.6, 1]
+
+    errs_times_p = []
+    weights_times_p = []
+
+    errs_times_s = []
+    weights_times_s = []
+
+    errs_refl_p = []
+    weights_refl_p = []
+
+    errs_refl_s = []
+    weights_refl_s = []
+
+    i = 0
     for d in depths[1:]:
         if use_rays_p:
             rays_p_ = [r for r in rays_p if r.get_reflection_z() == d]
             rays_p_o = [r for r in rays_observed_p if r.get_reflection_z() == d]
 
-            errs.append(get_time_differences(rays_p_o, rays_p_))
+            errs_times_p.append(get_time_differences(rays_p_o, rays_p_))
+            weights_times_p.append(np.interp(i, xp, fp))
 
         if use_rays_s:
             rays_s_ = [r for r in rays_s if r.get_reflection_z() == d]
             rays_s_o = [r for r in rays_observed_s if r.get_reflection_z() == d]
 
-            errs.append(get_time_differences(rays_s_o, rays_s_))
+            errs_times_s.append(get_time_differences(rays_s_o, rays_s_))
+            weights_times_s.append(np.interp(i, xp, fp))
 
+        i += 1
+
+    i = 0
     if use_reflection_p:
         for rp, rop in zip(reflection_p, reflection_observed_p):
-            errs.append(get_reflection_differences(rop, rp))
+            errs_refl_p.append(get_reflection_differences(rop, rp))
+            weights_refl_p.append(np.interp(i, xp, fp))
+            i += 1
 
+    i = 0
     if use_reflection_s:
         for rs, ros in zip(reflection_s, reflection_observed_s):
-            errs.append(get_reflection_differences(ros, rs))
+            errs_refl_s.append(get_reflection_differences(ros, rs))
+            weights_refl_s.append(np.interp(i, xp, fp))
+            i += 1
 
-    error = np.average(errs)
+    if layer_weights:
+        # weights_times_p = layer_weights
+        # weights_times_s = layer_weights
+        weights_refl_p = layer_weights
+        weights_refl_s = layer_weights
+
+    errs_times_p = np.average(errs_times_p, weights=weights_times_p)
+    errs_times_s = np.average(errs_times_s, weights=weights_times_s)
+
+    errs_refl_p = np.average(errs_refl_p, weights=weights_refl_p)
+    errs_refl_s = np.average(errs_refl_s, weights=weights_refl_s)
+
+    errs = [errs_times_p, errs_times_s, errs_refl_p, errs_refl_s]
+    weights = [1, 1, 0.65, 0.65]
+
+    error = np.average(errs, weights=weights)
 
     print(np.average(errs))
 
@@ -287,7 +353,8 @@ def inverse_universal(optimizers, error, params_all, params_to_optimize, params_
                     rays_observed_p, rays_observed_s,
                     reflection_observed_p, reflection_observed_s,
                     opt_type='de',
-                    use_rays_p=True, use_rays_s=True, use_reflection_p=False, use_reflection_s=False):
+                    use_rays_p=True, use_rays_s=True, use_reflection_p=False, use_reflection_s=False,
+                      layer_weights=None):
 
     if opt_type == 'de':
         # data_start = [[0.000001, 1] for i in range(len(params_bounds))]
@@ -295,14 +362,20 @@ def inverse_universal(optimizers, error, params_all, params_to_optimize, params_
         helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error)
 
         if type(optimizers[0]) == DifferentialEvolution_parallel:
-            parallel = True
-            helper.in_use = False
+            parallel = optimizers[0].parallel
 
-            ncpu = mp.cpu_count()
-            nproc = int(ncpu * 2)
+            if parallel:
 
-            pool = mp.Pool(nproc)
+                helper.in_use = False
 
+                ncpu = mp.cpu_count()
+                nproc = int(ncpu * 2)
+
+                pool = mp.Pool(nproc)
+
+            else:
+                parallel = False
+                pool = None
         else:
             parallel = False
             pool = None
@@ -311,7 +384,7 @@ def inverse_universal(optimizers, error, params_all, params_to_optimize, params_
                 rays_observed_p, rays_observed_s,
                 reflection_observed_p, reflection_observed_s,
                 use_rays_p, use_rays_s,
-                use_reflection_p, use_reflection_s, helper, parallel, pool]
+                use_reflection_p, use_reflection_s, helper, parallel, pool, layer_weights]
 
         try:
             result_model = optimizers[0].optimize(func_to_optimize_universal, data_start, args)
@@ -328,7 +401,7 @@ def inverse_universal(optimizers, error, params_all, params_to_optimize, params_
         print('======  LBFGS optimization started! =======')
         helper.in_use = False
 
-        args[-2] = False
+        args[-3] = False
 
         result_model = optimizers[1].optimize(func_to_optimize_universal, start_model, params_bounds, tuple(args))
 

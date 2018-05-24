@@ -1,6 +1,7 @@
 import argparse
 import sys
 import time
+import os
 import multiprocessing as mp
 sys.path.append('../')
 
@@ -12,17 +13,18 @@ from Inversion.Inversion1D import inverse_universal, inverse_universal_shots
 
 
 def main(input_folder, dx, nx, use_rays_p, use_rays_s,
-        use_reflection_p, use_reflection_s, forward_type):
+        use_reflection_p, use_reflection_s, forward_type, noise):
 
-    file_name = input_folder + '\\input.json'
+    file_name = os.path.join(input_folder, 'input.json')
     nlayers, params_all_dict, params_to_optimize, bounds_to_optimize = read_input_file(file_name)
 
     x_rec = [i * dx for i in range(1, nx)]
 
     optimizers = [
         # DifferentialEvolution(popsize=6, maxiter=10, atol=1000, init='random', polish=False),
-        DifferentialEvolution_parallel(popsize=6, maxiter=10, init='random', strategy='best1bin', polish=False),
-        # DifferentialEvolution_parallel(polish=False),
+        DifferentialEvolution_parallel(popsize=20, maxiter=30, init='random', strategy='best1bin', polish=False,
+                                       tol=0.000001, mutation=0.5, recombination=0.9, parallel=True),
+        # DifferentialEvolution_parallel(polish=False, init='random', strategy='best1bin'),
         LBFGSBOptimization()
     ]
 
@@ -35,13 +37,26 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
             'display_stat': False,
             'visualize_res': False,
             'calc_reflection_p': use_rays_p,
-            'calc_reflection_s': use_rays_s
+            'calc_reflection_s': use_rays_s,
+            'noise': noise
         }
+
+        layer_weights = [
+            0.7,
+            0.7,
+            1,
+            0.95,
+            0.8,
+            0.7,
+            0.7
+        ]
 
         forward_input_params.update(params_all_dict)
 
         observe, model, rays_observed_p, rays_observed_s, reflection_observed_p, reflection_observed_s = \
             forward(**forward_input_params)
+
+        forward_input_params['noise'] = False
 
         inversion_start_time = time.time()
 
@@ -51,7 +66,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
                                            reflection_observed_p, reflection_observed_s,
                                            opt_type='de',
                                            use_rays_p=use_rays_p, use_rays_s=use_rays_s,
-                                           use_reflection_p=use_reflection_p, use_reflection_s=use_reflection_s
+                                           use_reflection_p=use_reflection_p, use_reflection_s=use_reflection_s,
+                                           layer_weights=layer_weights
                                            )
 
 
@@ -112,6 +128,8 @@ if __name__ == '__main__':
                         help="Use s-rays")
     parser.add_argument("-f_t", "--forward_type", default=0, nargs='?',
                         help="Forward type")
+    parser.add_argument("-n", "--noise", default=False, nargs='?',
+                        help="Flag to add noise")
 
     args = parser.parse_args()
 
@@ -124,5 +142,6 @@ if __name__ == '__main__':
     use_reflection_p = args.use_reflection_p
     use_reflection_s = args.use_reflection_s
     forward_type = int(args.forward_type)
+    noise = bool(args.noise)
 
-    main(input_folder, dx, nx, use_rays_p, use_rays_s, use_reflection_p, use_reflection_s, forward_type)
+    main(input_folder, dx, nx, use_rays_p, use_rays_s, use_reflection_p, use_reflection_s, forward_type, noise)

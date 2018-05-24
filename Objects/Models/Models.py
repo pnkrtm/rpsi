@@ -4,12 +4,13 @@ import struct
 
 
 class SeismicModel1D:
-    def __init__(self, vp=[], vs=[], rho=[], h=[]):
+    def __init__(self, vp=None, vs=None, rho=None, h=None, phi=None):
         # values as 1D model
         self.vp = vp
         self.vs = vs
         self.rho = rho
         self.h = h
+        self.phi = phi
 
     def get_number_of_layers(self):
         return len(self.vp)
@@ -38,6 +39,9 @@ class SeismicModel1D:
 
         elif param_name.lower() == 'h':
             param = self.h
+
+        elif param_name.lower() == 'phi':
+            param = self.phi
 
         if index_finish is None:
             return param[index_start:]
