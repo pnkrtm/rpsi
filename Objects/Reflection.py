@@ -1,10 +1,15 @@
 import numpy as np
 
 class ReflectionCurve:
-    def __init__(self, amplitudes=[], offsets=[], angles=[], boundary_z=-1):
-        self.amplitudes = amplitudes
-        self.offsets = offsets
-        self.angles = angles
+    def __init__(self, amplitudes=None, offsets=None, angles=None, boundary_z=-1):
+        if amplitudes is not None:
+            self.amplitudes = amplitudes
+
+        else:
+            self.amplitudes = []
+
+        self.offsets = offsets or []
+        self.angles = angles or []
         self.boundary_z = boundary_z
 
     @property
