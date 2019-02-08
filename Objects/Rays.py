@@ -1,3 +1,5 @@
+import numpy as np
+
 class Ray():
     def __init__(self):
         self.p = -1
@@ -27,3 +29,15 @@ class Ray1D(Ray):
 
     def get_reflection_z(self):
         return max(self.z_points)
+
+    # TODO check this shit
+    def get_boundary_angle(self, bound_index):
+        """
+        На вход даем индекс границы (по всей видимости начиная с 1), на выходе имеем угол падения на эту границу
+        :param bound_index:
+        :return:
+        """
+        angle = np.arctan(abs((self.x_points[bound_index] - self.x_points[bound_index - 1]) /
+                              (self.z_points[bound_index] - self.z_points[bound_index - 1])))
+
+        return angle

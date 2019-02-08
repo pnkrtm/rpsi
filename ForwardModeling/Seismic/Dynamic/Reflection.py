@@ -3,6 +3,7 @@
 """
 from collections import namedtuple
 from Objects.Reflection import ReflectionCurve
+from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refraction
 from utils.vectorizing import vectorize
 
 import numpy as np
@@ -445,14 +446,28 @@ def akirichards_alt(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
         return np.squeeze(term1 + term2 + term3)
 
 
-def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_universal_matrix=False):
+def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_universal_matrix=False,
+                                   calculate_refraction_flag=False):
+    """
+    Расчет отражения для одной границы
+    :param d: Глубина целевой границы
+    :param model: Геол модель
+    :param vel_type: Тип скоростей (vp или vs)
+    :param element: Тип волны (pdpu и т.д.)
+    :param rays: Массив рассчитанных по кинематике лучей
+    :param i: Индекс отражающей границы
+    :param use_universal_matrix: Флаг использования универсальной формулы или прямых формул
+    :return:
+    """
     angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in rays if
               r.get_reflection_z() == d]
+
+    depth_rays = [r for r in rays if r.get_reflection_z() == d]
     offsets = [r.get_x_finish() for r in rays if r.get_reflection_z() == d]
 
     angles_arr = (np.array(angles) / np.pi * 180).tolist()
 
-    #TODO проверить эквивалентности расчетов к-тов отражения по формулам и по таблице
+    # TODO проверить эквивалентности расчетов к-тов отражения по формулам и по таблице
     if element.lower() == 'pdpu' and not use_universal_matrix:
         reflection_amplitudes = zoeppritz_rpp(model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
             model.vp[i], model.vs[i], model.rho[i], angles_arr)
@@ -467,6 +482,10 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_uni
             model.vp[i], model.vs[i], model.rho[i],
             a / np.pi * 180, element) for a in angles]
 
+    if calculate_refraction:
+        refraction_coeffs = calculate_refraction(model, rays, element)
+        reflection_amplitudes *= refraction_coeffs
+
 
     return ReflectionCurve(reflection_amplitudes, offsets, angles, d)
 
@@ -474,8 +493,16 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_uni
 def calculate_reflection_for_depth_mp_helper(args):
     return calculate_reflection_for_depth(*args)
 
-
+# TODO исправить случай однократного отражения на отражения с прохождениями
 def calculate_reflections(model, rays, element):
+    """
+    Расчет динамических характеристик среды для заданной одномерной модели
+    :param model: геологическая модель среды
+    :param rays: расчитанные по кинематике лучи
+    :param element: тип волны ()
+    :param with_refraction:
+    :return:
+    """
     depths = model.get_depths()
 
     if element[0].lower() == 'p':
@@ -488,6 +515,7 @@ def calculate_reflections(model, rays, element):
     i = 1
     for d in depths[1:]:
         reflections.append(calculate_reflection_for_depth(d, model, vel_type, element, rays, i))
+
         # angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i+1))[0] for r in rays if r.get_reflection_z() == d]
         # offsets = [r.get_x_finish() for r in rays if r.get_reflection_z() == d]
         # reflection_amplitudes = [zoeppritz_element(
@@ -500,295 +528,4 @@ def calculate_reflections(model, rays, element):
         i += 1
 
 
-
     return reflections
-
-
-
-# @vectorize
-# def fatti(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
-#     """
-#     Compute reflectivities with Fatti's formulation of the Aki-Richards
-#     equation, which does not account for the critical angle. See Fatti et al.
-#     (1994), Geophysics 59 (9).
-#     Args:
-#         vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-#         vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-#         rho1 (ndarray): The upper layer's density; float or 1D array length m.
-#         vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-#         vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-#         rho2 (ndarray): The lower layer's density; float or 1D array length m.
-#         theta1 (ndarray): The incidence angle; float or 1D array length n.
-#         terms (bool): Whether or not to return a tuple of the terms of the
-#             equation. The first term is the acoustic impedance.
-#     Returns:
-#         ndarray. The Fatti approximation for P-P reflectivity at the
-#             interface. Will be a float (for float inputs and one angle), a
-#             1 x n array (for float inputs and an array of angles), a 1 x m
-#             array (for float inputs and one angle), or an n x m array (for
-#             array inputs and an array of angles).
-#     """
-#     theta1 = np.radians(theta1)
-#
-#     drho = rho2-rho1
-#     rho = (rho1+rho2) / 2.0
-#     vp = (vp1+vp2) / 2.0
-#     vs = (vs1+vs2) / 2.0
-#     dip = (vp2*rho2 - vp1*rho1)/(vp2*rho2 + vp1*rho1)
-#     dis = (vs2*rho2 - vs1*rho1)/(vs2*rho2 + vs1*rho1)
-#     d = drho/rho
-#
-#     # Compute the three terms
-#     term1 = (1 + np.tan(theta1)**2) * dip
-#     term2 = -8 * (vs/vp)**2 * dis * np.sin(theta1)**2
-#     term3 = -1 * (0.5 * np.tan(theta1)**2 - 2 * (vs/vp)**2 * np.sin(theta1)**2) * d
-#
-#     if terms:
-#         fields = ['term1', 'term2', 'term3']
-#         Fatti = namedtuple('Fatti', fields)
-#         return Fatti(np.squeeze(term1),
-#                      np.squeeze(term2),
-#                      np.squeeze(term3)
-#                      )
-#     else:
-#         return np.squeeze(term1 + term2 + term3)
-#
-#
-# @vectorize
-# def shuey(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0,
-#           terms=False,
-#           return_gradient=False):
-#     """
-#     Compute Shuey approximation with 3 terms.
-#     http://subsurfwiki.org/wiki/Shuey_equation
-#     Args:
-#         vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-#         vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-#         rho1 (ndarray): The upper layer's density; float or 1D array length m.
-#         vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-#         vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-#         rho2 (ndarray): The lower layer's density; float or 1D array length m.
-#         theta1 (ndarray): The incidence angle; float or 1D array length n.
-#         terms (bool): Whether or not to return a tuple of the terms of the
-#             equation. The first term is the acoustic impedance.
-#         return_gradient (bool): Whether to return a tuple of the intercept
-#             and gradient (i.e. the second term divided by sin^2(theta)).
-#     Returns:
-#         ndarray. The Aki-Richards approximation for P-P reflectivity at the
-#             interface. Will be a float (for float inputs and one angle), a
-#             1 x n array (for float inputs and an array of angles), a 1 x m
-#             array (for float inputs and one angle), or an n x m array (for
-#             array inputs and an array of angles).
-#     """
-#     theta1 = np.radians(theta1)
-#
-#     drho = rho2-rho1
-#     dvp = vp2-vp1
-#     dvs = vs2-vs1
-#     rho = (rho1+rho2)/2.0
-#     vp = (vp1+vp2)/2.0
-#     vs = (vs1+vs2)/2.0
-#
-#     # Compute three-term reflectivity
-#     r0 = 0.5 * (dvp/vp + drho/rho)
-#     g = 0.5 * dvp/vp - 2 * (vs**2/vp**2) * (drho/rho + 2 * dvs/vs)
-#     f = 0.5 * dvp/vp
-#
-#     term1 = r0
-#     term2 = g * np.sin(theta1)**2
-#     term3 = f * (np.tan(theta1)**2 - np.sin(theta1)**2)
-#
-#     if return_gradient:
-#         fields = ['intercept', 'gradient']
-#         Shuey = namedtuple('Shuey', fields)
-#         return Shuey(np.squeeze(r0), np.squeeze(g))
-#     elif terms:
-#         fields = ['R0', 'Rg', 'Rf']
-#         Shuey = namedtuple('Shuey', fields)
-#         return Shuey(np.squeeze([term1 for _ in theta1]),
-#                      np.squeeze(term2),
-#                      np.squeeze(term3)
-#                      )
-#     else:
-#         return np.squeeze(term1 + term2 + term3)
-
-#
-# @deprecated('Please use shuey() instead.')
-# def shuey2(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
-#     """
-#     Compute Shuey approximation with 2 terms. Wraps `shuey()`. Deprecated,
-#     use `shuey()` instead.
-#     """
-#     r, g, _ = shuey(vp1, vs1, rho1, vp2, vs2, rho2, theta1=theta1, terms=True)
-#     return r + g
-#
-#
-# @deprecated('Please use shuey() instead.')
-# def shuey3(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
-#     """
-#     Compute Shuey approximation with 3 terms. Wraps `shuey()`. Deprecated,
-#     use `shuey()` instead.
-#     """
-#     return shuey(vp1, vs1, rho1, vp2, vs2, rho2, theta1=theta1)
-
-
-# @vectorize
-# def bortfeld(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
-#     """
-#     Compute Bortfeld approximation with three terms.
-#     http://sepwww.stanford.edu/public/docs/sep111/marie2/paper_html/node2.html
-#     Args:
-#         vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-#         vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-#         rho1 (ndarray): The upper layer's density; float or 1D array length m.
-#         vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-#         vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-#         rho2 (ndarray): The lower layer's density; float or 1D array length m.
-#         theta1 (ndarray): The incidence angle; float or 1D array length n.
-#         terms (bool): Whether or not to return a tuple of the terms of the
-#             equation. The first term is the acoustic impedance.
-#     Returns:
-#         ndarray. The 3-term Bortfeld approximation for P-P reflectivity at the
-#             interface. Will be a float (for float inputs and one angle), a
-#             1 x n array (for float inputs and an array of angles), a 1 x m
-#             array (for float inputs and one angle), or an n x m array (for
-#             array inputs and an array of angles).
-#     """
-#     theta1 = np.radians(theta1)
-#
-#     drho = rho2-rho1
-#     dvp = vp2-vp1
-#     dvs = vs2-vs1
-#     rho = (rho1+rho2)/2.0
-#     vp = (vp1+vp2)/2.0
-#     vs = (vs1+vs2)/2.0
-#     k = (2 * vs/vp)**2
-#     rsh = 0.5 * (dvp/vp - k*drho/rho - 2*k*dvs/vs)
-#
-#     # Compute three-term reflectivity
-#     term1 = 0.5 * (dvp/vp + drho/rho)
-#     term2 = rsh * np.sin(theta1)**2
-#     term3 = 0.5 * dvp/vp * np.tan(theta1)**2 * np.sin(theta1)**2
-#
-#     if terms:
-#         fields = ['term1', 'term2', 'term3']
-#         Bortfeld = namedtuple('Bortfeld', fields)
-#         return Bortfeld(np.squeeze([term1 for _ in theta1]),
-#                         np.squeeze(term2),
-#                         np.squeeze(term3)
-#                         )
-#     else:
-#         return np.squeeze(term1 + term2 + term3)
-#
-#
-# @deprecated('Please use bortfeld() instead.')
-# def bortfeld2(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
-#     """
-#     The 2-term Bortfeld approximation for ava analysis. Wraps `shuey()`.
-#     Deprecated, use `bortfeld()` instead.
-#     Args:
-#         vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-#         vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-#         rho1 (ndarray): The upper layer's density; float or 1D array length m.
-#         vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-#         vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-#         rho2 (ndarray): The lower layer's density; float or 1D array length m.
-#         theta1 (ndarray): The incidence angle; float or 1D array length n.
-#         terms (bool): Whether or not to return a tuple of the terms of the
-#             equation. The first term is the acoustic impedance.
-#     Returns:
-#         ndarray. The 2-term Bortfeld approximation for P-P reflectivity at the
-#             interface. Will be a float (for float inputs and one angle), a
-#             1 x n array (for float inputs and an array of angles), a 1 x m
-#             array (for float inputs and one angle), or an n x m array (for
-#             array inputs and an array of angles).
-#     """
-#     theta1 = np.radians(theta1)
-#     theta2 = np.arcsin(vp2/vp1*np.sin(theta1))
-#     term1 = 0.5 * np.log((vp2*rho2*np.cos(theta1)) / (vp1*rho1*np.cos(theta2)))
-#     svp2 = (np.sin(theta1)/vp1)**2
-#     dvs2 = (vs1**2-vs2**2)
-#     term2 = svp2 * dvs2 * (2+np.log(rho2/rho1)/np.log(vs2/vs1))
-#
-#     if terms:
-#         return term1, term2
-#     else:
-#         return (term1 + term2)
-#
-#
-# @deprecated('Please use bortfeld() instead.')
-# def bortfeld3(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
-#     return bortfeld(vp1, vs1, rho1, vp2, vs2, rho2, theta1=theta1)
-
-
-# @vectorize
-# def hilterman(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
-#     """
-#     Not recommended, only seems to match Zoeppritz to about 10 deg.
-#     Hilterman (1989) approximation from Mavko et al. Rock Physics Handbook.
-#     According to Dvorkin: "arguably the simplest and a very convenient
-#     [approximation]." At least for small angles and small contrasts.
-#     Args:
-#         vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-#         vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-#         rho1 (ndarray): The upper layer's density; float or 1D array length m.
-#         vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-#         vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-#         rho2 (ndarray): The lower layer's density; float or 1D array length m.
-#         theta1 (ndarray): The incidence angle; float or 1D array length n.
-#         terms (bool): Whether or not to return a tuple of the terms of the
-#             equation. The first term is the acoustic impedance.
-#     Returns:
-#         ndarray. The Hilterman approximation for P-P reflectivity at the
-#             interface. Will be a float (for float inputs and one angle), a
-#             1 x n array (for float inputs and an array of angles), a 1 x m
-#             array (for float inputs and one angle), or an n x m array (for
-#             array inputs and an array of angles).
-#     """
-#     theta1 = np.radians(theta1)
-#
-#     ip1 = vp1 * rho1
-#     ip2 = vp2 * rho2
-#     rp0 = (ip2 - ip1) / (ip2 + ip1)
-#
-#     pr2, pr1 = moduli.pr(vp2, vs2), moduli.pr(vp1, vs1)
-#     pravg = (pr2 + pr1) / 2.
-#     pr = (pr2 - pr1) / (1 - pravg)**2.
-#
-#     term1 = rp0 * np.cos(theta1)**2.
-#     term2 = pr * np.sin(theta1)**2.
-#
-#     if terms:
-#         fields = ['term1', 'term2']
-#         Hilterman = namedtuple('Hilterman', fields)
-#         return Hilterman(np.squeeze(term1), np.squeeze(term2))
-#     else:
-#         return np.squeeze(term1 + term2)
-#
-#
-# def blangy(vp1, vs1, rho1, vp2, vs2, rho2,
-#            d1=0, e1=0, d2=0, e2=0,
-#            theta1=0):
-#     """Implements the Blangy equation with the same interface as the other
-#     reflectivity equations. Wraps bruges.anisotropy.blangy(), which you may
-#     prefer to use directly.
-#     Args:
-#         vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-#         vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-#         rho1 (ndarray): The upper layer's density; float or 1D array length m.
-#         vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-#         vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-#         rho2 (ndarray): The lower layer's density; float or 1D array length m.
-#         d1 (ndarray): The upper delta; float or 1D array length m.
-#         e1 (ndarray): The upper epsilon; float or 1D array length m.
-#         d2 (ndarray): The lower delta; float or 1D array length m.
-#         e2 (ndarray): The lower epsilon; float or 1D array length m.
-#         theta1 (ndarray): The incidence angle; float or 1D array length n.
-#     Returns:
-#         ndarray. The Blangy approximation for P-P reflectivity at the
-#             interface. Wraps `anisotropy.blangy()`.
-#     """
-#     _, anisotropic = anisotropy.blangy(vp1, vs1, rho1, d1, e1,  # UPPER
-#                                        vp2, vs2, rho2, d2, e2,  # LOWER
-#                                        theta1)
-#     return anisotropic

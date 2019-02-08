@@ -40,7 +40,9 @@ def add_noise_rays(rays, depths):
 def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
             display_stat=False, visualize_res=True,
             calc_rays_p=True, calc_rays_s=True,
-            calc_reflection_p=True, calc_reflection_s=True, noise=False):
+            calc_reflection_p=True, calc_reflection_s=True,
+            calc_refraction_p=False, calc_refraction_s=False,
+            noise=False):
 
     '''
 
@@ -73,6 +75,7 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     disp_func('Rockphysics model calculated!')
 
+    # Создание моделей геол среды и среды наблюдения (последнее из источников и приемников)
     model = SeismicModel1D(vp, vs, rho, h, phi)
     sources = [Source(0, 0, 0)]
     receivers = [Receiver(x) for x in x_rec]
@@ -83,6 +86,7 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     rays_start_time = time.time()
 
+    # Расчет кинематических параметров
     if calc_rays_p:
         disp_func('Calculating p-rays...')
         rays_p = calculate_rays(observe, model, 'vp')
