@@ -66,7 +66,7 @@ def pdownpdown(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
         vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
         vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
         rho2 (ndarray): The lower layer's density; float or 1D array length m.
-        theta1 (ndarray): The incidence P-wave angle; float or 1D array length n.
+        theta1 (ndarray): The incidence P-wave angle; float or 1D array length n. IN DEGREES!!
     Returns:
         ndarray. The exact Zoeppritz solution for P-P reflectivity at the
             interface. Will be a float (for float inputs and one angle), a

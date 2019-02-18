@@ -5,6 +5,14 @@ import struct
 
 class SeismicModel1D:
     def __init__(self, vp=None, vs=None, rho=None, h=None, phi=None):
+        """
+        Seismic model class
+        :param vp: np.array of presure velocities
+        :param vs: np.array of shear velocities
+        :param rho: np.array of densities
+        :param h: np.array of layers' widths
+        :param phi:
+        """
         # values as 1D model
         self.vp = vp
         self.vs = vs

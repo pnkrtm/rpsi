@@ -7,7 +7,7 @@ def calculate_refraction_for_ray(model, ray, element):
     Расчет коэффициентов преломления для одного луча
     :param model: Геологическая модель
     :param ray: единичный луч
-    :param element: тип волны (vp или vs)
+    :param element: тип волны (vp или vs). Но сейчас прилетает PdPu
     :return:
     """
 
@@ -15,13 +15,13 @@ def calculate_refraction_for_ray(model, ray, element):
         raise NotImplementedError("S-waves are not implemented yet! GFY!")
 
     # Берем все границы кроме последней
-    vp1_arr = model.get_param(param_name='vp', index_finish=-1)
-    vs1_arr = model.get_param(param_name='vs', index_finish=-1)
-    rho1_arr = model.get_param(param_name='rho', index_finish=-1)
+    vp1_arr = model.get_param(param_name='vp', index_finish=-2)
+    vs1_arr = model.get_param(param_name='vs', index_finish=-2)
+    rho1_arr = model.get_param(param_name='rho', index_finish=-2)
 
-    vp2_arr = model.get_param(param_name='vp', index_start=1)
-    vs2_arr = model.get_param(param_name='vs', index_start=1)
-    rho2_arr = model.get_param(param_name='rho', index_start=1)
+    vp2_arr = model.get_param(param_name='vp', index_start=1, index_finish=-1)
+    vs2_arr = model.get_param(param_name='vs', index_start=1, index_finish=-1)
+    rho2_arr = model.get_param(param_name='rho', index_start=1, index_finish=-1)
 
     # Кол-во углов падения = кол-ву преломляющих границ (вот это да!)
     nangles = len(vp1_arr)

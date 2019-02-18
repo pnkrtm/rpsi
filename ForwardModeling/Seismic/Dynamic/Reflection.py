@@ -455,14 +455,13 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_uni
     :param vel_type: Тип скоростей (vp или vs)
     :param element: Тип волны (pdpu и т.д.)
     :param rays: Массив рассчитанных по кинематике лучей
-    :param i: Индекс отражающей границы
+    :param i: Индекс отражающей границы (начинается с нуля или с единицы?..)
     :param use_universal_matrix: Флаг использования универсальной формулы или прямых формул
     :return:
     """
-    angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in rays if
-              r.get_reflection_z() == d]
-
     depth_rays = [r for r in rays if r.get_reflection_z() == d]
+    angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in depth_rays]
+
     offsets = [r.get_x_finish() for r in rays if r.get_reflection_z() == d]
 
     angles_arr = (np.array(angles) / np.pi * 180).tolist()
@@ -482,8 +481,8 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_uni
             model.vp[i], model.vs[i], model.rho[i],
             a / np.pi * 180, element) for a in angles]
 
-    if calculate_refraction:
-        refraction_coeffs = calculate_refraction(model, rays, element)
+    if calculate_refraction_flag:
+        refraction_coeffs = calculate_refraction(model, depth_rays, element)
         reflection_amplitudes *= refraction_coeffs
 
 

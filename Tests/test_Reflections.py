@@ -22,6 +22,7 @@ def reflections_p_identity():
 
     rays_p = calculate_rays(observe, model, 'vp')
 
+    # индекс интересующей отражающей границы
     refl_index = 2
 
     curve_PP1 = calculate_reflection_for_depth(depths[refl_index], model, 'vp', 'PdPu', rays_p, refl_index,

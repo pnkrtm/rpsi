@@ -40,4 +40,6 @@ class Ray1D(Ray):
         angle = np.arctan(abs((self.x_points[bound_index] - self.x_points[bound_index - 1]) /
                               (self.z_points[bound_index] - self.z_points[bound_index - 1])))
 
+        angle = np.rad2deg(angle)
+
         return angle
