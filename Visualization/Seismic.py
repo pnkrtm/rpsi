@@ -76,7 +76,7 @@ def visualize_reflection_amplitudes(plt, boundaries, rays, reflection_index=None
         if reflection_index is not None and i != reflection_index:
             continue
 
-        depth_rays = [r for r in rays if r.reflection_z == b]
+        depth_rays = rays[i - 1]
 
         if absc == 'angle':
             x = [r.get_reflection_angle() for r in depth_rays]
@@ -84,7 +84,7 @@ def visualize_reflection_amplitudes(plt, boundaries, rays, reflection_index=None
         else:
             x = [r.x_finish for r in depth_rays]
 
-        y = [r.calculate_dynamic_factor.real for r in depth_rays]
+        y = [r.calculate_dynamic_factor().real for r in depth_rays]
 
         plt.plot(x, y, label='Граница {}'.format(i), linewidth=linewidth, linestyle=linestyle)
         i += 1

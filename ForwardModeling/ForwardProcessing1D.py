@@ -162,11 +162,11 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         axes[1, 1].set_title('time curves for s-waves')
 
         if calc_reflection_p:
-            visualize_reflection_amplitudes(axes[0, 0], rays_p, 'angle')
+            visualize_reflection_amplitudes(axes[0, 0], model.get_depths()[1:], rays_p, absc='angle')
             axes[0, 0].set_title('avo for p-waves')
 
         if calc_reflection_s:
-            visualize_reflection_amplitudes(axes[0, 1], rays_s, 'angle')
+            visualize_reflection_amplitudes(axes[0, 1], model.get_depths()[1:], rays_s, absc='angle')
             axes[0, 1].set_title('avo for for s-waves')
 
         plt.show()
