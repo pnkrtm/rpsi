@@ -3,7 +3,7 @@
 """
 from collections import namedtuple
 from Objects.Reflection import ReflectionCurve
-from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refraction
+from Objects.Rays import BoundaryType
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup
 from utils.vectorizing import vectorize
 
@@ -352,83 +352,7 @@ def akirichards_alt(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
         return np.squeeze(term1 + term2 + term3)
 
 
-# TODO МБ стоит добавить векторизацию для к-тов отражения?..
-def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_universal_matrix=False,
-                                   calculate_refraction_flag=False):
-    """
-    Расчет отражения для одной границы
-    :param d: Глубина целевой границы
-    :param model: Геол модель
-    :param vel_type: Тип скоростей (vp или vs)
-    :param element: Тип волны (pdpu и т.д.)
-    :param rays: Массив рассчитанных по кинематике лучей
-    :param i: Индекс отражающей границы (начинается с нуля или с единицы?..)
-    :param use_universal_matrix: Флаг использования универсальной формулы или прямых формул
-    :return:
-    """
-    depth_rays = [r for r in rays if r.reflection_z == d]
-    angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in depth_rays]
-
-    offsets = [r.x_finish for r in rays if r.reflection_z == d]
-
-    angles_arr = (np.array(angles) / np.pi * 180).tolist()
-
-    # TODO проверить эквивалентности расчетов к-тов отражения по формулам и по таблице
-    if element.lower() == 'pdpu' and not use_universal_matrix:
-        reflection_amplitudes = pdownpup(model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
-            model.vp[i], model.vs[i], model.rho[i], angles_arr)
-
-    elif element.lower() == 'sdsu' and not use_universal_matrix:
-        reflection_amplitudes = svdownsvup(model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
-                                              model.vp[i], model.vs[i], model.rho[i], angles_arr)
-
-    else:
-        reflection_amplitudes = [zoeppritz_element(
-            model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
-            model.vp[i], model.vs[i], model.rho[i],
-            a / np.pi * 180, element) for a in angles]
-
-    if calculate_refraction_flag:
-        raise NotImplementedError("GFY!")
-
-
-    return ReflectionCurve(reflection_amplitudes, offsets, angles, d)
-
-
-def calculate_reflection_for_depth_mp_helper(args):
-    return calculate_reflection_for_depth(*args)
-
-
-# TODO исправить случай однократного отражения на отражения с прохождениями
-def calculate_reflections(model, rays, element):
-    """
-    Расчет динамических характеристик среды для заданной одномерной модели
-    :param model: геологическая модель среды
-    :param rays: расчитанные по кинематике лучи
-    :param element: тип волны ()
-    :param with_refraction:
-    :return:
-    """
-    depths = model.get_depths()
-
-    if element[0].lower() == 'p':
-        vel_type = 'vp'
-
-    else:
-        vel_type = 'vs'
-
-    reflections = []
-    i = 1
-    for d in depths[1:]:
-        reflections.append(calculate_reflection_for_depth(d, model, vel_type, element, rays, i))
-
-        i += 1
-
-
-    return reflections
-
-
-def calculate_reflections_vectorized(model, rays, element, calculate_refraction_flag=False):
+def calculate_reflections_vectorized(model, rays, element):
     """
     Calculating reflections with vectorized objects
     :param model:
@@ -449,10 +373,10 @@ def calculate_reflections_vectorized(model, rays, element, calculate_refraction_
     offsets_all = []
 
     for i, d in enumerate(depths[1:], 1):
-        depth_rays = [r for r in rays if r.reflection_z == d]
+        depth_rays = rays[i-1]
         angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in depth_rays]
 
-        offsets = [r.x_finish for r in rays if r.reflection_z == d]
+        offsets = [r.x_finish for r in depth_rays]
 
         angles = np.rad2deg(angles)
 
@@ -479,11 +403,22 @@ def calculate_reflections_vectorized(model, rays, element, calculate_refraction_
     else:
         raise NotImplementedError("Another reflection types are not implemented yet!")
 
-    if calculate_refraction_flag:
-        refraction_coeffs = calculate_refraction(model, depth_rays, element)
-        reflection_amplitudes *= refraction_coeffs
+    return reflection_amplitudes
 
-    reflections = [ReflectionCurve(ra, offs.tolist(), angle.tolist(), d) for ra, offs, angle, d in zip(reflection_amplitudes, offsets_all,
-                                                                                     angles_all, depths)]
 
-    return reflections
+def calculate_reflections(model, rays, element):
+    """
+
+    :param model:
+    :param rays:
+    :param element: PdPu or SdSu
+    :return:
+    """
+    reflections_amplitudes = calculate_reflections_vectorized(model, rays, element)
+
+    i = 1
+    for dr, da in zip(rays, reflections_amplitudes):
+        for ofr, ofa in zip(dr, da):
+            ofr.add_boundary_dynamic(ofa, BoundaryType.REFLECTION, i)
+
+        i += 1

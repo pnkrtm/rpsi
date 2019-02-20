@@ -107,21 +107,10 @@ def calculate_rays_for_layer(model, observ, velocity_type, layer_index):
 def calculate_rays_for_layer_mp_helper(args):
     return calculate_rays_for_layer(*args)
 
-
 def calculate_rays(observ, model, velocity_type='vp'):
     rays = []
 
     for i in range(1, model.get_number_of_layers()):
-        rays = np.append(rays, calculate_rays_for_layer(model, observ, velocity_type, i))
-        # for source in observ.sources:
-        #     for receiver in observ.receivers:
-        #         p_start = p
-        #
-        #         p = solve_for_p(p_start, model.get_param(velocity_type, index_finish=i+1), model.get_param('h', index_finish=i), receiver.x)
-        #
-        #         x, z, t = forward_rtrc(model.get_param(velocity_type, index_finish=i+1), model.get_param('h', index_finish=i), p)
-        #         rays.append(Ray1D(x, z, t, p))
+        rays.append(calculate_rays_for_layer(model, observ, velocity_type, i))
 
     return rays
-
-

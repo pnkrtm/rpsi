@@ -170,8 +170,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, noise=False, result_numbe
 
     params_all_['noise'] = False
 
-    observe_1, model_1, rays_p_1, rays_s_1, reflection_p_1, reflection_s_1 = forward(**forward_input_params)
-    observe_2, model_2, rays_p_2, rays_s_2, reflection_p_2, reflection_s_2 = forward(**params_all_)
+    observe_1, model_1, rays_p_1, rays_s_1 = forward(**forward_input_params)
+    observe_2, model_2, rays_p_2, rays_s_2 = forward(**params_all_)
 
     max_depth = model_1.get_max_boundary_depth() * 1.2
     dz = 100
@@ -231,8 +231,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, noise=False, result_numbe
     # plt.show()
 
     for i in range(nlayers-1):
-        visualize_reflection_amplitudes(plt, reflection_p_1, reflection_index=i, absc='angle')
-        visualize_reflection_amplitudes(plt, reflection_p_2, reflection_index=i, absc='angle', linestyle='--')
+        visualize_reflection_amplitudes(plt, rays_p_1, reflection_index=i, absc='angle')
+        visualize_reflection_amplitudes(plt, rays_p_2, reflection_index=i, absc='angle', linestyle='--')
         plt.title('отражение от подошвы {} слоя для p-волн'.format(i+1), fontsize=18)
         plt.ylabel('к-т отражения')
         plt.xlabel('угол падения, рад')
@@ -249,8 +249,8 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s, noise=False, result_numbe
         plt.savefig(os.path.join(pictures_folder, 'times_vp_{}.png'.format(i)))
         plt.close()
 
-        visualize_reflection_amplitudes(plt, reflection_s_1, reflection_index=i, absc='angle')
-        visualize_reflection_amplitudes(plt, reflection_s_2, reflection_index=i, absc='angle', linestyle='--')
+        visualize_reflection_amplitudes(plt, rays_s_1, reflection_index=i, absc='angle')
+        visualize_reflection_amplitudes(plt, rays_s_2, reflection_index=i, absc='angle', linestyle='--')
         plt.title('отражение от подошвы {} слоя для s-волн'.format(i + 1), fontsize=18)
         plt.ylabel('амплитуда')
         plt.xlabel('угол падения, рад')

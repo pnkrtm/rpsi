@@ -6,11 +6,13 @@ import multiprocessing as mp
 import random as rnd
 
 from ForwardModeling.RockPhysics.Models import model_calculation, simple_model_1
+
 from Objects.Models.Models import SeismicModel1D
 from Objects.Observation import Observation, Source, Receiver
 from Objects.Seismogram import Trace, Seismogram
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays, calculate_rays_for_layer
-from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections, calculate_reflection_for_depth
+from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections
+from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refractions
 from Visualization.Seismic import visualize_model1D, visualize_model_wellogs, visualize_rays_model_1D, visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram
 
@@ -100,17 +102,33 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     reflection_start_time = time.time()
 
-    reflections_p = None
     if calc_reflection_p:
         disp_func('Calculating p-reflections...')
-        reflections_p = calculate_reflections(model, rays_p, 'PdPu')
 
-    reflections_s = None
-    if calc_reflection_s:
-        disp_func('Calculating s-reflections...')
-        reflections_s = calculate_reflections(model, rays_s, 'SdSu')
+        calculate_reflections(model, rays_p, 'PdPu')
 
         disp_func('Reflections calculated!')
+
+    if calc_reflection_s:
+        disp_func('Calculating s-reflections...')
+
+        calculate_reflections(model, rays_s, 'SdSu')
+
+        disp_func('Reflections calculated!')
+
+    if calc_refraction_p:
+        disp_func('Calculating p-refractions...')
+
+        calculate_refractions(model, rays_p, 'vp')
+
+        disp_func('Refractions calculated!')
+
+    if calc_refraction_s:
+        disp_func('Calculating s-refractions...')
+
+        calculate_refractions(model, rays_s, 'vs')
+
+        disp_func('Refractions calculated!')
 
     calc_stop_time = time.time()
 
@@ -144,16 +162,16 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         axes[1, 1].set_title('time curves for s-waves')
 
         if calc_reflection_p:
-            visualize_reflection_amplitudes(axes[0, 0], reflections_p, 'angle')
+            visualize_reflection_amplitudes(axes[0, 0], rays_p, 'angle')
             axes[0, 0].set_title('avo for p-waves')
 
         if calc_reflection_s:
-            visualize_reflection_amplitudes(axes[0, 1], reflections_s, 'angle')
+            visualize_reflection_amplitudes(axes[0, 1], rays_s, 'angle')
             axes[0, 1].set_title('avo for for s-waves')
 
         plt.show()
 
-    return observe, model, rays_p, rays_s, reflections_p, reflections_s
+    return observe, model, rays_p, rays_s
 
 
 def create_seismogram(seismogram, rays, reflections, observe, times, dt):
@@ -216,53 +234,3 @@ def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, r
         plt.show()
 
     return seismogram_p, seismogram_s
-
-
-# def forward_with_parallel_mp_helper(args)
-#
-#
-# def forward_with_parallel(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec, display_stat=False,
-#             visualize_res=True, calc_reflection=True):
-#     '''
-#
-#         :param nlayers: Кол-во слоев одномерной модели
-#         :param Km: Массив массивов модулей сжатия матрикса (для каждого слоя задается массив из составляющих его минералов)
-#         :param Gm: Массив массивов модулей сдвига матрикса (для каждого слоя задается массив из составляющих его минералов)
-#         :param Ks: Массив модулей сжатия глины
-#         :param Gs: Массив модулей сдвига глины
-#         :param Kf: Массив модулей сжатия флюида
-#         :param phi: Массив пористости
-#         :param phi_s: Массив К глинистости (кол-во глины)
-#         :param rho_s: Массив плотностей глин
-#         :param rho_f: Массив плотностнй флюида
-#         :param rho_m: Массив массивов плотностей минералов матрикса
-#         :param h: Массив мощностей
-#         :param x_rec: Массив приемников
-#         :return:
-#         '''
-#
-#     sources = [Source(0, 0, 0)]
-#     receivers = [Receiver(x) for x in x_rec]
-#     observe = Observation(sources, receivers)
-#
-#     input_args = np.column_stack([])
-#
-#     for i in range(nlayers):
-#         vp, vs, rho = model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m)
-#
-#
-#         model = SeismicModel1D(vp, vs, rho, h)
-#         sources = [Source(0, 0, 0)]
-#         receivers = [Receiver(x) for x in x_rec]
-#         observe = Observation(sources, receivers)
-#
-#         rays_p = calculate_rays(observe, model, 'vp')
-#
-#         rays_s = calculate_rays(observe, model, 'vs')
-#
-#         if calc_reflection:
-#             reflections_p = calculate_reflections(model, rays_p, 'PdPu')
-#
-#             reflections_s = calculate_reflections(model, rays_s, 'SdSu')
-
-

@@ -41,13 +41,14 @@ def calculate_refraction_for_ray(model, ray, element):
 
 
 # TODO сделать расчет к-тов прохождения не по лучам, а по границам
-def calculate_refraction(model, rays, element):
-    for ray in rays:
-        down_coeffs, up_coeffs = calculate_refraction_for_ray(model, ray, element)
+def calculate_refractions(model, rays, element):
+    for rays_depth in rays:
+        for ray in rays_depth:
+            down_coeffs, up_coeffs = calculate_refraction_for_ray(model, ray, element)
 
-        i = 1
-        for dc, uc in zip(down_coeffs, up_coeffs):
-            ray.add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, i)
-            ray.add_boundary_dynamic(uc, BoundaryType.REFRACTION_UP, i)
+            i = 1
+            for dc, uc in zip(down_coeffs, up_coeffs):
+                ray.add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, i)
+                ray.add_boundary_dynamic(uc, BoundaryType.REFRACTION_UP, i)
 
-            i += 1
+                i += 1
