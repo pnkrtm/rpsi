@@ -17,6 +17,6 @@ def vectorize(func):
         vp2 = np.asanyarray(vp2, dtype=float)
         vs2 = np.asanyarray(vs2, dtype=float) + 1e-12  # Prevent singular matrix.
         rho2 = np.asanyarray(rho2, dtype=float)
-        theta1 = np.asanyarray(theta1).reshape((-1, 1))
+        theta1 = np.asanyarray(theta1, dtype=float)
         return func(vp1, vs1, rho1, vp2, vs2, rho2, theta1, **kwargs)
     return wrapper

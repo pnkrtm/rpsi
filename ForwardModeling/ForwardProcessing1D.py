@@ -17,7 +17,7 @@ from Visualization.Seismic import visualize_model1D, visualize_model_wellogs, vi
 
 def add_noise_rays(rays, depths):
     for d in depths[1:]:
-        rays_ = [r for r in rays if r.get_reflection_z() == d]
+        rays_ = [r for r in rays if r.reflection_z == d]
         times_ = np.array([r.time for r in rays_])
         mean_time = np.mean(times_)
 
@@ -30,11 +30,6 @@ def add_noise_rays(rays, depths):
 
             random_noise = (2*rnd.random() - 1)* value
             r.time += random_noise
-
-
-# def add_noise_amplitudes(reflection):
-
-
 
 
 def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
@@ -164,11 +159,11 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 def create_seismogram(seismogram, rays, reflections, observe, times, dt):
     for rec in observe.receivers:
         offset = rec.x
-        rays_ = [r for r in rays if abs(r.get_x_finish() - offset) <= 0.2]
+        rays_ = [r for r in rays if abs(r.x_finish - offset) <= 0.2]
         trace_i = np.zeros(len(times))
 
         for ray in rays_:
-            ampl_curve = [r for r in reflections if float(r.boundary_z) == float(ray.get_reflection_z())][0]
+            ampl_curve = [r for r in reflections if float(r.boundary_z) == float(ray.reflection_z)][0]
             reflection_index = int(ray.time / dt)
             r_coeff = ampl_curve.get_amplitude_by_offset(offset)
 

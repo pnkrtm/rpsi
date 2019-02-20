@@ -162,15 +162,15 @@ def func_to_optimize_universal(model_opt, params_all, params_to_optimize, params
     i = 0
     for d in depths[1:]:
         if use_rays_p:
-            rays_p_ = [r for r in rays_p if r.get_reflection_z() == d]
-            rays_p_o = [r for r in rays_observed_p if r.get_reflection_z() == d]
+            rays_p_ = [r for r in rays_p if r.reflection_z == d]
+            rays_p_o = [r for r in rays_observed_p if r.reflection_z == d]
 
             errs_times_p.append(get_time_differences(rays_p_o, rays_p_))
             weights_times_p.append(np.interp(i, xp, fp))
 
         if use_rays_s:
-            rays_s_ = [r for r in rays_s if r.get_reflection_z() == d]
-            rays_s_o = [r for r in rays_observed_s if r.get_reflection_z() == d]
+            rays_s_ = [r for r in rays_s if r.reflection_z == d]
+            rays_s_o = [r for r in rays_observed_s if r.reflection_z == d]
 
             errs_times_s.append(get_time_differences(rays_s_o, rays_s_))
             weights_times_s.append(np.interp(i, xp, fp))
@@ -297,14 +297,14 @@ def func_to_optimize(model_opt, nlayers, Km, Gm, Ks, Gs, h, x_rec,
 
     for d in depths[1:]:
         if use_rays_p:
-            rays_p_ = [r for r in rays_p if r.get_reflection_z() == d]
-            rays_p_o = [r for r in rays_observed_p if r.get_reflection_z() == d]
+            rays_p_ = [r for r in rays_p if r.reflection_z == d]
+            rays_p_o = [r for r in rays_observed_p if r.reflection_z == d]
 
             errs.append(get_time_differences(rays_p_o, rays_p_))
 
         if use_rays_s:
-            rays_s_ = [r for r in rays_s if r.get_reflection_z() == d]
-            rays_s_o = [r for r in rays_observed_s if r.get_reflection_z() == d]
+            rays_s_ = [r for r in rays_s if r.reflection_z == d]
+            rays_s_o = [r for r in rays_observed_s if r.reflection_z == d]
 
             errs.append(get_time_differences(rays_s_o, rays_s_))
 

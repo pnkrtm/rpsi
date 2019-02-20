@@ -1,14 +1,45 @@
+from enum import Enum
+
 import numpy as np
+
+
+class BoundaryType(Enum):
+    REFLECTION = 1
+    REFRACTION_DOWN = 2
+    REFRACTION_UP = 3
+
 
 class Ray():
     def __init__(self):
         self.p = -1
+        self.boundaries_dynamics = []
 
-    def get_x_start(self):
-        pass
+    @property
+    def x_start(self):
+        raise NotImplementedError()
 
-    def get_x_finish(self):
-        pass
+    @property
+    def x_finish(self):
+        raise NotImplementedError()
+
+    @property
+    def reflection_z(self):
+        raise NotImplementedError
+
+    def add_boundary_dynamic(self, value, bound_type: BoundaryType, bound_index: int=-1, bound_depth: float=-1):
+        self.boundaries_dynamics.append(
+            {
+                "boundary_index": bound_index,
+                "boundadry_depth": bound_depth,
+                "boundary_type": bound_type,
+                "value": value
+            }
+        )
+
+    def calculate_dynamic_factor(self):
+        vals = [bd["value"] for bd in self.boundaries_dynamics]
+
+        return np.prod(vals)
 
 
 class Ray1D(Ray):
@@ -21,13 +52,16 @@ class Ray1D(Ray):
         self.time = time
         self.p = p
 
-    def get_x_start(self):
+    @property
+    def x_start(self):
         return self.x_points[0]
 
-    def get_x_finish(self):
+    @property
+    def x_finish(self):
         return self.x_points[-1]
 
-    def get_reflection_z(self):
+    @property
+    def reflection_z(self):
         return max(self.z_points)
 
     # TODO check this shit

@@ -49,7 +49,7 @@ def visualize_time_curves(plt, model, rays, observe, depth_index=None, linewidth
             i += 1
             continue
 
-        rays_ = [r for r in rays if r.get_reflection_z() == d]
+        rays_ = [r for r in rays if r.reflection_z == d]
         times = [r.time for r in rays_]
 
         plt.plot(x, times, label='Граница {}'.format(i), linewidth=linewidth, linestyle=linestyle)

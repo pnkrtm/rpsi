@@ -1,5 +1,6 @@
 import numpy as np
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpdown, puppup
+from Objects.Rays import BoundaryType
 
 
 def calculate_refraction_for_ray(model, ray, element):
@@ -27,7 +28,7 @@ def calculate_refraction_for_ray(model, ray, element):
     nangles = len(vp1_arr)
 
     if nangles == 0:
-        return 1
+        return
 
     falling_angles = np.array([ray.get_boundary_angle(i) for i in range(1, nangles+1)])
     rising_angles = np.array([ray.get_boundary_angle(i) for i in range(nangles+1, 2*nangles+1)])
@@ -36,14 +37,17 @@ def calculate_refraction_for_ray(model, ray, element):
     down_coeffs = pdownpdown(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, falling_angles)
     up_coeffs = puppup(vp2_arr[::-1], vs2_arr[::-1], rho2_arr[::-1], vp1_arr[::-1], vs1_arr[::-1], rho1_arr[::-1], rising_angles)
 
-    refr_coeff = np.prod(np.append(down_coeffs, up_coeffs))
-
-    return refr_coeff
+    return down_coeffs, up_coeffs
 
 
+# TODO сделать расчет к-тов прохождения не по лучам, а по границам
 def calculate_refraction(model, rays, element):
-    refractions = []
     for ray in rays:
-        refractions.append(calculate_refraction_for_ray(model, ray, element))
+        down_coeffs, up_coeffs = calculate_refraction_for_ray(model, ray, element)
 
-    return refractions
+        i = 1
+        for dc, uc in zip(down_coeffs, up_coeffs):
+            ray.add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, i)
+            ray.add_boundary_dynamic(uc, BoundaryType.REFRACTION_UP, i)
+
+            i += 1

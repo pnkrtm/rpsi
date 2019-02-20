@@ -4,6 +4,7 @@
 from collections import namedtuple
 from Objects.Reflection import ReflectionCurve
 from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refraction
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup
 from utils.vectorizing import vectorize
 
 import numpy as np
@@ -110,7 +111,7 @@ def reflectivity(vp, vs, rho, theta=0, method='zoeppritz_rpp'):
         'scattering_matrix': scattering_matrix,
         'zoeppritz_element': zoeppritz_element,
         'zoeppritz': zoeppritz,
-        'zoeppritz_rpp': zoeppritz_rpp,
+        'zoeppritz_rpp': pdownpup,
         'akirichards': akirichards,
         'akirichards_alt': akirichards_alt,
         # 'fatti': fatti,
@@ -240,101 +241,6 @@ def zoeppritz(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
 
 
 @vectorize
-def zoeppritz_rpp(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
-    """
-    Exact Zoeppritz from expression.
-    This is useful because we can pass arrays to it, which we can't do to
-    scattering_matrix().
-    Dvorkin et al. (2014). Seismic Reflections of Rock Properties. Cambridge.
-    Returns the complex reflectivity.
-    Args:
-        vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-        vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-        rho1 (ndarray): The upper layer's density; float or 1D array length m.
-        vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-        vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-        rho2 (ndarray): The lower layer's density; float or 1D array length m.
-        theta1 (ndarray): The incidence angle; float or 1D array length n.
-    Returns:
-        ndarray. The exact Zoeppritz solution for P-P reflectivity at the
-            interface. Will be a float (for float inputs and one angle), a
-            1 x n array (for float inputs and an array of angles), a 1 x m
-            array (for float inputs and one angle), or an n x m array (for
-            array inputs and an array of angles).
-    """
-    theta1 = np.radians(theta1).astype(complex)
-
-    p = np.sin(theta1) / vp1  # Ray parameter
-    theta2 = np.arcsin(p * vp2)
-    phi1 = np.arcsin(p * vs1)  # Reflected S
-    phi2 = np.arcsin(p * vs2)  # Transmitted S
-
-    a = rho2 * (1 - 2 * np.sin(phi2)**2.) - rho1 * (1 - 2 * np.sin(phi1)**2.)
-    b = rho2 * (1 - 2 * np.sin(phi2)**2.) + 2 * rho1 * np.sin(phi1)**2.
-    c = rho1 * (1 - 2 * np.sin(phi1)**2.) + 2 * rho2 * np.sin(phi2)**2.
-    d = 2 * (rho2 * vs2**2 - rho1 * vs1**2)
-
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1)/vp1 * np.cos(phi2)/vs2
-    H = a - d * np.cos(theta2)/vp2 * np.cos(phi1)/vs1
-
-    D = E*F + G*H*p**2
-
-    rpp = (1/D) * (F*(b*(np.cos(theta1)/vp1) - c*(np.cos(theta2)/vp2)) \
-                   - H*p**2 * (a + d*(np.cos(theta1)/vp1)*(np.cos(phi2)/vs2)))
-
-    return np.squeeze(rpp)
-
-@vectorize
-def zoeppritz_rsvsv(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
-    """
-    Exact Zoeppritz from expression.
-    This is useful because we can pass arrays to it, which we can't do to
-    scattering_matrix().
-    Dvorkin et al. (2014). Seismic Reflections of Rock Properties. Cambridge.
-    Returns the complex reflectivity.
-    Args:
-        vp1 (ndarray): The upper P-wave velocity; float or 1D array length m.
-        vs1 (ndarray): The upper S-wave velocity; float or 1D array length m.
-        rho1 (ndarray): The upper layer's density; float or 1D array length m.
-        vp2 (ndarray): The lower P-wave velocity; float or 1D array length m.
-        vs2 (ndarray): The lower S-wave velocity; float or 1D array length m.
-        rho2 (ndarray): The lower layer's density; float or 1D array length m.
-        theta1 (ndarray): The incidence angle; float or 1D array length n.
-    Returns:
-        ndarray. The exact Zoeppritz solution for Sv-Sv reflectivity at the
-            interface. Will be a float (for float inputs and one angle), a
-            1 x n array (for float inputs and an array of angles), a 1 x m
-            array (for float inputs and one angle), or an n x m array (for
-            array inputs and an array of angles).
-    """
-    theta1 = np.radians(theta1).astype(complex)
-
-    p = np.sin(theta1) / vp1  # Ray parameter
-    theta2 = np.arcsin(p * vp2)
-    phi1 = np.arcsin(p * vs1)  # Reflected S
-    phi2 = np.arcsin(p * vs2)  # Transmitted S
-
-    a = rho2 * (1 - 2 * np.sin(phi2)**2.) - rho1 * (1 - 2 * np.sin(phi1)**2.)
-    b = rho2 * (1 - 2 * np.sin(phi2)**2.) + 2 * rho1 * np.sin(phi1)**2.
-    c = rho1 * (1 - 2 * np.sin(phi1)**2.) + 2 * rho2 * np.sin(phi2)**2.
-    d = 2 * (rho2 * vs2**2 - rho1 * vs1**2)
-
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1)/vp1 * np.cos(phi2)/vs2
-    H = a - d * np.cos(theta2)/vp2 * np.cos(phi1)/vs1
-
-    D = E*F + G*H*p**2
-
-    rsvsv = -((b * np.cos(phi1) / vs1 - c * np.cos(phi2) / vs2) * E \
-              - (a + d * (np.cos(theta2) / vp2) * (np.cos(phi1) / vs1)) * G * p * p) / D
-
-    return np.squeeze(rsvsv)
-
-
-@vectorize
 def akirichards(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
     """
     The Aki-Richards approximation to the reflectivity.
@@ -446,6 +352,7 @@ def akirichards_alt(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, terms=False):
         return np.squeeze(term1 + term2 + term3)
 
 
+# TODO МБ стоит добавить векторизацию для к-тов отражения?..
 def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_universal_matrix=False,
                                    calculate_refraction_flag=False):
     """
@@ -459,20 +366,20 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_uni
     :param use_universal_matrix: Флаг использования универсальной формулы или прямых формул
     :return:
     """
-    depth_rays = [r for r in rays if r.get_reflection_z() == d]
+    depth_rays = [r for r in rays if r.reflection_z == d]
     angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in depth_rays]
 
-    offsets = [r.get_x_finish() for r in rays if r.get_reflection_z() == d]
+    offsets = [r.x_finish for r in rays if r.reflection_z == d]
 
     angles_arr = (np.array(angles) / np.pi * 180).tolist()
 
     # TODO проверить эквивалентности расчетов к-тов отражения по формулам и по таблице
     if element.lower() == 'pdpu' and not use_universal_matrix:
-        reflection_amplitudes = zoeppritz_rpp(model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
+        reflection_amplitudes = pdownpup(model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
             model.vp[i], model.vs[i], model.rho[i], angles_arr)
 
     elif element.lower() == 'sdsu' and not use_universal_matrix:
-        reflection_amplitudes = zoeppritz_rsvsv(model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
+        reflection_amplitudes = svdownsvup(model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
                                               model.vp[i], model.vs[i], model.rho[i], angles_arr)
 
     else:
@@ -482,8 +389,7 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_uni
             a / np.pi * 180, element) for a in angles]
 
     if calculate_refraction_flag:
-        refraction_coeffs = calculate_refraction(model, depth_rays, element)
-        reflection_amplitudes *= refraction_coeffs
+        raise NotImplementedError("GFY!")
 
 
     return ReflectionCurve(reflection_amplitudes, offsets, angles, d)
@@ -491,6 +397,7 @@ def calculate_reflection_for_depth(d, model, vel_type, element, rays, i, use_uni
 
 def calculate_reflection_for_depth_mp_helper(args):
     return calculate_reflection_for_depth(*args)
+
 
 # TODO исправить случай однократного отражения на отражения с прохождениями
 def calculate_reflections(model, rays, element):
@@ -515,16 +422,68 @@ def calculate_reflections(model, rays, element):
     for d in depths[1:]:
         reflections.append(calculate_reflection_for_depth(d, model, vel_type, element, rays, i))
 
-        # angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i+1))[0] for r in rays if r.get_reflection_z() == d]
-        # offsets = [r.get_x_finish() for r in rays if r.get_reflection_z() == d]
-        # reflection_amplitudes = [zoeppritz_element(
-        #     model.vp[i - 1], model.vs[i - 1], model.rho[i - 1],
-        #     model.vp[i], model.vs[i], model.rho[i],
-        #     a, element) for a in angles]
-        #
-        # reflections.append(ReflectionCurve(reflection_amplitudes, offsets, angles, d))
-
         i += 1
 
+
+    return reflections
+
+
+def calculate_reflections_vectorized(model, rays, element, calculate_refraction_flag=False):
+    """
+    Calculating reflections with vectorized objects
+    :param model:
+    :param rays:
+    :param element:
+    :param calculate_refraction_flag:
+    :return:
+    """
+    depths = model.get_depths()
+
+    if element[0].lower() == 'p':
+        vel_type = 'vp'
+
+    else:
+        vel_type = 'vs'
+
+    angles_all = []
+    offsets_all = []
+
+    for i, d in enumerate(depths[1:], 1):
+        depth_rays = [r for r in rays if r.reflection_z == d]
+        angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in depth_rays]
+
+        offsets = [r.x_finish for r in rays if r.reflection_z == d]
+
+        angles = np.rad2deg(angles)
+
+        angles_all.append(angles)
+        offsets_all.append(offsets)
+
+    angles_all = np.array(angles_all)
+    offsets_all = np.array(offsets_all)
+
+    # Берем все границы кроме последней
+    vp1_arr = model.get_param(param_name='vp', index_finish=-1)
+    vs1_arr = model.get_param(param_name='vs', index_finish=-1)
+    rho1_arr = model.get_param(param_name='rho', index_finish=-1)
+
+    # Берем все границы кроме первой
+    vp2_arr = model.get_param(param_name='vp', index_start=1)
+    vs2_arr = model.get_param(param_name='vs', index_start=1)
+    rho2_arr = model.get_param(param_name='rho', index_start=1)
+
+    if element.lower() == 'pdpu':
+        reflection_amplitudes = pdownpup(vp1_arr, vs1_arr, rho1_arr,
+                                              vp2_arr, vs2_arr, rho2_arr, angles_all)
+
+    else:
+        raise NotImplementedError("Another reflection types are not implemented yet!")
+
+    if calculate_refraction_flag:
+        refraction_coeffs = calculate_refraction(model, depth_rays, element)
+        reflection_amplitudes *= refraction_coeffs
+
+    reflections = [ReflectionCurve(ra, offs.tolist(), angle.tolist(), d) for ra, offs, angle, d in zip(reflection_amplitudes, offsets_all,
+                                                                                     angles_all, depths)]
 
     return reflections
