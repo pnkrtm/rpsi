@@ -113,4 +113,4 @@ def calculate_rays(observ, model, velocity_type='vp'):
     for i in range(1, model.get_number_of_layers()):
         rays.append(calculate_rays_for_layer(model, observ, velocity_type, i))
 
-    return rays
+    return np.array(rays)

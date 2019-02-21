@@ -123,7 +123,13 @@ def visualize_seismogram(plt, seism, normalize=False, fill_negative=False, wigle
         x_vals = offsets[::-1]
         y_vals = seism.traces[0].times
 
+        minval = values.min()
+        maxval = values.max()
+
+        values *= gain
+
         plt.imshow(values, extent=([min(x_vals), max(x_vals), max(y_vals), min(y_vals)]),
+                   vmin=minval, vmax=maxval,
                    aspect='auto', cmap='Greys')
 
 
