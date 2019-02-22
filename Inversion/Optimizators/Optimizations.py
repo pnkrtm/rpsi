@@ -1,5 +1,5 @@
 from scipy.optimize import fmin_l_bfgs_b, differential_evolution
-from Inversion._differentialevolution import differential_evolution as differential_evolution_parallel
+from Inversion.Optimizators._differentialevolution import differential_evolution as differential_evolution_parallel
 
 class LBFGSBOptimization:
     def __init__(self, approx_grad=True, m=10, factr=1e10, pgtol=1e-8, epsilon=1e-6, maxiter=200, bounds=[]):

@@ -3,7 +3,7 @@ sys.path.append('../')
 
 import numpy as np
 from ForwardModeling.ForwardProcessing1D import forward
-from Inversion.Inversion1D import inverse
+from Inversion.Strategies.Inversion1D import inverse
 from Tests.test_ForwardProcessing1D import get_model_1
 
 import time
@@ -17,7 +17,7 @@ def main():
 
 
     print('Calculating forward modeling...')
-    observe, model, rays_observed_p, rays_observed_s, reflection_observed_p, reflection_observed_s = \
+    observe, model, rays_observed_p, rays_observed_s = \
         forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f,
                                                                rho_m, h, x_rec, display_stat=True,
             visualize_res=False, calc_reflection_p=True, calc_reflection_s=True)

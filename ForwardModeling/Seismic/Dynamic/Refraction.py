@@ -15,34 +15,38 @@ def calculate_refraction_for_ray(model, ray, element):
     if 's' in element.lower():
         raise NotImplementedError("S-waves are not implemented yet! GFY!")
 
-    # Берем все границы кроме последней
-    vp1_arr = model.get_param(param_name='vp', index_finish=-2)
-    vs1_arr = model.get_param(param_name='vs', index_finish=-2)
-    rho1_arr = model.get_param(param_name='rho', index_finish=-2)
+    nrefractions = ray.nlayers - 1
+    npoints = ray.nlayers * 2 + 1
 
-    vp2_arr = model.get_param(param_name='vp', index_start=1, index_finish=-1)
-    vs2_arr = model.get_param(param_name='vs', index_start=1, index_finish=-1)
-    rho2_arr = model.get_param(param_name='rho', index_start=1, index_finish=-1)
-
-    # Кол-во углов падения = кол-ву преломляющих границ (вот это да!)
-    nangles = len(vp1_arr)
-
-    if nangles == 0:
+    if nrefractions == 0:
         return
 
-    falling_angles = np.array([ray.get_boundary_angle(i) for i in range(1, nangles+1)])
-    rising_angles = np.array([ray.get_boundary_angle(i) for i in range(nangles+1, 2*nangles+1)])
+    # Берем все границы кроме последней
+    vp1_arr = model.get_param(param_name='vp', index_finish=nrefractions)
+    vs1_arr = model.get_param(param_name='vs', index_finish=nrefractions)
+    rho1_arr = model.get_param(param_name='rho', index_finish=nrefractions)
 
-    # TODO чекнуть правильность определения углов падения + чекнуть, правильно ли считаются к-ты прохождения
+    vp2_arr = model.get_param(param_name='vp', index_start=1, index_finish=nrefractions+1)
+    vs2_arr = model.get_param(param_name='vs', index_start=1, index_finish=nrefractions+1)
+    rho2_arr = model.get_param(param_name='rho', index_start=1, index_finish=nrefractions+1)
+
+    # Кол-во углов падения = кол-ву преломляющих границ (вот это да!)
+    nangles = nrefractions
+
+    falling_angles = np.array([ray.get_boundary_angle(i) for i in range(1, nangles+1)])
+    rising_angles = np.array([ray.get_boundary_angle(i) for i in range(npoints - 1 - nangles, npoints - 1)])[::-1]
+
+    # TODO восходящие к-ты неправильные
     down_coeffs = pdownpdown(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, falling_angles)
-    up_coeffs = puppup(vp2_arr[::-1], vs2_arr[::-1], rho2_arr[::-1], vp1_arr[::-1], vs1_arr[::-1], rho1_arr[::-1], rising_angles)
+    up_coeffs = puppup(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, rising_angles)
 
     return down_coeffs, up_coeffs
 
 
 # TODO сделать расчет к-тов прохождения не по лучам, а по границам
 def calculate_refractions(model, rays, element):
-    for rays_depth in rays:
+    # rays[0] - это отражения от первой границы, у которых нет к-тов преломления
+    for rays_depth in rays[1:]:
         for ray in rays_depth:
             down_coeffs, up_coeffs = calculate_refraction_for_ray(model, ray, element)
 

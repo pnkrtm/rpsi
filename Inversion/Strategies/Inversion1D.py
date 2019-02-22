@@ -5,8 +5,8 @@ from numpy import linalg
 import time
 
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from Inversion.Optimizations import DifferentialEvolution, DifferentialEvolution_parallel
-from Inversion.Tools import OptimizeHelper
+from Inversion.Optimizators.Optimizations import DifferentialEvolution_parallel
+from Inversion.Utils.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException
 
 
@@ -219,8 +219,9 @@ def func_to_optimize_universal(model_opt, params_all, params_to_optimize, params
 
 
 def func_to_optimize_seismogram_universal(model_opt, params_all, params_to_optimize,
-                seismogram_observed_p, seismogram_observed_s,
-                use_p_waves, use_s_waves, helper):
+                                          seismogram_observed_p, seismogram_observed_s,
+
+                                          use_p_waves, use_s_waves, helper):
 
     params_all_ = {}
 
@@ -328,30 +329,8 @@ def func_to_optimize(model_opt, nlayers, Km, Gm, Ks, Gs, h, x_rec,
     return np.average(errs)
 
 
-def inverse(nlayers, Km, Gm, Ks, Gs, h, x_rec,
-            rays_observed_p, rays_observed_s,
-            reflection_observed_p, reflection_observed_s,
-            data_start=None, opt_type='de',
-            use_rays_p=True, use_rays_s=True, use_reflection_p=False, use_reflection_s=False):
-
-
-    if opt_type == 'de':
-        optimizer = DifferentialEvolution(popsize=2, maxiter=10, atol=1000, init='random', polish=True)
-
-        args = (nlayers, Km, Gm, Ks, Gs, h, x_rec,
-                rays_observed_p, rays_observed_s,
-                reflection_observed_p, reflection_observed_s,
-                use_rays_p, use_rays_s,
-                use_reflection_p, use_reflection_s)
-
-        result_model = optimizer.optimize(func_to_optimize, data_start, args)
-
-    return result_model
-
-
 def inverse_universal(optimizers, error, params_all, params_to_optimize, params_bounds,
                     rays_observed_p, rays_observed_s,
-                    reflection_observed_p, reflection_observed_s,
                     opt_type='de',
                     use_rays_p=True, use_rays_s=True, use_reflection_p=False, use_reflection_s=False,
                       layer_weights=None):

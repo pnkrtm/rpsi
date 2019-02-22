@@ -2,15 +2,14 @@ import argparse
 import sys
 import time
 import os
-import multiprocessing as mp
+
 sys.path.append('../')
 
 from Inversion.DataIO import read_input_file, write_output_file
-import numpy as np
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from Inversion.Optimizations import LBFGSBOptimization, DifferentialEvolution, DifferentialEvolution_parallel
-from Inversion.Inversion1D import inverse_universal, inverse_universal_shots
-
+from Inversion.Optimizators.Optimizations import LBFGSBOptimization, DifferentialEvolution_parallel
+from Inversion.Strategies.Inversion1D import inverse_universal, inverse_universal_shots
+from Inversion.Strategies.SeismDiffInversion1D import inverse
 
 def main(input_folder, dx, nx, use_rays_p, use_rays_s,
         use_reflection_p, use_reflection_s, forward_type, noise):
@@ -90,11 +89,9 @@ def main(input_folder, dx, nx, use_rays_p, use_rays_s,
 
         inversion_start_time = time.time()
 
-        inversed_model = inverse_universal_shots(optimizers, error, forward_input_params, params_to_optimize,
-                                                 bounds_to_optimize,
-                                                 seismogram_observed_p, seismogram_observed_s,
-                                                 opt_type='de', use_p_waves=use_rays_p, use_s_waves=use_rays_s
-                                                 )
+        inversed_model = inverse(optimizers, error, forward_input_params, params_to_optimize, bounds_to_optimize,
+                                 seismogram_observed_p, seismogram_observed_s, start_indexes, stop_indexes,
+                                 opt_type='de', use_p_waves=True, use_s_waves=False, trace_weights=None)
 
 
     inversion_end_time = time.time()

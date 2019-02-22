@@ -1,3 +1,4 @@
+import time
 import numpy as np
 
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
@@ -171,18 +172,24 @@ def main():
     nx = 20
     x_rec = [i*dx for i in range(1, nx)]
 
-    forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-            display_stat=True, visualize_res=True,
-            calc_rays_p=True, calc_rays_s=True,
-            calc_reflection_p=True, calc_reflection_s=False
+    time_mark_1 = time.time()
+
+    # forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+    #         display_stat=True, visualize_res=True,
+    #         calc_rays_p=True, calc_rays_s=True,
+    #         calc_reflection_p=True, calc_reflection_s=False
+    #         )
+
+    forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+                               dt=3e-03, trace_len=1500,
+            display_stat=True, visualize_res=False,
+            use_p_waves=True, use_s_waves=False,
+                               visualize_seismograms=False
             )
 
-    # forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-    #                            dt=3e-03, trace_len=1500,
-    #         display_stat=True, visualize_res=False,
-    #         use_p_waves=True, use_s_waves=True,
-    #                            visualize_seismograms=True
-    #         )
+    time_mark_2 = time.time()
+
+    print(f'Calculation time: {time_mark_2 - time_mark_1}')
 
 
 

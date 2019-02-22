@@ -66,6 +66,7 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         disp_func = lambda x: x  # пустая функция при отстутствии написания параметров
 
     disp_func('Calculating rockphysics model...')
+
     rp_start_time = time.time()
 
     vp, vs, rho = model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m)
@@ -116,6 +117,8 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
         disp_func('Reflections calculated!')
 
+    refraction_start_time = time.time()
+
     if calc_refraction_p:
         disp_func('Calculating p-refractions...')
 
@@ -132,10 +135,11 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     calc_stop_time = time.time()
 
-    # print('rp time = {}'.format(rays_start_time - rp_start_time))
-    # print('ray tracing time = {}'.format(reflection_start_time - rays_start_time))
-    # print('reflection time = {}'.format(calc_stop_time - reflection_start_time))
-    # print('all_time = {}'.format(calc_stop_time - rp_start_time))
+    print('rp time = {}'.format(rays_start_time - rp_start_time))
+    print('ray tracing time = {}'.format(reflection_start_time - rays_start_time))
+    print('reflection time = {}'.format(refraction_start_time - reflection_start_time))
+    print('refraction time = {}'.format(calc_stop_time - refraction_start_time))
+    print('all_time = {}'.format(calc_stop_time - rp_start_time))
 
     if visualize_res:
         max_depth = model.get_max_boundary_depth() * 1.2
@@ -205,7 +209,8 @@ def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, r
     observe, model, rays_p, rays_s = forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
                                              display_stat=display_stat, visualize_res=visualize_res,
                                              calc_rays_p=use_p_waves, calc_rays_s=use_s_waves,
-                                             calc_reflection_p=use_p_waves, calc_reflection_s=use_s_waves)
+                                             calc_reflection_p=use_p_waves, calc_reflection_s=use_s_waves,
+                                             calc_refraction_p=use_p_waves, calc_refraction_s=use_s_waves)
 
     times = [dt * i for i in range(trace_len)]
 
@@ -233,4 +238,4 @@ def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, r
 
         plt.show()
 
-    return seismogram_p, seismogram_s
+    return observe, model, rays_p, rays_s, seismogram_p, seismogram_s

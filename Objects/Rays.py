@@ -64,6 +64,10 @@ class Ray1D(Ray):
     def reflection_z(self):
         return max(self.z_points)
 
+    @property
+    def nlayers(self):
+        return len(self.x_points) // 2
+
     # TODO check this shit
     def get_boundary_angle(self, bound_index):
         """
