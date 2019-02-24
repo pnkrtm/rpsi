@@ -1,6 +1,7 @@
 from scipy.optimize import fmin_l_bfgs_b, differential_evolution
 from Inversion.Optimizators._differentialevolution import differential_evolution as differential_evolution_parallel
 
+
 class LBFGSBOptimization:
     def __init__(self, approx_grad=True, m=10, factr=1e10, pgtol=1e-8, epsilon=1e-6, maxiter=200, bounds=[]):
         self.approx_grad = approx_grad
@@ -68,3 +69,9 @@ class DifferentialEvolution_parallel():
                                                  disp=self.disp, polish=self.polish, init=self.init)
 
         return result.x
+
+
+optimizers_dict = {
+    'de_parallel': DifferentialEvolution_parallel,
+    'lbfgsb': LBFGSBOptimization
+}

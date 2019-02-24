@@ -1,0 +1,24 @@
+* text eol=lf
+*.gz binary
+*.bz2 binary
+*.tar.bz2 binary
+*.tar.xz binary
+*.bson binary
+*.pcap binary
+*.png binary
+*.gif binary
+*.jpg binary
+*.swf binary
+*.eot binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
+*.mp4 binary
+*.svg binary
+*.zip binary
+*.csv binary
+*.tar binary
+.cfdf_zip binary
+*.ipynb binary
+*.h5 binary
+*.sgy binary

@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Trace:
     def __init__(self, values=[], dt=-1, offset=-1, start_time=0):
         self.values = values
@@ -26,7 +27,7 @@ class Trace:
 
 class Seismogram:
     def __init__(self, traces=None):
-        self.traces = traces
+        self.traces = traces or []
 
     def add_trace(self, trace):
         if self.traces:
@@ -43,3 +44,16 @@ class Seismogram:
 
     def get_values_matrix(self):
         return np.array([t.values for t in self.traces])
+
+    @property
+    def ntraces(self):
+        return len(self.traces)
+
+    @classmethod
+    def from_segy(cls, segy):
+        traces=[]
+
+        for trace in segy.traces:
+            traces.append(
+                Trace()
+            )

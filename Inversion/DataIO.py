@@ -2,6 +2,8 @@ import json
 import os
 import numpy as np
 
+from obspy_edited import segy
+
 parameters_invers_1 = [
     'Km',
     'Gm',
@@ -93,6 +95,42 @@ def read_input_file(file_name):
     return nlayers, params_all_dict, params_to_optimize, np.array(bounds_to_optimize)
 
 
+def read_input_file_ver2(file_name):
+    with open(file_name, 'r') as f:
+        input = json.load(f)
+
+    nlayers = len(input['model']['layers'])
+
+    params_all_dict = get_starter_dict()
+    params_all_dict['nlayers'] = nlayers
+
+    params_to_optimize = []
+    bounds_to_optimize = []
+
+    for layer in input['model']['layers']:
+        params_all_dict['h'].append(layer['H'])
+        for pc in parameters_components_1:
+            for pe in parameters_elastic_1:
+
+                if (pc == 'matrix' and pe == 'volume') or (pc == 'fluid' and pe == 'G'):
+                    continue
+
+                key = keys_1[pc][pe]
+
+                params_all_dict[key].append(layer[pc][pe]['value'])
+
+                if layer[pc][pe]['optimize']:
+                    params_to_optimize.append({key: layer['index']})
+                    bounds_to_optimize.append(np.array([layer[pc][pe]['min'], layer[pc][pe]['max']]))
+
+    del(params_all_dict['h'][-1])
+
+    observation_params = input['observation']
+    inversion_params = input['inversion_params']
+
+    return nlayers, params_all_dict, params_to_optimize, np.array(bounds_to_optimize), observation_params, inversion_params
+
+
 def read_inversion_result_file(file_name):
     with open(file_name, 'r') as f:
         rows = f.readlines()
@@ -157,4 +195,37 @@ def write_output_file(folder, params_all_, inversed_model, params_to_optimize, i
     with open(file_name, 'w') as f:
         f.writelines(rows)
 
+def write_segy(seismogram, filename):
+    segy_obj = segy._read_segy("../Files/example.sgy")
+    ntraces = seismogram.ntraces
 
+    segy_obj.traces = [segy_obj.traces[0]] * ntraces
+
+    segy_obj.binary_file_header.unassigned_1 = b""
+    segy_obj.binary_file_header.unassigned_2 = b""
+    segy_obj.binary_file_header.number_of_samples_per_data_trace = -1
+    segy_obj.binary_file_header.number_of_data_traces_per_ensemble = -1
+    segy_obj.binary_file_header.sample_interval_in_microseconds = int(seismogram.traces[0].dt)
+
+    for i in range(ntraces):
+        segy_obj.traces[i].data = np.array(seismogram.traces[i].values, dtype=np.float32)
+
+        segy_obj.traces[i].header.source_coordinate_x = 0
+        segy_obj.traces[i].header.source_coordinate_y = 0
+
+        segy_obj.traces[i].header.ensemble_number = int(i)
+        segy_obj.traces[i].header.original_field_record_number = int(i)
+        segy_obj.traces[i].header.energy_source_point_number = int(i)
+
+        segy_obj.traces[i].header.distance_from_center_of_the_source_point_to_the_center_of_the_receiver_group = \
+            int(seismogram.traces[i].offset*1000)
+
+        segy_obj.traces[i].header.number_of_samples_in_this_trace = len(seismogram.traces[i].values)
+        segy_obj.traces[i].header.sample_interval_in_ms_for_this_trace = int(seismogram.traces[i].dt)
+
+        # segy_obj.traces[i]
+
+    segy_obj.write(filename)
+
+def read_segy(filename):
+    seg_file = segy._read_segy(filename)

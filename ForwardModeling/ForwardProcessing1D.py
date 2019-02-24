@@ -135,11 +135,11 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     calc_stop_time = time.time()
 
-    print('rp time = {}'.format(rays_start_time - rp_start_time))
-    print('ray tracing time = {}'.format(reflection_start_time - rays_start_time))
-    print('reflection time = {}'.format(refraction_start_time - reflection_start_time))
-    print('refraction time = {}'.format(calc_stop_time - refraction_start_time))
-    print('all_time = {}'.format(calc_stop_time - rp_start_time))
+    # print('rp time = {}'.format(rays_start_time - rp_start_time))
+    # print('ray tracing time = {}'.format(reflection_start_time - rays_start_time))
+    # print('reflection time = {}'.format(refraction_start_time - reflection_start_time))
+    # print('refraction time = {}'.format(calc_stop_time - refraction_start_time))
+    # print('all_time = {}'.format(calc_stop_time - rp_start_time))
 
     if visualize_res:
         max_depth = model.get_max_boundary_depth() * 1.2
