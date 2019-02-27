@@ -184,7 +184,7 @@ def main():
                                dt=3e-03, trace_len=1500,
             display_stat=True, visualize_res=False,
             use_p_waves=True, use_s_waves=False,
-                               visualize_seismograms=False
+                               visualize_seismograms=True
             )
 
     time_mark_2 = time.time()
