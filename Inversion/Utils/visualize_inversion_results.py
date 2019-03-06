@@ -64,7 +64,7 @@ def get_all_results(input_folder):
 
 
 def plot_histogram_by_all_results(input_folder):
-    input_file_name = input_folder + '/input.json'
+    input_file_name = input_folder + '/input_fp.json'
     nlayers, params_all_dict, params_to_optimize, bounds_to_optimize = read_input_file(input_file_name)
 
     params_optimized_all, values_optimized_all, nparams = get_all_results(input_folder)
@@ -96,23 +96,23 @@ def plot_histogram_by_all_results(input_folder):
 
 
 def write_averaged_result(input_folder):
-    input_file_name = input_folder + '/input.json'
+    input_file_name = os.path.join(input_folder, 'input', 'input_fp.json')
     nlayers, params_all_dict, params_to_optimize, bounds_to_optimize = read_input_file(input_file_name)
 
-    params_optimized_, values_optimized_mean = get_averaged_model(input_folder)
+    params_optimized_, values_optimized_mean = get_averaged_model(os.path.join(input_folder, 'output'))
 
-    write_output_file(input_folder, params_all_dict, values_optimized_mean, params_to_optimize, file_name='result_average')
+    write_output_file(input_folder, params_all_dict, values_optimized_mean, params_to_optimize, averaged=True)
 
 
 def get_averaged_model(input_folder):
     params_optimized_all = []
     values_optimized_all = []
     values_optimized_mean = []
-    result_files = get_results_files_list(input_folder)
+    result_folders = get_results_files_list(input_folder)
 
-    for file in result_files:
+    for result_num in result_folders:
         params_optimized_, values_optimized_ = read_inversion_result_file(
-            os.path.join(input_folder, 'result_{}'.format(file)))
+            os.path.join(input_folder, 'result_{}'.format(result_num)))
         params_optimized_all.append(list(params_optimized_))
         values_optimized_all.append(list(values_optimized_))
 
@@ -127,7 +127,7 @@ def get_averaged_model(input_folder):
 
 
 def main(input_folder, dx, nx, use_rays_p, use_rays_s, noise=False, result_number=None):
-    input_file_name = input_folder + '/input.json'
+    input_file_name = input_folder + '/input_fp.json'
     result_file_name = input_folder + '/result_{}'.format(result_number)
     nlayers, params_all_dict, params_to_optimize, bounds_to_optimize = read_input_file(input_file_name)
     if result_number:

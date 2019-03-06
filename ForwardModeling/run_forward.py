@@ -2,15 +2,13 @@ import os
 import argparse
 
 from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
-from Inversion.DataIO import read_input_file_ver2, write_segy
+from Inversion.DataIO import read_input_fp_file, write_segy
 from Visualization.Drawing import draw_seismogram
 
 
 def main(model_folder, draw_pics):
-    input_filename = os.path.join(model_folder, 'input', 'input.json')
-
     nlayers, params_all_dict, params_to_optimize, bounds_to_optimize, \
-        observation_params, inversion_params = read_input_file_ver2(input_filename)
+        observation_params = read_input_fp_file(model_folder)
 
     dx = float(observation_params['dx'])
     nrec = observation_params['nrec']

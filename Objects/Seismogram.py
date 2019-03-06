@@ -29,6 +29,53 @@ class Seismogram:
     def __init__(self, traces=None):
         self.traces = traces or []
 
+    # ВСЕГДА ПРОВЕРЯТЬ, ЕСЛИ В ТРАССЫ ДОБАВЛЯЮТСЯ НОВЫЕ ПОЛЯ!!!
+    def _check_equality(self, other):
+        for trace_self, trace_other in zip(self.traces, other.traces):
+            attributes = list(trace_self.__dict__.keys())
+            attributes.remove('values')
+
+            for attr in attributes:
+                if trace_self.__getattribute__(attr) != trace_other.__getattribute__(attr):
+                    return False
+
+            if trace_self.tracelength != trace_other.tracelength:
+                return False
+
+        return True
+
+    def _trace_values_math_operation(self, other, operation):
+        """
+
+        :param other:
+        :param operation: lambda function
+        :return:
+        """
+        if self._check_equality(other):
+            traces_result = []
+            for trace_self, trace_other in zip(self.traces, other.traces):
+                trace_params = trace_self.__dict__
+                trace_params['values'] = operation(trace_self.values, trace_other.values)
+
+                traces_result.append(Trace(**trace_params))
+
+            return Seismogram(traces_result)
+
+        else:
+            raise ValueError("Seismograms are not equal!")
+
+    def __add__(self, other):
+        return self._trace_values_math_operation(other, lambda x1, x2: x1 + x2)
+
+    def __sub__(self, other):
+        return self._trace_values_math_operation(other, lambda x1, x2: x1 - x2)
+
+    def __mul__(self, other):
+        return self._trace_values_math_operation(other, lambda x1, x2: x1 * x2)
+
+    def __truediv__(self, other):
+        return self._trace_values_math_operation(other, lambda x1, x2: x1 / x2)
+
     def add_trace(self, trace):
         if self.traces:
             self.traces.append(trace)

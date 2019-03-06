@@ -197,7 +197,7 @@ def create_seismogram(seismogram, rays, observe, times, dt):
         signal = ricker(50, 4)
         signal /= max(signal)
 
-        trace_values = np.convolve(trace_i, signal)
+        trace_values = np.convolve(trace_i, signal)[0: len(times)]
 
         seismogram.add_trace(Trace(trace_values, dt, offset))
 

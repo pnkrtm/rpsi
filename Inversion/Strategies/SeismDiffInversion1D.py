@@ -3,25 +3,26 @@ import multiprocessing as mp
 import gc
 
 from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
-from Inversion.Optimizators.Optimizations import DifferentialEvolution_parallel
+from Inversion.Optimizators.Optimizations import DifferentialEvolution, DifferentialEvolution_parallel
 from Objects.Seismogram import Seismogram
 from Inversion.Utils.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException
 
 
-def rmse_per_column(matr1: np.ndarray, matr2: np.ndarray, trace_weights: np.ndarray=None):
+def rmse_per_column(matr_obs: np.ndarray, matr_mod: np.ndarray, trace_weights: np.ndarray=None):
     if trace_weights is None:
-        trace_weights = np.ones(matr1.shape[1])
+        trace_weights = np.ones(matr_obs.shape[0])
         trace_weights = trace_weights / trace_weights.sum()
 
     def sqrt_mean(a):
         return np.sqrt(np.mean(a))
 
-    matr_diff = (matr1 - matr2)**2
+    matr_diff = (matr_obs - matr_mod) ** 2
     # TODO необходимо чекнуть, праивльно ли задана ось, вдоль которой производить применение функции
-    matr_diff = np.apply_along_axis(sqrt_mean, 1, matr_diff)
+    # matr_diff = np.apply_along_axis(sqrt_mean, 1, matr_diff)
+    matr_diff = [sqrt_mean(md) for md in matr_diff]
 
-    return np.average(matr_diff, trace_weights)
+    return np.average(matr_diff, weights=trace_weights)
 
 
 def get_matrices_diff(seism_observed: Seismogram, seism_modeled: Seismogram,
@@ -32,7 +33,7 @@ def get_matrices_diff(seism_observed: Seismogram, seism_modeled: Seismogram,
     vals_obs = np.array([vo[indexes_start[j]: indexes_stop[j]] for j, vo in enumerate(vals_obs)])
     vals_mod = np.array([vm[indexes_start[j]: indexes_stop[j]] for j, vm in enumerate(vals_mod)])
 
-    return rmse_per_column(vals_mod, vals_obs, weights)
+    return rmse_per_column(vals_obs, vals_mod, weights)
 
 
 def func_to_optimize_mp_helper(args):
@@ -92,7 +93,12 @@ def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optim
 
     error = get_matrices_diff(seismogram_observed, seismogram_p, start_indexes, stop_indexes, trace_weights)
 
+    if np.isnan(error):
+        error = 99999
+
     helper.add_error(error)
+
+    print(error)
 
     if helper.need_to_stop():
         raise ErrorAchievedException(model_opt)
@@ -103,11 +109,9 @@ def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optim
 def inverse(optimizers, error, params_all, params_to_optimize, params_bounds,
             seismogram_observed_p, seismogram_observed_s,
             start_indexes, stop_indexes,
-            opt_type='de',
-            use_p_waves=True, use_s_waves=False,
             trace_weights=None):
 
-    if opt_type == 'de':
+    if type(optimizers[0]) in [DifferentialEvolution, DifferentialEvolution_parallel]:
         data_start = params_bounds
         helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error)
 
