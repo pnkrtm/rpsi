@@ -9,7 +9,7 @@ sys.path.append('../')
 from Inversion.DataIO import read_input_file, write_output_file, read_input_fp_file, read_input_ip_file
 from Visualization.Drawing import draw_seismogram
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from Inversion.Utils.visualize_inversion_results import write_averaged_result
+from Inversion.Utils.visualize_inversion_results import write_averaged_result, plot_histogram_by_all_results
 from Inversion.Optimizators.Optimizations import LBFGSBOptimization, DifferentialEvolution_parallel
 from Inversion.Strategies.Inversion1D import inverse_universal, inverse_universal_shots
 from Inversion.Strategies.SeismDiffInversion1D import inverse
@@ -170,6 +170,7 @@ def main_2(model_folder, draw_pics):
         draw_seismogram(seismogram_observed - seismogram_p, 'p-waves difference', os.path.join(picks_folder, 'p-difference.png'))
 
         write_averaged_result(model_folder)
+        plot_histogram_by_all_results(model_folder)
 
 
 

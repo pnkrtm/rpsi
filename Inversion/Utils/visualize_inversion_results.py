@@ -64,10 +64,10 @@ def get_all_results(input_folder):
 
 
 def plot_histogram_by_all_results(input_folder):
-    input_file_name = input_folder + '/input_fp.json'
+    input_file_name = os.path.join(input_folder, 'input', 'input_fp.json')
     nlayers, params_all_dict, params_to_optimize, bounds_to_optimize = read_input_file(input_file_name)
 
-    params_optimized_all, values_optimized_all, nparams = get_all_results(input_folder)
+    params_optimized_all, values_optimized_all, nparams = get_all_results(os.path.join(input_folder, 'output'))
 
     for i in range(nparams):
         param_name = list(params_optimized_all[0][i].keys())[0]
@@ -91,7 +91,7 @@ def plot_histogram_by_all_results(input_folder):
 
         # plt.grid(True)
         # plt.show()
-        plt.savefig(os.path.join(input_folder, 'pictures/{}_{}.png'.format(param_name, param_index)))
+        plt.savefig(os.path.join(input_folder, 'pics/{}_{}.png'.format(param_name, param_index)))
         plt.close()
 
 
