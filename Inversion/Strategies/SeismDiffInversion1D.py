@@ -17,7 +17,22 @@ def rmse_per_column(matr_obs: np.ndarray, matr_mod: np.ndarray, trace_weights: n
     def sqrt_mean(a):
         return np.sqrt(np.mean(a))
 
-    matr_diff = (matr_obs - matr_mod) ** 2
+    def substract_nonzero_vals(a, b):
+        """
+        Функция для подсчета разницы только между ненулевыми значениями трассы
+        :param a:
+        :param b:
+        :return:
+        """
+        ind1 = np.nonzero(a)[0]
+        ind2 = np.nonzero(b)[0]
+
+        ind = list(set(ind1) | set(ind2))
+
+        return a[ind] - b[ind]
+
+    # matr_diff = (matr_obs - matr_mod) ** 2
+    matr_diff = [substract_nonzero_vals(mo, mm)**2 for mo, mm in zip(matr_obs, matr_mod)]
     # TODO необходимо чекнуть, праивльно ли задана ось, вдоль которой производить применение функции
     # matr_diff = np.apply_along_axis(sqrt_mean, 1, matr_diff)
     matr_diff = [sqrt_mean(md) for md in matr_diff]

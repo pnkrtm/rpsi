@@ -173,14 +173,13 @@ def main_2(model_folder, draw_pics):
         plot_histogram_by_all_results(model_folder)
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input_folder", default=None, nargs='?',
                         help="Path to source folder")
-    parser.add_argument("-dp", "--draw_pics", default=False, nargs='?',
+    parser.add_argument("-dp", "--draw_pics", default=0, nargs='?',
                         help="Flag for pics drawing")
 
     args = parser.parse_args()
 
-    main_2(args.input_folder, args.draw_pics)
+    main_2(args.input_folder, bool(args.draw_pics))
