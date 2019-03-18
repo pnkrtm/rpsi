@@ -3,12 +3,12 @@ import multiprocessing as mp
 from scipy import interpolate
 
 from ForwardModeling.RockPhysics.Mediums.VoigtReussHill import voigt
-from ForwardModeling.RockPhysics.Mediums.DEM import DEM
+from ForwardModeling.RockPhysics.Mediums.DEMSlb import DEM
 from ForwardModeling.RockPhysics.Mediums import Gassmann
 from ForwardModeling.RockPhysics import Tools
 
 
-def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=[1], alpha=0.1):
+def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=0.1):
     '''
     Самый простой вариант модели (для одного слоя!)
     :param Km: Массив модулей сжатия минералов скелета
@@ -22,8 +22,12 @@ def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=[1], 
     :param rho_f: Плотность флюида
     :param rho_m: Плотность скелета
     :param Vm: Компоненты минералов (их сумма должна быть равна 1)
+    :param alpha: Аспектное соотношение?..
     :return: Vp, Vs, Rho
     '''
+
+    if Vm is None:
+        Vm = [1]
 
     # Осреднение упругих модулей скелета
     if type(Km) == np.ndarray:
@@ -47,12 +51,7 @@ def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=[1], 
 
     if phi > 0:
         # Создание дыр в "сухой" породе
-        Km_list, Gm_list, phi_list = DEM(Km_, Gm_, np.array([0]), np.array([0]), np.array([alpha]), np.array([phi]))
-        # Km_inter = interpolate.interp1d(Km_list, phi_list)
-        # Gm_inter = interpolate.interp1d(Gm_list, phi_list)
-
-        K_dry = Km_list[-1]
-        G_dry = Gm_list[-1]
+        K_dry, G_dry = DEM(Km_, Gm_, 0, 0, phi, alpha)
 
         if Kf > 0:
             # Заливаем флюид по Гассману

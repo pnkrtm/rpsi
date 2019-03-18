@@ -101,7 +101,7 @@ def write_averaged_result(input_folder):
 
     params_optimized_, values_optimized_mean = get_averaged_model(os.path.join(input_folder, 'output'))
 
-    write_output_file(input_folder, params_all_dict, values_optimized_mean, params_to_optimize, averaged=True)
+    write_output_file(input_folder, params_all_dict, values_optimized_mean, params_to_optimize, res_folder_postfix='averaged')
 
 
 def get_averaged_model(input_folder):

@@ -194,25 +194,29 @@ def get_results_files_list(folder):
     return current_folder_numbers
 
 
-def write_output_file(model_folder, params_all_, inversed_model, params_to_optimize, inverse_duration=None, res_folder=None, averaged=False):
+def create_res_folder(folder):
+    base_folder = os.path.join(folder, 'output')
+    current_files_numbers = get_results_files_list(base_folder)
+
+    if len(current_files_numbers) == 0:
+        current_res_number = 1
+
+    else:
+        current_res_number = current_files_numbers[-1] + 1
+
+    res_folder = os.path.join(base_folder, 'result_{}'.format(current_res_number))
+
+    if not os.path.exists(res_folder):
+        os.makedirs(res_folder)
+
+    return current_res_number
+
+
+def write_output_file(model_folder, params_all_, inversed_model, params_to_optimize, inverse_duration=None, res_folder_postfix=None):
     base_folder = os.path.join(model_folder, "output")
     print(inversed_model)
 
-    if averaged:
-        current_res_number = 'averaged'
-
-    else:
-        current_res_number = -1
-        if res_folder is None:
-            current_files_numbers = get_results_files_list(base_folder)
-
-            if len(current_files_numbers) == 0:
-                current_res_number = 1
-
-            else:
-                current_res_number = current_files_numbers[-1] + 1
-
-    res_folder = os.path.join(base_folder, 'result_{}'.format(current_res_number))
+    res_folder = os.path.join(base_folder, 'result_{}'.format(res_folder_postfix))
 
     if not os.path.exists(res_folder):
         os.makedirs(res_folder)
@@ -240,8 +244,6 @@ def write_output_file(model_folder, params_all_, inversed_model, params_to_optim
 
     with open(file_name, 'w') as f:
         f.writelines(rows)
-
-    return current_res_number
 
 
 def write_segy(seismogram, filename):

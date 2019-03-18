@@ -3,7 +3,7 @@ from matplotlib import pyplot as plt
 from Visualization.Seismic import visualize_seismogram
 
 
-def draw_seismogram(seismogram, pic_header, filename, gain=1,  additional_lines: list=None):
+def draw_seismogram(seismogram, pic_header, filename, gain=1,  additional_lines: list=None, colorbar: bool=False):
     fig, axes = plt.subplots(nrows=1, ncols=1)
 
     if additional_lines is not None:

@@ -16,7 +16,7 @@ def main():
     x_rec = [i * dx for i in range(1, nx)]
 
 
-    print('Calculating forward modeling...')
+    print('Calculating DEM modeling...')
     observe, model, rays_observed_p, rays_observed_s = \
         forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f,
                                                                rho_m, h, x_rec, display_stat=True,

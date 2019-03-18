@@ -6,7 +6,7 @@ import numpy as np
 
 sys.path.append('../')
 
-from Inversion.DataIO import read_input_file, write_output_file, read_input_fp_file, read_input_ip_file
+from Inversion.DataIO import read_input_file, write_output_file, read_input_fp_file, read_input_ip_file, create_res_folder
 from Visualization.Drawing import draw_seismogram
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
 from Inversion.Utils.visualize_inversion_results import write_averaged_result, plot_histogram_by_all_results
@@ -132,13 +132,17 @@ def main_2(model_folder, draw_pics):
     seismogram_observed, err, optimizers, start_indexes, stop_indexes = read_input_ip_file(model_folder, np.array(x_rec),
                                                                                   observation_params['dt'])
 
+    result_number = create_res_folder(model_folder)
+
+    logpath = os.path.join(model_folder, 'output', f'result_{result_number}', 'opt.log')
+
     inversed_model = inverse(optimizers, err, forward_input_params, params_to_optimize, bounds_to_optimize,
-                seismogram_observed, None, start_indexes, stop_indexes)
+                seismogram_observed, None, start_indexes, stop_indexes, logpath=logpath)
 
     inversion_end_time = time.time()
     inversion_duration = (inversion_end_time - inversion_start_time) / 60
 
-    result_number = write_output_file(model_folder, params_all_dict, inversed_model, params_to_optimize, inversion_duration)
+    write_output_file(model_folder, params_all_dict, inversed_model, params_to_optimize, inversion_duration, result_number)
 
     if draw_pics:
         # changing start model to result model
@@ -167,7 +171,8 @@ def main_2(model_folder, draw_pics):
                         ])
 
         draw_seismogram(seismogram_p, 'p-waves inverted', os.path.join(picks_folder, 'p-inverted.png'))
-        draw_seismogram(seismogram_observed - seismogram_p, 'p-waves difference', os.path.join(picks_folder, 'p-difference.png'))
+        draw_seismogram(seismogram_observed - seismogram_p, 'p-waves difference',
+                        os.path.join(picks_folder, 'p-difference.png'), colorbar=True)
 
         write_averaged_result(model_folder)
         plot_histogram_by_all_results(model_folder)

@@ -320,7 +320,7 @@ def func_to_optimize(model_opt, nlayers, Km, Gm, Ks, Gs, h, x_rec,
 
     error_end_time = time.time()
 
-    # print('forward time = {}'.format(error_start_time - forward_start_time))
+    # print('DEM time = {}'.format(error_start_time - forward_start_time))
     # print('error time = {}'.format(error_end_time - error_start_time))
     # print('all_time = {}'.format(error_end_time - forward_start_time))
 

@@ -174,7 +174,7 @@ def main():
 
     time_mark_1 = time.time()
 
-    # forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+    # DEM(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
     #         display_stat=True, visualize_res=True,
     #         calc_rays_p=True, calc_rays_s=True,
     #         calc_reflection_p=True, calc_reflection_s=False
