@@ -1,12 +1,13 @@
 import json
 import os
+import random
 import warnings
+
 import numpy as np
 
-from obspy_edited import segy
-
-from Objects.Seismogram import Seismogram, Trace
 from Inversion.Optimizators.Optimizations import optimizers_dict
+from Objects.Seismogram import Seismogram, Trace
+from obspy_edited import segy
 
 parameters_invers_1 = [
     'Km',
@@ -88,11 +89,15 @@ def read_input_file(file_name):
 
                 key = keys_1[pc][pe]
 
-                params_all_dict[key].append(layer[pc][pe]['value'])
-
                 if layer[pc][pe]['optimize']:
                     params_to_optimize.append({key: layer['index']})
-                    bounds_to_optimize.append(np.array([layer[pc][pe]['min'], layer[pc][pe]['max']]))
+                    bound_min = layer[pc][pe]['min']
+                    bound_max = layer[pc][pe]['max']
+                    bounds_to_optimize.append(np.array([bound_min, bound_max]))
+                    params_all_dict[key].append(random.uniform(bound_min, bound_max))
+
+                else:
+                    params_all_dict[key].append(layer[pc][pe]['value'])
 
     del(params_all_dict['h'][-1])
 

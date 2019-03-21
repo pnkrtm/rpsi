@@ -90,7 +90,8 @@ def visualize_reflection_amplitudes(plt, boundaries, rays, reflection_index=None
         i += 1
 
 
-def visualize_seismogram(plt, seism, normalize=False, fill_negative=False, wigles=True, gain=1):
+def visualize_seismogram(fig, axes, seism, normalize=False, fill_negative=False, wigles=True, gain=1, colorbar=False,
+                         minmax=(-0.5, 0.5)):
 
     x = seism.get_time_range()
     offsets = seism.get_offsets()
@@ -110,26 +111,33 @@ def visualize_seismogram(plt, seism, normalize=False, fill_negative=False, wigle
             y += offset
             y *= gain
 
-            plt.plot(y, x, 'k-')
+            axes.plot(y, x, 'k-')
             if fill_negative:
-                plt.fill_betweenx(x, offset, y, where= y>offset, color='k')
+                axes.fill_betweenx(x, offset, y, where=y > offset, color='k')
             i += 1
 
-        plt.set_ylim(x[-1], 0)
+        axes.set_ylim(x[-1], 0)
 
     else:
-        values = np.array([t.values for t in seism.traces]).T
+        if normalize:
+            values = np.array([t.values / max(t.values) for t in seism.traces]).T
+
+        else:
+            values = np.array([t.values for t in seism.traces]).T
 
         x_vals = offsets[::-1]
         y_vals = seism.traces[0].times
 
-        minval = values.min()
-        maxval = values.max()
+        minval = minmax[0]
+        maxval = minmax[1]
 
         values *= gain
 
-        plt.imshow(values, extent=([min(x_vals), max(x_vals), max(y_vals), min(y_vals)]),
-                   vmin=minval, vmax=maxval,
-                   aspect='auto', cmap='Greys')
+        img = axes.imshow(values, extent=([min(x_vals), max(x_vals), max(y_vals), min(y_vals)]),
+                    vmin=minval, vmax=maxval,
+                    aspect='auto', cmap='Greys')
+
+        if colorbar:
+            fig.colorbar(img)
 
 

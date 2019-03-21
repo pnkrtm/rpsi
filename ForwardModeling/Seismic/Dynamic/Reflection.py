@@ -374,8 +374,7 @@ def calculate_reflections_vectorized(model, rays, element):
 
     for i, d in enumerate(depths[1:], 1):
         depth_rays = rays[i-1]
-        angles = [np.arcsin(r.p * model.get_param(vel_type, index_start=i, index_finish=i + 1))[0] for r in depth_rays]
-
+        angles = [r.get_reflection_angle() for r in depth_rays]
         offsets = [r.x_finish for r in depth_rays]
 
         angles = np.rad2deg(angles)

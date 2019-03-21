@@ -13,9 +13,9 @@ def get_model_1():
     :return:
     '''
     # первый слой - песчаник, мощность 1000 м
-    Km_1 = np.array([K_from_VpVsDensity(2, 1, 2.71)])
-    Gm_1 = np.array([G_from_VsDensity(1, 2.71)])
-    rho_m_1 = np.array([2.71])
+    Km_1 = K_from_VpVsDensity(2, 1, 2.71)
+    Gm_1 = G_from_VsDensity(1, 2.71)
+    rho_m_1 = 2.71
 
     Ks_1 = 0
     Gs_1 = 0
@@ -30,12 +30,12 @@ def get_model_1():
     h_1 = 1000
 
     # второй слой - песчаник+глина, мощность 300 м
-    Km_2 = np.array([K_from_VpVsDensity(3, 1.5, 2.75)])
-    Gm_2 = np.array([G_from_VsDensity(1.5, 2.75)])
-    rho_m_2 = np.array([2.75])
+    Km_2 = K_from_VpVsDensity(3, 1.5, 2.75)
+    Gm_2 = G_from_VsDensity(1.5, 2.75)
+    rho_m_2 = 2.75
 
-    Ks_2 = np.array([K_from_VpVsDensity(2, 0.4, 2.43)])
-    Gs_2 = np.array([G_from_VsDensity(0.4, 2.43)])
+    Ks_2 = K_from_VpVsDensity(2, 0.4, 2.43)
+    Gs_2 = G_from_VsDensity(0.4, 2.43)
     rho_s_2 = 2.43
 
     Kf_2 = 0
@@ -47,9 +47,9 @@ def get_model_1():
     h_2 = 300
 
     # третий слой - известняк, мощность 200 м
-    Km_3 = np.array([K_from_VpVsDensity(3.5, 2, 2.8)])
-    Gm_3 = np.array([G_from_VsDensity(2, 2.8)])
-    rho_m_3 = np.array([2.8])
+    Km_3 = K_from_VpVsDensity(3.5, 2, 2.8)
+    Gm_3 = G_from_VsDensity(2, 2.8)
+    rho_m_3 = 2.8
 
     Ks_3 = 0
     Gs_3 = 0
@@ -64,12 +64,12 @@ def get_model_1():
     h_3 = 200
 
     # четвертый слой - известняк+глина+газ, мощность 100 м
-    Km_4 = np.array([K_from_VpVsDensity(4, 2.5, 2.8)])
-    Gm_4 = np.array([G_from_VsDensity(2.5, 2.8)])
-    rho_m_4 = np.array([2.8])
+    Km_4 = K_from_VpVsDensity(4, 2.5, 2.8)
+    Gm_4 = G_from_VsDensity(2.5, 2.8)
+    rho_m_4 = 2.8
 
-    Ks_4 = np.array([K_from_VpVsDensity(2, 0.4, 2.43)])
-    Gs_4 = np.array([G_from_VsDensity(0.4, 2.43)])
+    Ks_4 = K_from_VpVsDensity(2, 0.4, 2.43)
+    Gs_4 = G_from_VsDensity(0.4, 2.43)
     rho_s_4 = 2.43
 
     Kf_4 = 0
@@ -81,12 +81,12 @@ def get_model_1():
     h_4 = 100
 
     # пятый слой - известняк+глина+нефть, мощность 100 м
-    Km_5 = np.array([K_from_VpVsDensity(4, 2.5, 2.8)])
-    Gm_5 = np.array([G_from_VsDensity(2.5, 2.8)])
-    rho_m_5 = np.array([2.8])
+    Km_5 = K_from_VpVsDensity(4, 2.5, 2.8)
+    Gm_5 = G_from_VsDensity(2.5, 2.8)
+    rho_m_5 = 2.8
 
-    Ks_5 = np.array([K_from_VpVsDensity(2, 0.4, 2.43)])
-    Gs_5 = np.array([G_from_VsDensity(0.4, 2.43)])
+    Ks_5 = K_from_VpVsDensity(2, 0.4, 2.43)
+    Gs_5 = G_from_VsDensity(0.4, 2.43)
     rho_s_5 = 2.43
 
     Kf_5 = 2.41
@@ -98,12 +98,12 @@ def get_model_1():
     h_5 = 100
 
     # шестой слой - известняк+глина+вода, мощность 100 м
-    Km_6 = np.array([K_from_VpVsDensity(4, 2.5, 2.8)])
-    Gm_6 = np.array([G_from_VsDensity(2.5, 2.8)])
-    rho_m_6 = np.array([2.8])
+    Km_6 = K_from_VpVsDensity(4, 2.5, 2.8)
+    Gm_6 = G_from_VsDensity(2.5, 2.8)
+    rho_m_6 = 2.8
 
-    Ks_6 = np.array([K_from_VpVsDensity(2, 0.4, 2.43)])
-    Gs_6 = np.array([G_from_VsDensity(0.4, 2.43)])
+    Ks_6 = K_from_VpVsDensity(2, 0.4, 2.43)
+    Gs_6 = G_from_VsDensity(0.4, 2.43)
     rho_s_6 = 2.43
 
     Kf_6 = 2
@@ -115,12 +115,12 @@ def get_model_1():
     h_6 = 100
 
     # седьмой слой - глина + известняк, мощность 50 м
-    Km_7 = np.array([K_from_VpVsDensity(4, 2.5, 2.8)])
-    Gm_7 = np.array([G_from_VsDensity(2.5, 2.8)])
-    rho_m_7 = np.array([2.8])
+    Km_7 = K_from_VpVsDensity(4, 2.5, 2.8)
+    Gm_7 = G_from_VsDensity(2.5, 2.8)
+    rho_m_7 = 2.8
 
-    Ks_7 = np.array([K_from_VpVsDensity(2, 0.4, 2.43)])
-    Gs_7 = np.array([G_from_VsDensity(0.4, 2.43)])
+    Ks_7 = K_from_VpVsDensity(2, 0.4, 2.43)
+    Gs_7 = G_from_VsDensity(0.4, 2.43)
     rho_s_7 = 2.43
 
     Kf_7 = 0
@@ -132,9 +132,9 @@ def get_model_1():
     h_7 = 50
 
     # последний слой - известняк
-    Km_8 = np.array([K_from_VpVsDensity(4.5, 2.7, 2.85)])
-    Gm_8 = np.array([G_from_VsDensity(2.7, 2.85)])
-    rho_m_8 = np.array([2.85])
+    Km_8 = K_from_VpVsDensity(4.5, 2.7, 2.85)
+    Gm_8 = G_from_VsDensity(2.7, 2.85)
+    rho_m_8 = 2.85
 
     Ks_8 = 0
     Gs_8 = 0

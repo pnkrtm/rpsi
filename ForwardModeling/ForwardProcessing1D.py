@@ -197,7 +197,7 @@ def create_seismogram(seismogram, rays, observe, times, dt):
         signal = ricker(50, 4)
         signal /= max(signal)
 
-        trace_values = np.convolve(trace_i, signal)[0: len(times)]
+        trace_values = np.convolve(trace_i, signal)[0: len(times)].real
 
         seismogram.add_trace(Trace(trace_values, dt, offset))
 
@@ -229,11 +229,11 @@ def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, r
         fig, axes = plt.subplots(nrows=1, ncols=2)
 
         if use_p_waves:
-            visualize_seismogram(axes[0], seismogram_p, normalize=True, wigles=False)
+            visualize_seismogram(fig, axes[0], seismogram_p, normalize=True, wigles=False)
             axes[0].set_title('p-waves seismogram')
 
         if use_s_waves:
-            visualize_seismogram(axes[1], seismogram_s, normalize=True, wigles=False)
+            visualize_seismogram(fig, axes[1], seismogram_s, normalize=True, wigles=False)
             axes[1].set_title('s-waves seismogram')
 
         plt.show()

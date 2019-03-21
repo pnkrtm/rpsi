@@ -1,6 +1,7 @@
 import numpy as np
 import multiprocessing as mp
 import gc
+import datetime
 
 from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
 from Inversion.Optimizators.Optimizations import DifferentialEvolution, DifferentialEvolution_parallel, DualAnnealing
@@ -50,39 +51,7 @@ def func_to_optimize_mp_helper(args):
 
 def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optimize, params_bounds,
                      start_indexes, stop_indexes,
-                     helper, parallel, pool, trace_weights=None, normalize=False):
-    if parallel:
-        # определние величины популяции
-        njobs = int(len(model_opt) / len(model_opt[0]))
-
-        input_args = []
-
-        for i in range(njobs):
-            model_opt_ = model_opt[i, :]
-
-            input_args.append(
-                {
-                    'seismogram_observed': seismogram_observed,
-                    'model_opt': model_opt_,
-                    'params_all': params_all,
-                    'params_to_optimize': params_to_optimize,
-                    'params_bounds': params_bounds,
-                    'start_indexes': start_indexes,
-                    'stop_indexes': stop_indexes,
-                    'helper': helper,
-                    'parallel': False,
-                    'pool': None,
-                    'trace_weights': trace_weights,
-                    'normalize': normalize
-                }
-            )
-
-        result_errors = pool.map(func_to_optimize_mp_helper, input_args)
-
-        gc.collect()
-
-        return result_errors
-
+                     helper, trace_weights=None, normalize=False, show_tol=True):
     model_opt_2 = model_opt
 
     params_all_ = {}
@@ -110,7 +79,8 @@ def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optim
     if np.isnan(error):
         error = 99999
 
-    print(error)
+    if show_tol:
+        print(error)
 
     if helper is not None:
         helper.add_error(error)
@@ -124,66 +94,65 @@ def inverse(optimizers, error, params_all, params_to_optimize, params_bounds,
             seismogram_observed_p, seismogram_observed_s,
             start_indexes, stop_indexes,
             trace_weights=None, normalize=True, logpath=None):
+    """
+    Функция единичной инверсии одной точки
+    :param optimizers: массив применяемых оптимизаторов
+    :param error: значение ошибки, при которой инверсия останавливатеся
+    :param params_all: словарь аргументов для решения ПЗ
+    :param params_to_optimize: словарь параметров, которые необходимо подбирать
+    :param params_bounds: границы подбора параметров
+    :param seismogram_observed_p: наблюденные данные p-волн
+    :param seismogram_observed_s: наблюденные данные s-волн
+    :param start_indexes: массив индексов, ограничивающих сверху область сейсмограммы для расчета невязки
+    :param stop_indexes: массив индексов, ограничивающих снизу область сейсмограммы для расчета невязки
+    :param trace_weights: массив весов для трасс
+    :param normalize: флаг, указывающий нужно ли нормировать подбираемые параметры
+    :param logpath: путь до файла, в который пишутся логи
+    :return:
+    """
+    show_tol = True
 
-    if type(optimizers[0]) in [DifferentialEvolution, DifferentialEvolution_parallel, DualAnnealing]:
-        data_start = params_bounds
-        helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error, logpath=logpath)
-        helper.in_use = False
+    data_start = params_bounds
+    helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error, logpath=logpath)
+    helper.in_use = True
 
-        if type(optimizers[0]) == DifferentialEvolution_parallel:
-            parallel = optimizers[0].parallel
+    for i in range(len(optimizers)):
+        optimizers[i].helper = helper
 
-            if parallel:
-                ncpu = mp.cpu_count()
-                nproc = int(ncpu * 2)
+    helper.log_message(f"{str(datetime.datetime.now())} Optimization starts!")
 
-                pool = mp.Pool(nproc)
+    args = tuple([seismogram_observed_p, params_all, params_to_optimize,
+            params_bounds, start_indexes, stop_indexes,
+                 helper, trace_weights, normalize, show_tol])
 
-            else:
-                parallel = False
-                pool = None
-        else:
-            parallel = False
-            pool = None
+    if normalize:
+        data_start_opt = [[0, 1]] * len(data_start)
+        param_bounds_opt = [[0, 1]] * len(data_start)
 
-        args = [seismogram_observed_p, params_all, params_to_optimize,
-                params_bounds, start_indexes, stop_indexes,
-                     helper, parallel, pool, trace_weights, normalize]
+    else:
+        data_start_opt = data_start
+        param_bounds_opt = params_bounds
 
-        if normalize:
-            data_start_de = [[0, 1]] * len(data_start)
-            param_bounds_lbfgs = [[0, 1]] * len(data_start)
+    optimizator_start_params = {
+        "func": func_to_optimize,
+        "x0": data_start_opt,
+        "bounds": param_bounds_opt,
+        "args": args
+    }
 
-        else:
-            data_start_de = data_start
-            param_bounds_lbfgs = params_bounds
-
+    for opt in optimizers:
         try:
-            result_model = optimizers[0].optimize(func_to_optimize, data_start_de, args)
-            start_model = result_model
+            result_model = opt.optimize(**optimizator_start_params)
+            optimizator_start_params["x0"] = result_model
 
         except ErrorAchievedException as e:
-            start_model = e.model
-
-        finally:
-            if pool:
-                pool.close()
-                pool.join()
-
-        print('======  LBFGS optimization started! =======')
-
-        # Disable stopping by error
-        helper.in_use = False
-        # Disable parallel
-        args[-4] = False
-
-        helper.log_message('======  LBFGS optimization started! =======')
-
-        print(start_model)
-
-        result_model = optimizers[1].optimize(func_to_optimize, start_model, param_bounds_lbfgs, tuple(args))
+            result_model = e.model
+            helper.log_message(f'{str(datetime.datetime.now())} Random error achieved!! =)))')
+            break
 
     if normalize:
         result_model = [b[0] + (b[1] - b[0]) * rm for rm, b in zip(result_model, params_bounds)]
+
+    helper.log_message(f'{str(datetime.datetime.now())} Optimization finished!')
 
     return result_model
