@@ -229,11 +229,11 @@ def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, r
         fig, axes = plt.subplots(nrows=1, ncols=2)
 
         if use_p_waves:
-            visualize_seismogram(fig, axes[0], seismogram_p, normalize=True, wigles=False)
+            visualize_seismogram(fig, axes[0], seismogram_p, normalize=True, wiggles=False)
             axes[0].set_title('p-waves seismogram')
 
         if use_s_waves:
-            visualize_seismogram(fig, axes[1], seismogram_s, normalize=True, wigles=False)
+            visualize_seismogram(fig, axes[1], seismogram_s, normalize=True, wiggles=False)
             axes[1].set_title('s-waves seismogram')
 
         plt.show()

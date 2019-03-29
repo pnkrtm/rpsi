@@ -90,7 +90,7 @@ class Seismogram:
         return [t.offset for t in self.traces]
 
     def get_values_matrix(self):
-        return np.array([t.values for t in self.traces])
+        return np.array([np.array(t.values) for t in self.traces])
 
     @property
     def ntraces(self):

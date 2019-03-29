@@ -1,30 +1,78 @@
-import numpy as np
-import multiprocessing as mp
-import gc
 import datetime
 
-from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
-from Inversion.Optimizators.Optimizations import DifferentialEvolution, DifferentialEvolution_parallel, DualAnnealing
-from Objects.Seismogram import Seismogram
-from Inversion.Utils.Tools import OptimizeHelper
+import numpy as np
+
+from Exceptions.bad_calcs import BadCalcBaseException
 from Exceptions.exceptions import ErrorAchievedException
+from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
+from Inversion.Utils.Tools import OptimizeHelper
+from Objects.Seismogram import Seismogram
+
+
+def get_params_dict_copy(params_all):
+    params_all_ = {}
+
+    for key in list(params_all.keys()):
+        if isinstance(params_all[key], (list, np.ndarray)):
+            params_all_[key] = params_all[key].copy()
+
+        else:
+            params_all_[key] = params_all[key]
+
+    return params_all_
+
+
+def change_values_in_params_dict(params_all, params_vals, params_keys, params_bounds, normalize):
+    for m, p, b in zip(params_vals, params_keys, params_bounds):
+        if normalize:
+            val = b[0] + (b[1] - b[0]) * m
+
+        else:
+            val = m
+
+        params_all[list(p.keys())[0]][list(p.values())[0]] = val
+
+    return params_all
 
 
 def rmse_per_column(matr_obs: np.ndarray, matr_mod: np.ndarray, trace_weights: np.ndarray=None):
     if trace_weights is None:
-        trace_weights = np.ones(matr_obs.shape[0])
+        # trace_weights = np.ones(matr_obs.shape[0])
+        trace_weights = np.arange(0, matr_obs.shape[0])
+        # trace_weights = trace_weights**2
         trace_weights = trace_weights / trace_weights.sum()
 
+    def calculate_increments(values):
+        arr_1 = values[1::]
+        arr_2 = values[:-1]
+
+        return arr_1 - arr_2
+
     def calcing_per_trace(observed, modeled):
+        use_increments = False
+
         ind1 = np.nonzero(observed)[0]
         ind2 = np.nonzero(modeled)[0]
 
         ind = list(set(ind1) | set(ind2))
 
-        # diff = np.sqrt(np.mean((observed[ind] - modeled[ind])**2)) / np.mean(observed[ind])
-        # diff = np.sqrt(np.mean((observed[ind] - modeled[ind]) ** 2))
-        # diff = np.mean(abs(observed[ind] - modeled[ind])) / np.mean(observed[ind])
-        diff = np.sqrt(np.mean((observed - modeled) ** 2))
+        obs = observed
+        mod = modeled
+
+        # obs = observed[ind]
+        # mod = modeled[ind]
+
+        diff_func = lambda x, y: np.sqrt(np.mean((x - y)**2))
+        # diff_func = lambda x, y: np.mean((x - y) ** 2)
+        # diff_func = lambda x, y: np.mean(abs((x - y) / x))
+
+        diff = diff_func(obs, mod)
+
+        if use_increments:
+            incr_obs = calculate_increments(obs)
+            incr_mod = calculate_increments(mod)
+
+            diff = 0.5 * diff + 0.5 * diff_func(incr_obs, incr_mod)
 
         return diff
 
@@ -52,32 +100,33 @@ def func_to_optimize_mp_helper(args):
 def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optimize, params_bounds,
                      start_indexes, stop_indexes,
                      helper, trace_weights=None, normalize=False, show_tol=True):
-    model_opt_2 = model_opt
+    try:
+        params_all_ = get_params_dict_copy(params_all)
 
-    params_all_ = {}
+        params_all_ = change_values_in_params_dict(params_all_, model_opt, params_to_optimize, params_bounds, normalize)
 
-    for key in list(params_all.keys()):
-        if type(params_all[key]) == type([]):
-            params_all_[key] = params_all[key].copy()
+        observe, model, rays_p, rays_s, seismogram_p, seismogram_s = forward_with_trace_calcing(**params_all_)
 
-        else:
-            params_all_[key] = params_all[key]
+        error = get_matrices_diff(seismogram_observed, seismogram_p, start_indexes, stop_indexes, trace_weights)
 
-    for m, p, b in zip(model_opt_2, params_to_optimize, params_bounds):
-        if normalize:
-            val = b[0] + (b[1] - b[0]) * m
+        # Добавляем минимизацию к-тов оражения
+        aip_1 = model.get_param('aip', index_finish=-1)
+        aip_2 = model.get_param('aip', index_start=1)
+        rp = (aip_2 - aip_1) / (aip_2 + aip_1)
 
-        else:
-            val = m
+        error = 1.0 * error + 0.0 * np.sum(abs(rp))
 
-        params_all_[list(p.keys())[0]][list(p.values())[0]] = val
+        if np.isnan(error):
+            error = 99999
 
-    observe, model, rays_p, rays_s, seismogram_p, seismogram_s = forward_with_trace_calcing(**params_all_)
-
-    error = get_matrices_diff(seismogram_observed, seismogram_p, start_indexes, stop_indexes, trace_weights)
-
-    if np.isnan(error):
+    except OverflowError as e:
         error = 99999
+
+    except BadCalcBaseException as e:
+        error = 99999
+
+    # except Warning:
+    #     error = 99999
 
     if show_tol:
         print(error)
@@ -143,6 +192,7 @@ def inverse(optimizers, error, params_all, params_to_optimize, params_bounds,
     for opt in optimizers:
         try:
             result_model = opt.optimize(**optimizator_start_params)
+            helper.log_message(f"{str(datetime.datetime.now())} Optimizer finished!")
             optimizator_start_params["x0"] = result_model
 
         except ErrorAchievedException as e:
@@ -156,3 +206,41 @@ def inverse(optimizers, error, params_all, params_to_optimize, params_bounds,
     helper.log_message(f'{str(datetime.datetime.now())} Optimization finished!')
 
     return result_model
+
+
+def inverse_per_layer(optimizers, error, params_all, params_to_optimize, params_bounds,
+            seismogram_observed_p, seismogram_observed_s,
+            start_indexes, stop_indexes,
+            trace_weights=None, normalize=True, logpath=None):
+    # добавить больше гипербол для ограничения сейсмограмм
+
+    layers_to_inverse = list(set([list(po.values())[0] for po in params_to_optimize]))
+    params_all_local = get_params_dict_copy(params_all)
+
+    # Подбираем отдельно для первого и второго слоев
+    params_to_optimize_local = [po for po in params_to_optimize if list(po.values())[0] == layers_to_inverse[0] or
+                                                                        list(po.values())[0] == layers_to_inverse[1]]
+    res_model = inverse(optimizers, error, params_all_local, params_to_optimize_local, params_bounds,
+                        seismogram_observed_p, seismogram_observed_s, start_indexes, stop_indexes,
+                        trace_weights, normalize, logpath)
+
+    params_all_local = change_values_in_params_dict(params_all_local, res_model, params_to_optimize,
+                                                    params_bounds, normalize)
+
+    result = []
+
+    # Подбираем для всех остальных слоев (3+)
+    for layer in layers_to_inverse[2:]:
+        params_to_optimize_local = [po for po in params_to_optimize if list(po.values())[0] == layer]
+
+        res_model = inverse(optimizers, error, params_all_local, params_to_optimize_local, params_bounds,
+                            seismogram_observed_p, seismogram_observed_s, start_indexes, stop_indexes,
+                            trace_weights, normalize, logpath)
+
+        result = np.append(result, res_model)
+
+        params_all_local = change_values_in_params_dict(params_all_local, res_model, params_to_optimize,
+                                                        params_bounds, normalize)
+
+    return result
+

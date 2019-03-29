@@ -51,6 +51,12 @@ class SeismicModel1D:
         elif param_name.lower() == 'phi':
             param = self.phi
 
+        elif param_name.lower() == 'aip':
+            param = self.vp * self.rho
+
+        elif param_name.lower() == 'ais':
+            param = self.vs * self.rho
+
         if index_finish is None:
             return param[index_start:]
 

@@ -1,11 +1,12 @@
-import numpy as np
 import multiprocessing as mp
-from scipy import interpolate
 
-from ForwardModeling.RockPhysics.Mediums.VoigtReussHill import voigt
-from ForwardModeling.RockPhysics.Mediums.DEMSlb import DEM
-from ForwardModeling.RockPhysics.Mediums import Gassmann
+import numpy as np
+
+from Exceptions.bad_calcs import BadRPModelException
 from ForwardModeling.RockPhysics import Tools
+from ForwardModeling.RockPhysics.Mediums import Gassmann
+from ForwardModeling.RockPhysics.Mediums.DEMSlb import DEM
+from ForwardModeling.RockPhysics.Mediums.VoigtReussHill import voigt
 
 
 def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=0.1):
@@ -66,14 +67,14 @@ def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None,
         K_res = Km_
         G_res = Gm_
 
-
-
-
     # Осредняем плотность скелета
     Rho_m = voigt(rho_m, Vm)
 
     # Осредняем все плотности до результирующей
     rho_res = rho_s*phi_s + rho_f*phi + (1 - (phi + phi_s))*Rho_m
+
+    if K_res < 0 or G_res < 0 or rho_res < 0:
+        raise BadRPModelException()
 
     return [Tools.vp_from_KGRho(K_res, G_res, rho_res), Tools.vs_from_GRho(G_res, rho_res), rho_res]
 

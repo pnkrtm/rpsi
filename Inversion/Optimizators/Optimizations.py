@@ -1,12 +1,22 @@
 import numpy as np
-from scipy.optimize import fmin_l_bfgs_b, differential_evolution, dual_annealing, newton, fmin_cg
+import random
+from scipy.optimize import fmin_l_bfgs_b, differential_evolution, dual_annealing, newton, fmin_cg, fmin_bfgs, fmin
 
 from Inversion.Optimizators._differentialevolution import differential_evolution as differential_evolution_parallel
 
 
-class LBFGSBOptimization:
+class BaseOptimization:
+    def __init__(self, helper=None):
+        self.helper = helper
+
+    def optimize(self, func, x0, bounds, args=(), **kwargs):
+        raise NotImplementedError()
+
+
+class LBFGSBOptimization(BaseOptimization):
     def __init__(self, approx_grad=True, m=10, factr=1e10, pgtol=1e-8, epsilon=1e-6, maxiter=200, bounds=None,
                  maxfun=15000, maxls=20, helper=None):
+        super().__init__(helper)
         self.approx_grad = approx_grad
         self.m = m
         self.factr = factr
@@ -21,7 +31,6 @@ class LBFGSBOptimization:
 
         self.maxfun = maxfun
         self.maxls = maxls
-        self.helper = helper
 
     def optimize(self, func, x0, bounds, args=(), **kwargs):
 
@@ -34,6 +43,58 @@ class LBFGSBOptimization:
             self.helper.log_message(str(d))
 
         return x
+
+class BFGSOptimization(BaseOptimization):
+    def __init__(self, gtol=1e-05, norm=np.inf, epsilon=1.4901161193847656e-08, maxiter=None,
+                 full_output=True, disp=1, retall=False, helper=None):
+        super().__init__(helper)
+        self.gtol = gtol
+        self.norm = norm
+        self.epsilon = epsilon
+        self.maxiter = maxiter
+        self.full_output = full_output
+        self.disp = disp
+        self.retall = retall
+        self.helper = helper
+
+    def optimize(self, func, x0, args=(), fprime=None, callback=None, **kwargs):
+        xopt, fopt, gopt, Bopt, func_calls, grad_calls, warnflag = fmin_bfgs(func, x0, fprime, args, gtol=self.gtol,
+                                                                             norm=self.norm, epsilon=self.epsilon,
+                                                                             maxiter=self.maxiter, full_output=self.full_output,
+                                                                             disp=self.disp, retall=self.retall, callback=callback)
+
+        if self.helper is not None:
+            self.helper.log_message("BFGS optimizer finished!")
+            self.helper.log_message(f"BFGS stats: warnflag={warnflag}, error={fopt}, gradopt={gopt}, function calls={func_calls}, "
+                                    f"gradient calls={grad_calls}, ")
+
+        return xopt
+
+
+class NelderMeadOptimization:
+    def __init__(self, xtol=0.0001, ftol=0.0001, maxiter=None, maxfun=None, full_output=True, disp=False, retall=False,
+                 initial_simplex=None, helper=None):
+        self.xtol = xtol
+        self.ftol = ftol
+        self.maxiter = maxiter
+        self.maxfun = maxfun
+        self.full_output = full_output
+        self.disp = disp
+        self.retall = retall
+        self.initial_simplex = initial_simplex
+        self.helper = helper
+
+    def optimize(self, func, x0, args=(), callback=None, **kwargs):
+        xopt, fopt, iter, funcalls, warnflag = fmin(func, x0, args, xtol=self.xtol, ftol=self.ftol, maxiter=self.maxiter,
+                                                    maxfun=self.maxfun, full_output=self.full_output, disp=self.disp,
+                                                    callback=callback, initial_simplex=self.initial_simplex)
+
+        if self.helper is not None:
+            self.helper.log_message("Nelder mead optimizer finished!")
+            self.helper.log_message(f"Nelder mead stats: warnflag={warnflag}, error={fopt}, function calls={funcalls}, "
+                                    f"number of iterations={iter}")
+
+        return xopt
 
 class ConjugateGradient:
     def __init__(self, gtol=1e-05, norm=np.inf, epsilon=1.4901161193847656e-08, maxiter=None, full_output=True, disp=False,
@@ -72,10 +133,11 @@ class ConjugateGradient:
         return xopt
 
 
-class DifferentialEvolution:
+class DifferentialEvolution(BaseOptimization):
     def __init__(self, strategy='best1bin', maxiter=1000, popsize=15, tol=0.01, mutation=(0.5, 1), recombination=0.7,
                  seed=None, disp=False, polish=True, init='latinhypercube', atol=0, updating='immediate',
                  workers=1, helper=None):
+        super().__init__(helper)
         self.strategy = strategy
         self.maxiter = maxiter
         self.popsize = popsize
@@ -100,9 +162,19 @@ class DifferentialEvolution:
 
         self.init = inits
 
+    def create_random_inits(self, bounds):
+        init = []
+        for i in range(self.popsize):
+            init.append([random.uniform(b[0], b[1]) for b in bounds])
+
+        self.init = init
+
     def optimize(self, func, bounds, args=(), callback=None, **kwargs):
         if self.init == "uniformdist":
             self.create_uniform_dist(bounds)
+
+        elif self.init == "random_min":
+            self.create_random_inits(bounds)
 
         result = differential_evolution(func, bounds, args=args, strategy=self.strategy, maxiter=self.maxiter,
                                         popsize=self.popsize, tol=self.tol, mutation=self.mutation,
@@ -172,5 +244,7 @@ optimizers_dict = {
     'cg': ConjugateGradient,
     'de': DifferentialEvolution,
     'anneal': DualAnnealing,
-    'lbfgsb': LBFGSBOptimization
+    'lbfgsb': LBFGSBOptimization,
+    'bfgs': BFGSOptimization,
+    'nm': NelderMeadOptimization
 }

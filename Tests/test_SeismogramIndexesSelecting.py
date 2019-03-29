@@ -42,7 +42,7 @@ def main():
     axes.plot(x_rec, start_indexes*dt)
     axes.plot(x_rec, stop_indexes*dt)
 
-    visualize_seismogram(axes, seismogram_p, normalize=True, wigles=False)
+    visualize_seismogram(axes, seismogram_p, normalize=True, wiggles=False)
     axes.set_title('p-waves seismogram')
 
     plt.show()

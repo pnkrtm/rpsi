@@ -1,0 +1,44 @@
+{
+  "inversion_params": {
+    "segy_observed": "pwaves.sgy",
+    "seismic_indexes": {
+      "type": "from_model",
+      "values": {
+        "start": {
+          "v": 2600,
+          "h": 500
+        },
+        "stop": {
+          "v": 2000,
+          "h": 1000
+        }
+      }
+    },
+    "error": 0.00000000001,
+    "optimizers": [
+      {
+        "name": "de_parallel",
+        "params": {
+          "popsize": 20,
+          "maxiter": 50,
+          "init": "random",
+          "strategy": "best1bin",
+          "polish": false,
+          "tol": 0.000001,
+          "mutation": 0.5,
+          "recombination": 0.9,
+          "parallel": true
+        }
+      },
+      {
+        "name": "lbfgsb",
+        "params": {
+          "maxiter": 15000,
+          "maxfun": 15000,
+          "factr": 10000,
+          "maxls": 50
+        }
+      }
+    ]
+  }
+}

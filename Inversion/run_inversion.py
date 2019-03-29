@@ -1,13 +1,15 @@
 import argparse
+import os
 import sys
 import time
-import os
+
 import numpy as np
 
 sys.path.append('../')
 
-from Inversion.DataIO import write_output_file, read_input_fp_file, read_input_ip_file, create_res_folder
-from Visualization.Drawing import draw_seismogram
+from Inversion.DataIO import write_output_file, read_input_fp_file, read_input_ip_file, create_res_folder, write_segy
+from Visualization.Drawing import draw_seismogram, draw_dos_seismograms
+from Visualization.Models import visualize_model
 from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
 from Inversion.Utils.visualize_inversion_results import write_averaged_result, plot_histogram_by_all_results
 from Inversion.Strategies.SeismDiffInversion1D import inverse
@@ -41,11 +43,15 @@ def main(model_folder, draw_pics):
                                                                                   observation_params['dt'])
 
     result_number = create_res_folder(model_folder)
+    result_folder = os.path.join(model_folder, 'output', f'result_{result_number}')
 
-    logpath = os.path.join(model_folder, 'output', f'result_{result_number}', 'opt.log')
+    logpath = os.path.join(result_folder, 'opt.log')
 
     inversed_model = inverse(optimizers, err, forward_input_params, params_to_optimize, bounds_to_optimize,
                 seismogram_observed, None, start_indexes, stop_indexes, logpath=logpath)
+
+    # inversed_model = inverse_per_layer(optimizers, err, forward_input_params, params_to_optimize, bounds_to_optimize,
+    #                          seismogram_observed, None, start_indexes, stop_indexes, logpath=logpath)
 
     inversion_end_time = time.time()
     inversion_duration = (inversion_end_time - inversion_start_time) / 60
@@ -53,6 +59,10 @@ def main(model_folder, draw_pics):
     write_output_file(model_folder, params_all_dict, inversed_model, params_to_optimize, inversion_duration, result_number)
 
     if draw_pics:
+        # calculate true model's params
+        observe_true, model_true, rays_p_true, rays_s_true, seismogram_p_true, seismogram_s_true = \
+            forward_with_trace_calcing(**forward_input_params)
+
         # changing start model to result model
         params_all_ = {}
         for key in list(params_all_dict.keys()):
@@ -68,9 +78,13 @@ def main(model_folder, draw_pics):
         forward_input_params = dict(forward_base_params)
         forward_input_params.update(params_all_)
 
+        # calculate forward from inverse model
         observe, model, rays_p, rays_s, seismogram_p, seismogram_s = forward_with_trace_calcing(**forward_input_params)
 
         picks_folder = os.path.join(model_folder, 'output', f'result_{result_number}')
+
+        # draw wellogs
+        visualize_model(model_true, model, picks_folder)
 
         draw_seismogram(seismogram_observed, 'p-waves observed', os.path.join(picks_folder, 'p-observed.png'),
                         additional_lines=[
@@ -79,8 +93,20 @@ def main(model_folder, draw_pics):
                         ])
 
         draw_seismogram(seismogram_p, 'p-waves inverted', os.path.join(picks_folder, 'p-inverted.png'))
+
+        draw_dos_seismograms(seismogram_observed, seismogram_p, 'p-waves compare',
+                             os.path.join(picks_folder, 'p-compare.png'), normalize=False)
+
+        draw_seismogram(seismogram_observed, 'p-waves observed', os.path.join(picks_folder, 'p-observed-wig.png'),
+                        wiggles=True, normalize=False)
+        draw_seismogram(seismogram_p, 'p-waves inverted', os.path.join(picks_folder, 'p-inverted-wig.png'),
+                        wiggles=True, normalize=False)
+
+        write_segy(seismogram_p, os.path.join(result_folder, 'pwaves_inv.sgy'))
         draw_seismogram(seismogram_observed - seismogram_p, 'p-waves difference',
                         os.path.join(picks_folder, 'p-difference.png'), colorbar=True)
+
+        write_segy(seismogram_observed - seismogram_p, os.path.join(result_folder, 'pwaves_diff.sgy'))
 
         write_averaged_result(model_folder)
         plot_histogram_by_all_results(model_folder)

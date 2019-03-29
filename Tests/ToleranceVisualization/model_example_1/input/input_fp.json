@@ -1,0 +1,212 @@
+{
+  "model":  {
+    "layers":
+            [
+              {
+                "comment": "первый слой - песчаник, мощность 500 м",
+                "index": 0,
+                "H": 500,
+				"matrix": {
+					"K": {
+                      "value": 7.3,
+                      "optimize": false
+                    },
+					"G": {
+                      "value": 2.71,
+                      "optimize": false
+                    },
+					"rho": {
+                      "value": 2.71,
+                      "optimize": false,
+                      "min": 2,
+                      "max": 3
+                    },
+                    "volume": {
+                      "value": 1,
+                      "optimize": false
+                    }
+				},
+                "shale": {
+					"K": {
+                      "value": 0,
+                      "optimize": false
+                    },
+					"G": {
+                      "value": 0,
+                      "optimize": false
+                    },
+					"rho": {
+                      "value": 0,
+                      "optimize": false,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "volume": {
+                      "value": 0,
+                      "optimize": false
+                    }
+				},
+                "fluid": {
+                  "K": {
+                    "value": 0,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 3
+                  },
+                  "rho": {
+                    "value": 0,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 3
+                  },
+                  "volume": {
+                    "value": 0,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 0.2
+                  }
+                }
+              },
+
+              {
+                "comment": "второй слой - известняк+глина+нефть, мощность 500 м",
+                "index": 1,
+                "H": 500,
+				"matrix": {
+					"K": {
+                      "value": 21.5,
+                      "optimize": false
+                    },
+					"G": {
+                      "value": 17.5,
+                      "optimize": false
+                    },
+					"rho": {
+                      "value": 2.8,
+                      "optimize": false,
+                      "min": 2,
+                      "max": 3
+                    },
+                    "volume": {
+                      "value": 0.85,
+                      "optimize": false
+                    }
+				},
+                "shale": {
+					"K": {
+                      "value": 9.2,
+                      "optimize": false
+                    },
+					"G": {
+                      "value": 0.4,
+                      "optimize": false
+                    },
+					"rho": {
+                      "value": 2.43,
+                      "optimize": false,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "volume": {
+                      "value": 0.05,
+                      "optimize": false
+                    }
+				},
+                "fluid": {
+                  "K": {
+                    "value": 1.8,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 3
+                  },
+                  "rho": {
+                    "value": 0.95,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 3
+                  },
+                  "volume": {
+                    "value": 0.1,
+                    "optimize": true,
+                    "min": 0,
+                    "max": 0.2
+                  }
+                }
+              },
+
+              {
+                "comment": "последний слой - известняк",
+                "index": 2,
+                "H": 99999,
+				"matrix": {
+					"K": {
+                      "value": 30,
+                      "optimize": false
+                    },
+					"G": {
+                      "value": 20.7,
+                      "optimize": false
+                    },
+					"rho": {
+                      "value": 2.85,
+                      "optimize": false,
+                      "min": 2,
+                      "max": 3
+                    },
+                    "volume": {
+                      "value": 1,
+                      "optimize": false
+                    }
+				},
+                "shale": {
+					"K": {
+                      "value": 0,
+                      "optimize": false
+                    },
+					"G": {
+                      "value": 0,
+                      "optimize": false
+                    },
+					"rho": {
+                      "value": 0,
+                      "optimize": false,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "volume": {
+                      "value": 0,
+                      "optimize": false
+                    }
+				},
+                "fluid": {
+                  "K": {
+                    "value": 0,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 3
+                  },
+                  "rho": {
+                    "value": 0,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 3
+                  },
+                  "volume": {
+                    "value": 0,
+                    "optimize": false,
+                    "min": 0,
+                    "max": 0.2
+                  }
+                }
+              }
+            ]
+  },
+  "observation": {
+    "nrec": 15,
+    "dx": 20,
+    "use_p_waves": true,
+    "use_s_waves": false,
+    "trace_len": 1000,
+    "dt": 3e-03
+  }
+}

@@ -18,4 +18,8 @@ def G_from_VsDensity(vs, rho):
 
 
 def K_from_VpVsDensity(vp, vs, rho):
-    return rho * (vp*vp - (4/3) * vs * vs)
+    return rho * (vp*vp - (4.0/3.0) * vs * vs)
+
+
+def KGratio_from_VpVsratio(VpVs):
+    return VpVs * VpVs - 4.0/3.0

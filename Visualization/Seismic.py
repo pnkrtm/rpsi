@@ -1,5 +1,6 @@
 import numpy as np
 import itertools
+from Visualization.Wigles import wiggle
 
 
 def visualize_model1D(plt, model, observe, max_depth, dz, vel_type, only_boundaries=False):
@@ -90,40 +91,25 @@ def visualize_reflection_amplitudes(plt, boundaries, rays, reflection_index=None
         i += 1
 
 
-def visualize_seismogram(fig, axes, seism, normalize=False, fill_negative=False, wigles=True, gain=1, colorbar=False,
-                         minmax=(-0.5, 0.5)):
+def visualize_seismogram(fig, axes, seism, normalize=False, fill_positive=False, wiggles=True, gain=1, colorbar=False,
+                         minmax=(-0.5, 0.5), wiggle_color='k'):
 
     x = seism.get_time_range()
     offsets = seism.get_offsets()
 
-    if wigles:
-        i = 0
+    data = seism.get_values_matrix()
 
-        for offset in offsets:
-            offset /= 30
-            y = np.array(seism.traces[i].values)
-
-            if normalize:
-                max_y = max(y)
-                y /= max_y
-                # y *= 10
-
-            y += offset
-            y *= gain
-
-            axes.plot(y, x, 'k-')
-            if fill_negative:
-                axes.fill_betweenx(x, offset, y, where=y > offset, color='k')
-            i += 1
-
-        axes.set_ylim(x[-1], 0)
+    if wiggles:
+        if normalize:
+            data = np.array([d / max(abs(d)) for d in data])
+        wiggle(axes, data.T, fill_positive=fill_positive, color=wiggle_color)
 
     else:
         if normalize:
-            values = np.array([t.values / max(t.values) for t in seism.traces]).T
+            values = np.array([t.values / max(abs(t.values)) for t in seism.traces]).T
 
         else:
-            values = np.array([t.values for t in seism.traces]).T
+            values = data.T
 
         x_vals = offsets[::-1]
         y_vals = seism.traces[0].times

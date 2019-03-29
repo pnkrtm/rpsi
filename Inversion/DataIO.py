@@ -163,7 +163,7 @@ def read_input_ip_file(model_folder, x_arr, dt):
     input = input['inversion_params']
     seismogram = read_segy(os.path.join(model_folder, 'input', input['segy_observed']))
     err = input['error']
-    optimizers = [optimizers_dict[opt['name']](**opt['params']) for opt in input['optimizers']]
+    optimizers = [optimizers_dict[opt['name']](**opt['params']) for opt in input['optimizers'] if opt['use']]
 
     start_indexes, stop_indexes = create_start_stop_indexes(input['seismic_indexes'], x_arr, dt)
 
