@@ -1,11 +1,10 @@
 import numpy as np
-import time
 from matplotlib import pyplot as plt
 
 from Objects.Models.Models import SeismicModel1D
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup
 from ForwardModeling.Seismic.Dynamic.Reflection import zoeppritz_element
-from Objects.Observation import Observation, Source, Receiver
+from Objects.Seismic.Observation import Observation, Source, Receiver
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
 
 

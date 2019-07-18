@@ -2,9 +2,8 @@
 """"
 """
 from collections import namedtuple
-from Objects.Reflection import ReflectionCurve
-from Objects.Rays import BoundaryType
-from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup
+from Objects.Seismic.Rays import BoundaryType
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup
 from utils.vectorizing import vectorize
 
 import numpy as np

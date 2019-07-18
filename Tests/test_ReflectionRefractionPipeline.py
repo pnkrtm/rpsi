@@ -2,7 +2,7 @@ import numpy as np
 
 from Objects.Models.Models import SeismicModel1D
 from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflection_for_depth
-from Objects.Observation import Observation, Source, Receiver
+from Objects.Seismic.Observation import Observation, Source, Receiver
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
 
 

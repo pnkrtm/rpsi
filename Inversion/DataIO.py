@@ -6,7 +6,7 @@ import warnings
 import numpy as np
 
 from Inversion.Optimizators.Optimizations import optimizers_dict
-from Objects.Seismogram import Seismogram, Trace
+from Objects.Seismic.Seismogram import Seismogram, Trace
 from obspy_edited import segy
 
 parameters_invers_1 = [

@@ -2,18 +2,17 @@ import numpy as np
 from scipy.signal import ricker
 import time
 import matplotlib.pyplot as plt
-import multiprocessing as mp
 import random as rnd
 
-from ForwardModeling.RockPhysics.Models import model_calculation, simple_model_1
+from ForwardModeling.RockPhysics.Models import model_calculation
 
 from Objects.Models.Models import SeismicModel1D
-from Objects.Observation import Observation, Source, Receiver
-from Objects.Seismogram import Trace, Seismogram
-from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays, calculate_rays_for_layer
+from Objects.Seismic.Observation import Observation, Source, Receiver
+from Objects.Seismic.Seismogram import Trace, Seismogram
+from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
 from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections
 from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refractions
-from Visualization.Seismic import visualize_model1D, visualize_model_wellogs, visualize_rays_model_1D, \
+from Visualization.Seismic import visualize_model1D, visualize_rays_model_1D, \
     visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram
 
@@ -36,10 +35,8 @@ def add_noise_rays(rays, depths):
 
 
 def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+            wavetypes,
             display_stat=False, visualize_res=True,
-            calc_rays_p=True, calc_rays_s=True,
-            calc_reflection_p=True, calc_reflection_s=True,
-            calc_refraction_p=False, calc_refraction_s=False,
             noise=False):
     '''
 
@@ -56,6 +53,7 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
     :param rho_m: Массив массивов плотностей минералов матрикса
     :param h: Массив мощностей
     :param x_rec: Массив приемников
+    :param wavetypes: Лист с типами волн для работы
     :return:
     '''
 

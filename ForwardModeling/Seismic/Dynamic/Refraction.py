@@ -1,6 +1,6 @@
 import numpy as np
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpdown, puppup
-from Objects.Rays import BoundaryType
+from Objects.Seismic.Rays import BoundaryType
 
 
 def calculate_refraction_for_ray(model, ray, element):

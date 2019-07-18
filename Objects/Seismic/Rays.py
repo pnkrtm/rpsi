@@ -43,9 +43,19 @@ class Ray():
 
 
 class Ray1D(Ray):
-    def __init__(self, x_points=[], z_points=[], time=-1, p=-1, offset=-1):
+    def __init__(self, dutype, x_points=[], z_points=[], time=-1, p=-1, offset=-1):
+        """
+
+        :param dutype: Down-Up type (enumerator ObservationDataTypes)
+        :param x_points:
+        :param z_points:
+        :param time:
+        :param p:
+        :param offset:
+        """
         super().__init__()
 
+        self._dutype = dutype
         self.x_points = x_points
         self.z_points = z_points
         self.offset = offset
@@ -63,6 +73,10 @@ class Ray1D(Ray):
     @property
     def reflection_z(self):
         return max(self.z_points)
+
+    @property
+    def dutype(self):
+        return self._dutype
 
     @property
     def nlayers(self):
