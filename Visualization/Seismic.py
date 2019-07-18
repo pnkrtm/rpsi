@@ -35,7 +35,7 @@ def visualize_model_wellogs(plt, model, vel_type, linestyle='-', linewidth=4, le
 
 
 def visualize_rays_model_1D(plt, rays, linewidth=1):
-    for depth_rays in rays:
+    for depth_rays in rays.values():
         for ray in depth_rays:
             plt.plot(ray.x_points, ray.z_points, 'k', linewidth=linewidth)
 
@@ -46,7 +46,7 @@ def visualize_time_curves(plt, model, rays, observe, depth_index=None, linewidth
     depths = model.get_depths()
     i = 1
 
-    for d, depth_rays in zip(depths[1:], rays):
+    for depth_rays in rays.values():
         if depth_index is not None and (i-1) != depth_index:
             i += 1
             continue

@@ -1,8 +1,9 @@
 import cmath
 import numpy as np
+from collections import OrderedDict
 
 from Objects.Seismic.Rays import Ray1D
-from Objects.Data.RDPair import ODT, get_down_up_vel_types
+from Objects.Data.RDPair import OWT, get_down_up_vel_types
 
 
 def eq_to_solve(p, vd, vu, h, x_2):
@@ -98,9 +99,9 @@ def forward_rtrc(vd, vu, h, p):
     return x, z, t
 
 
-def calculate_rays_for_layer(model, observ, odt, layer_index):
+def calculate_rays_for_layer(model, observ, owt, layer_index):
     rays = []
-    vel_types = get_down_up_vel_types(odt)
+    vel_types = get_down_up_vel_types(owt)
     p = np.sin(np.pi / 4) / model.get_param(vel_types['down'], index_start=0, index_finish=1)[0]
 
     for receiver in observ.receivers:
@@ -115,7 +116,7 @@ def calculate_rays_for_layer(model, observ, odt, layer_index):
                                model.get_param(vel_types['up'], index_finish=layer_index + 1),
                                model.get_param('h', index_finish=layer_index),
                                p)
-        rays.append(Ray1D(x, z, t, p, receiver.x))
+        rays.append(Ray1D(owt, x, z, t, p, receiver.x))
 
     return rays
 
@@ -124,10 +125,13 @@ def calculate_rays_for_layer_mp_helper(args):
     return calculate_rays_for_layer(*args)
 
 
-def calculate_rays(observ, model, odt):
-    rays = []
+def calculate_rays(observ, model, owt):
+    rays = OrderedDict()
 
-    for i in range(1, model.get_number_of_layers()):
-        rays.append(calculate_rays_for_layer(model, observ, odt, i))
+    # TODO check multiwaves condition
+    for i, refl in zip(range(1, model.get_number_of_layers()), model.refl_flags):
 
-    return np.array(rays)
+        if refl:
+            rays[i] = calculate_rays_for_layer(model, observ, owt, i)
+
+    return rays

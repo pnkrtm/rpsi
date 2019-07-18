@@ -4,7 +4,7 @@ import struct
 
 
 class SeismicModel1D:
-    def __init__(self, vp=None, vs=None, rho=None, h=None, phi=None):
+    def __init__(self, vp=None, vs=None, rho=None, h=None, phi=None, refl_flags=None):
         """
         Seismic model class
         :param vp: np.array of presure velocities
@@ -14,11 +14,17 @@ class SeismicModel1D:
         :param phi:
         """
         # values as 1D model
-        self.vp = vp
-        self.vs = vs
-        self.rho = rho
-        self.h = h
-        self.phi = phi
+        self.vp = np.array(vp)
+        self.vs = np.array(vs)
+        self.rho = np.array(rho)
+        self.h = np.array(h)
+        self.phi = np.array(phi)
+
+        if refl_flags == None:
+            self.refl_flags = np.ones(self.get_number_of_layers() - 1)
+
+        else:
+            self.refl_flags = refl_flags
 
     def get_number_of_layers(self):
         return len(self.vp)

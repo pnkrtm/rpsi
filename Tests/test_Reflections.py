@@ -2,9 +2,10 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from Objects.Models.Models import SeismicModel1D
-from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, pdownpdown, puppup, svdownsvup
 from ForwardModeling.Seismic.Dynamic.Reflection import zoeppritz_element
 from Objects.Seismic.Observation import Observation, Source, Receiver
+from Objects.Data.RDPair import OWT
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
 
 
@@ -24,18 +25,24 @@ def reflections_p_identity_1():
     receivers = [Receiver(x * dx, 0, 0) for x in range(start_rec, start_rec + nrec)]
     observe = Observation(sources, receivers)
 
-    rays_p = calculate_rays(observe, model, 'vp')
+    rays_p = calculate_rays(observe, model, OWT.PdPu)
 
     # индекс интересующей отражающей границы
     refl_index = 2
 
-    angles = [r.get_reflection_angle() for r in rays_p[0]]
+    angles = np.array([r.get_reflection_angle() for r in rays_p[0]])
 
-    curve_PP1 = pdownpup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
-    curve_PP2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, 'PdPu')
+    # curve_1 = pdownpup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
+    # curve_1 = puppup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
+    # curve_1 = pdownpdown(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
+    curve_1 = svdownsvup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
 
-    ampl1 = np.array([a.real for a in curve_PP1])
-    ampl2 = np.array([a.real for a in curve_PP2])
+    # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="theta", index=1, element='PdPu')
+    # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="theta", index=2, element="PuPu")
+    # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, element='PdPd')
+    curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="phi", index=1, element='SdSu')
+    ampl1 = np.array([a.real for a in curve_1])
+    ampl2 = np.array([a.real for a in curve_2])
 
     print(ampl1 - ampl2)
 

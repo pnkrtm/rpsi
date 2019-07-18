@@ -43,7 +43,7 @@ class Ray():
 
 
 class Ray1D(Ray):
-    def __init__(self, dutype, x_points=[], z_points=[], time=-1, p=-1, offset=-1):
+    def __init__(self, dutype, x_points=None, z_points=None, time=-1, p=-1, offset=-1):
         """
 
         :param dutype: Down-Up type (enumerator ObservationDataTypes)
@@ -56,8 +56,17 @@ class Ray1D(Ray):
         super().__init__()
 
         self._dutype = dutype
-        self.x_points = x_points
-        self.z_points = z_points
+
+        if x_points is not None:
+            self.x_points = x_points
+        else:
+            self.x_points = []
+
+        if z_points is not None:
+            self.z_points = z_points
+        else:
+            self.z_points = []
+
         self.offset = offset
         self.time = time
         self.p = p

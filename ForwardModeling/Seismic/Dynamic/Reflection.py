@@ -3,7 +3,8 @@
 """
 from collections import namedtuple
 from Objects.Seismic.Rays import BoundaryType
-from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup
+from Objects.Data.RDPair import OWT
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup
 from utils.vectorizing import vectorize
 
 import numpy as np
@@ -130,8 +131,39 @@ def reflectivity(vp, vs, rho, theta=0, method='zoeppritz_rpp'):
     return func(vp1, vs1, rho1, vp2, vs2, rho2, theta)
 
 
-@vectorize
-def scattering_matrix(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
+def angles_definition(vp1, vs1, vp2, vs2, angle=0, angtype="theta", index=1):
+    if angtype == "theta" and index == 1:
+        theta1 = angle
+        theta1 = np.radians(theta1).astype(complex) * np.ones_like(vp1)
+        p = np.sin(theta1) / vp1  # Ray parameter.
+
+    elif angtype == "theta" and index == 2:
+        theta2 = angle
+        theta2 = np.radians(theta2).astype(complex) * np.ones_like(vp2)
+        p = np.sin(theta2) / vp2  # Ray parameter.
+
+    elif angtype == "phi" and index == 1:
+        phi1 = angle
+        phi1 = np.radians(phi1).astype(complex) * np.ones_like(vs1)
+        p = np.sin(phi1) / vs1  # Ray parameter.
+
+    elif angtype == "phi" and index == 2:
+        phi2 = angle
+        phi2 = np.radians(phi2).astype(complex) * np.ones_like(vs2)
+        p = np.sin(phi2) / vs2  # Ray parameter.
+
+    else:
+        raise ValueError()
+
+    theta1 = np.arcsin(p * vp1)  # Refl. angle of P-wave.
+    theta2 = np.arcsin(p * vp2)  # Trans. angle of P-wave.
+    phi1 = np.arcsin(p * vs1)  # Refl. angle of converted S-wave.
+    phi2 = np.arcsin(p * vs2)  # Trans. angle of converted S-wave.
+
+    return theta1, theta2, phi1, phi2
+
+# @vectorize
+def scattering_matrix(vp1, vs1, rho1, vp2, vs2, rho2, angle=0, angtype="theta", index=1):
     """
     Full Zoeppritz solution, considered the definitive solution.
     Calculates the angle dependent p-wave reflectivity of an interface
@@ -151,11 +183,7 @@ def scattering_matrix(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
             A 4x4 array representing the scattering matrix at the incident
             angle theta1.
     """
-    theta1 = np.radians(theta1).astype(complex) * np.ones_like(vp1)
-    p = np.sin(theta1) / vp1  # Ray parameter.
-    theta2 = np.arcsin(p * vp2)  # Trans. angle of P-wave.
-    phi1 = np.arcsin(p * vs1)    # Refl. angle of converted S-wave.
-    phi2 = np.arcsin(p * vs2)    # Trans. angle of converted S-wave.
+    theta1, theta2, phi1, phi2 = angles_definition(vp1, vs1, vp2, vs2, angle, angtype, index)
 
     # Matrix form of Zoeppritz equations... M & N are matrices.
     M = np.array([[-np.sin(theta1), -np.cos(phi1), np.sin(theta2), np.cos(phi2)],
@@ -188,7 +216,7 @@ def scattering_matrix(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
     return np.transpose(Z_, axes=list(range(Z_.ndim - 2)) + [-1, -2])
 
 
-def zoeppritz_element(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, element='PdPu'):
+def zoeppritz_element(vp1, vs1, rho1, vp2, vs2, rho2, angle=0, angtype="theta", index=1, element='PdPu'):
     """
     Returns any mode reflection coefficients from the Zoeppritz
     scattering matrix. Pass in the mode as element, e.g. 'PdSu' for PS.
@@ -214,7 +242,7 @@ def zoeppritz_element(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0, element='PdPu'):
                          ['PdPd', 'SdPd', 'PuPd', 'SuPd'],
                          ['PdSd', 'SdSd', 'PuSd', 'SuSd']])
 
-    Z = scattering_matrix(vp1, vs1, rho1, vp2, vs2, rho2, theta1).T
+    Z = scattering_matrix(vp1, vs1, rho1, vp2, vs2, rho2,  angle, angtype, index).T
 
     return np.squeeze(Z[np.where(elements == element)].T)
 
@@ -355,31 +383,28 @@ def calculate_reflections_vectorized(model, rays, element):
     """
     Calculating reflections with vectorized objects
     :param model:
-    :param rays:
+    :param rays: dictionary { boundary_index: reflected_rays }
     :param element:
     :param calculate_refraction_flag:
     :return:
     """
     depths = model.get_depths()
 
-    if element[0].lower() == 'p':
-        vel_type = 'vp'
-
-    else:
-        vel_type = 'vs'
-
     angles_all = []
     offsets_all = []
 
     for i, d in enumerate(depths[1:], 1):
-        depth_rays = rays[i-1]
-        angles = [r.get_reflection_angle() for r in depth_rays]
-        offsets = [r.x_finish for r in depth_rays]
+        # check if boundary is reflected
+        if i in rays.keys():
 
-        angles = np.rad2deg(angles)
+            depth_rays = rays[i]
+            angles = [r.get_reflection_angle() for r in depth_rays]
+            offsets = [r.x_finish for r in depth_rays]
 
-        angles_all.append(angles)
-        offsets_all.append(offsets)
+            angles = np.rad2deg(angles)
+
+            angles_all.append(angles)
+            offsets_all.append(offsets)
 
     angles_all = np.array(angles_all)
     offsets_all = np.array(offsets_all)
@@ -394,8 +419,22 @@ def calculate_reflections_vectorized(model, rays, element):
     vs2_arr = model.get_param(param_name='vs', index_start=1)
     rho2_arr = model.get_param(param_name='rho', index_start=1)
 
-    if element.lower() == 'pdpu':
+    refection_indexes = np.array(list(rays.keys())) - 1
+
+    vp1_arr = vp1_arr[refection_indexes]
+    vs1_arr = vs1_arr[refection_indexes]
+    rho1_arr = rho1_arr[refection_indexes]
+
+    vp2_arr = vp2_arr[refection_indexes]
+    vs2_arr = vs2_arr[refection_indexes]
+    rho2_arr = rho2_arr[refection_indexes]
+
+    if element == OWT.PdPu:
         reflection_amplitudes = pdownpup(vp1_arr, vs1_arr, rho1_arr,
+                                              vp2_arr, vs2_arr, rho2_arr, angles_all)
+
+    elif element == OWT.SVdSVu:
+        reflection_amplitudes = svdownsvup(vp1_arr, vs1_arr, rho1_arr,
                                               vp2_arr, vs2_arr, rho2_arr, angles_all)
 
     else:
@@ -404,18 +443,18 @@ def calculate_reflections_vectorized(model, rays, element):
     return reflection_amplitudes
 
 
-def calculate_reflections(model, rays, element):
+def calculate_reflections(model, rays, owt):
     """
 
     :param model:
-    :param rays:
-    :param element: PdPu or SdSu
+    :param rays: dictionary {boundary_index: reflected rays}
+    :param owt: observation wave type
     :return:
     """
-    reflections_amplitudes = calculate_reflections_vectorized(model, rays, element)
+    reflections_amplitudes = calculate_reflections_vectorized(model, rays, owt)
 
     i = 1
-    for dr, da in zip(rays, reflections_amplitudes):
+    for dr, da in zip(rays.values(), reflections_amplitudes):
         for ofr, ofa in zip(dr, da):
             ofr.add_boundary_dynamic(ofa, BoundaryType.REFLECTION, i)
 

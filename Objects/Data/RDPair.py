@@ -2,9 +2,9 @@ from enum import Enum
 import numpy as np
 
 
-class ODT(Enum):
+class OWT(Enum):
     """
-    Observation Data Types
+    Observation Wave Types
     """
     PdPu = 0
     PdSVu = 1
@@ -15,13 +15,13 @@ class ODT(Enum):
 
 def get_down_up_vel_types(odt):
     res = {}
-    if odt in (ODT.PdPu, ODT.PdSVu):
+    if odt in (OWT.PdPu, OWT.PdSVu):
         res['down'] = 'vp'
 
     else:
         res['down'] = 'vs'
 
-    if odt in (ODT.PdPu, ODT.SVdPu):
+    if odt in (OWT.PdPu, OWT.SVdPu):
         res['up'] = 'vp'
 
     else:

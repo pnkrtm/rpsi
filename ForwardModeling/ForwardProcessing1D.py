@@ -77,100 +77,61 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
     receivers = [Receiver(x) for x in x_rec]
     observe = Observation(sources, receivers)
 
-    rays_p = None
-    rays_s = None
 
-    rays_start_time = time.time()
+    result_rays = {}
 
-    # Расчет кинематических параметров
-    if calc_rays_p:
-        disp_func('Calculating p-rays...')
-        rays_p = calculate_rays(observe, model, 'vp')
+    for wt in wavetypes:
+        disp_func(f'Calculating {wt.name}-rays...')
+        result_rays[wt] = calculate_rays(observe, model, wt)
 
         if noise:
-            add_noise_rays(rays_p, model.get_depths())
+            add_noise_rays(result_rays[wt], model.get_depths())
 
-    if calc_rays_s:
-        disp_func('Calculating s-rays...')
-        rays_s = calculate_rays(observe, model, 'vs')
+        ###### REFACTOR #######
 
-        if noise:
-            add_noise_rays(rays_s, model.get_depths())
+        disp_func(f'Calculating {wt.name}-reflections...')
 
-    disp_func('Rays calculated!')
+        calculate_reflections(model, result_rays[wt], wt)
 
-    reflection_start_time = time.time()
-
-    if calc_reflection_p:
-        disp_func('Calculating p-reflections...')
-
-        calculate_reflections(model, rays_p, 'PdPu')
-
-        disp_func('Reflections calculated!')
-
-    if calc_reflection_s:
-        disp_func('Calculating s-reflections...')
-
-        calculate_reflections(model, rays_s, 'SdSu')
-
-        disp_func('Reflections calculated!')
-
-    refraction_start_time = time.time()
-
-    if calc_refraction_p:
         disp_func('Calculating p-refractions...')
 
-        calculate_refractions(model, rays_p, 'vp')
+        calculate_refractions(model, result_rays[wt], 'vp')
 
-        disp_func('Refractions calculated!')
+        ###############
 
-    if calc_refraction_s:
-        disp_func('Calculating s-refractions...')
 
-        calculate_refractions(model, rays_s, 'vs')
-
-        disp_func('Refractions calculated!')
-
-    calc_stop_time = time.time()
-
-    # print('rp time = {}'.format(rays_start_time - rp_start_time))
-    # print('ray tracing time = {}'.format(reflection_start_time - rays_start_time))
-    # print('reflection time = {}'.format(refraction_start_time - reflection_start_time))
-    # print('refraction time = {}'.format(calc_stop_time - refraction_start_time))
-    # print('all_time = {}'.format(calc_stop_time - rp_start_time))
-
-    if visualize_res:
-        max_depth = model.get_max_boundary_depth() * 1.2
-        dz = 100
-        disp_func('Drawing results...')
-        fig, axes = plt.subplots(nrows=3, ncols=2)
-
-        # visualize_model_wellogs(axes[2, 0], model, 'vp')
-        visualize_model1D(axes[2, 0], model, observe, max_depth, dz, 'vp', only_boundaries=True)
-        visualize_rays_model_1D(axes[2, 0], rays_p)
-        axes[2, 0].invert_yaxis()
-        # axes[2, 0].set_title('model and rays for p-waves')
-
-        # visualize_model_wellogs(axes[2, 0], model, 'vs')
-        visualize_model1D(axes[2, 1], model, observe, max_depth, dz, 'vs', only_boundaries=True)
-        visualize_rays_model_1D(axes[2, 1], rays_s)
-        axes[2, 1].invert_yaxis()
-        # axes[2, 1].set_title('model and rays for s-waves')
-
-        visualize_time_curves(axes[1, 0], model, rays_p, observe)
-        axes[1, 0].set_title('time curves for p-waves')
-        visualize_time_curves(axes[1, 1], model, rays_s, observe)
-        axes[1, 1].set_title('time curves for s-waves')
-
-        if calc_reflection_p:
-            visualize_reflection_amplitudes(axes[0, 0], model.get_depths()[1:], rays_p, absc='angle')
-            axes[0, 0].set_title('avo for p-waves')
-
-        if calc_reflection_s:
-            visualize_reflection_amplitudes(axes[0, 1], model.get_depths()[1:], rays_s, absc='angle')
-            axes[0, 1].set_title('avo for for s-waves')
-
-        plt.show()
+    # if visualize_res:
+    #     max_depth = model.get_max_boundary_depth() * 1.2
+    #     dz = 100
+    #     disp_func('Drawing results...')
+    #     fig, axes = plt.subplots(nrows=3, ncols=2)
+    #
+    #     # visualize_model_wellogs(axes[2, 0], model, 'vp')
+    #     visualize_model1D(axes[2, 0], model, observe, max_depth, dz, 'vp', only_boundaries=True)
+    #     visualize_rays_model_1D(axes[2, 0], rays_p)
+    #     axes[2, 0].invert_yaxis()
+    #     # axes[2, 0].set_title('model and rays for p-waves')
+    #
+    #     # visualize_model_wellogs(axes[2, 0], model, 'vs')
+    #     visualize_model1D(axes[2, 1], model, observe, max_depth, dz, 'vs', only_boundaries=True)
+    #     visualize_rays_model_1D(axes[2, 1], rays_s)
+    #     axes[2, 1].invert_yaxis()
+    #     # axes[2, 1].set_title('model and rays for s-waves')
+    #
+    #     visualize_time_curves(axes[1, 0], model, rays_p, observe)
+    #     axes[1, 0].set_title('time curves for p-waves')
+    #     visualize_time_curves(axes[1, 1], model, rays_s, observe)
+    #     axes[1, 1].set_title('time curves for s-waves')
+    #
+    #     if calc_reflection_p:
+    #         visualize_reflection_amplitudes(axes[0, 0], model.get_depths()[1:], rays_p, absc='angle')
+    #         axes[0, 0].set_title('avo for p-waves')
+    #
+    #     if calc_reflection_s:
+    #         visualize_reflection_amplitudes(axes[0, 1], model.get_depths()[1:], rays_s, absc='angle')
+    #         axes[0, 1].set_title('avo for for s-waves')
+    #
+    #     plt.show()
 
     return observe, model, rays_p, rays_s
 
