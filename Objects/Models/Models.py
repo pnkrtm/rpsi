@@ -39,7 +39,7 @@ class SeismicModel1D:
 
         return depths
 
-    def get_param(self, param_name, index_finish=None, index_start=0):
+    def get_single_param(self, param_name, index_finish=None, index_start=0):
         param = []
 
         if param_name.lower() == 'vp':
@@ -68,6 +68,9 @@ class SeismicModel1D:
 
         else:
             return param[index_start:index_finish]
+
+    def get_multiple_params(self, param_names: list, index_finish=None, index_start=0):
+        return [self.get_single_param(pn, index_finish, index_start) for pn in param_names]
 
     def get_max_boundary_depth(self):
         return np.sum(self.h)
@@ -149,7 +152,7 @@ class SeismicModel1D:
         for i in range(1, len(hh)):
             hh[i] += hh[i-1]
 
-        values_col = [self.find_nearest_value(self.get_param(param), hh, axsz) for axsz in axesz]
+        values_col = [self.find_nearest_value(self.get_single_param(param), hh, axsz) for axsz in axesz]
 
         return values_col, axesz
 

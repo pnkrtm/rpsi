@@ -53,8 +53,8 @@ def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optim
         error = get_matrices_diff(seismogram_observed, seismogram_p, start_indexes, stop_indexes, trace_weights)
 
         # Добавляем минимизацию к-тов оражения
-        aip_1 = model.get_param('aip', index_finish=-1)
-        aip_2 = model.get_param('aip', index_start=1)
+        aip_1 = model.get_single_param('aip', index_finish=-1)
+        aip_2 = model.get_single_param('aip', index_start=1)
         rp = (aip_2 - aip_1) / (aip_2 + aip_1)
 
         error = 1.0 * error + 0.0 * np.sum(abs(rp))

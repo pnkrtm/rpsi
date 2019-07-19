@@ -102,19 +102,19 @@ def forward_rtrc(vd, vu, h, p):
 def calculate_rays_for_layer(model, observ, owt, layer_index):
     rays = []
     vel_types = get_down_up_vel_types(owt)
-    p = np.sin(np.pi / 4) / model.get_param(vel_types['down'], index_start=0, index_finish=1)[0]
+    p = np.sin(np.pi / 4) / model.get_single_param(vel_types['down'], index_start=0, index_finish=1)[0]
 
     for receiver in observ.receivers:
         p_start = p
         p = solve_for_p(p_start,
-                        model.get_param(vel_types['down'], index_finish=layer_index + 1),
-                        model.get_param(vel_types['up'], index_finish=layer_index + 1),
-                        model.get_param('h', index_finish=layer_index),
+                        model.get_single_param(vel_types['down'], index_finish=layer_index + 1),
+                        model.get_single_param(vel_types['up'], index_finish=layer_index + 1),
+                        model.get_single_param('h', index_finish=layer_index),
                         receiver.x)
 
-        x, z, t = forward_rtrc(model.get_param(vel_types['down'], index_finish=layer_index + 1),
-                               model.get_param(vel_types['up'], index_finish=layer_index + 1),
-                               model.get_param('h', index_finish=layer_index),
+        x, z, t = forward_rtrc(model.get_single_param(vel_types['down'], index_finish=layer_index + 1),
+                               model.get_single_param(vel_types['up'], index_finish=layer_index + 1),
+                               model.get_single_param('h', index_finish=layer_index),
                                p)
         rays.append(Ray1D(owt, x, z, t, p, receiver.x))
 

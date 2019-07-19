@@ -23,7 +23,7 @@ def visualize_model1D(plt, model, observe, max_depth, dz, vel_type, only_boundar
 
 
 def visualize_model_wellogs(plt, model, vel_type, linestyle='-', linewidth=4, legend_label='default label', scale=1):
-    v = model.get_param(vel_type)
+    v = model.get_single_param(vel_type)
     v = np.array(list(itertools.chain(*zip(v, v)))) * scale
 
     depths = model.get_depths()[1:]

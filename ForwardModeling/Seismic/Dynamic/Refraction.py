@@ -20,13 +20,13 @@ def calculate_refraction_for_ray(model, ray, owt):
         return
 
     # Берем все границы кроме последней
-    vp1_arr = model.get_param(param_name='vp', index_finish=nrefractions)
-    vs1_arr = model.get_param(param_name='vs', index_finish=nrefractions)
-    rho1_arr = model.get_param(param_name='rho', index_finish=nrefractions)
+    vp1_arr = model.get_single_param(param_name='vp', index_finish=nrefractions)
+    vs1_arr = model.get_single_param(param_name='vs', index_finish=nrefractions)
+    rho1_arr = model.get_single_param(param_name='rho', index_finish=nrefractions)
 
-    vp2_arr = model.get_param(param_name='vp', index_start=1, index_finish=nrefractions+1)
-    vs2_arr = model.get_param(param_name='vs', index_start=1, index_finish=nrefractions+1)
-    rho2_arr = model.get_param(param_name='rho', index_start=1, index_finish=nrefractions+1)
+    vp2_arr = model.get_single_param(param_name='vp', index_start=1, index_finish=nrefractions + 1)
+    vs2_arr = model.get_single_param(param_name='vs', index_start=1, index_finish=nrefractions + 1)
+    rho2_arr = model.get_single_param(param_name='rho', index_start=1, index_finish=nrefractions + 1)
 
     # Кол-во углов падения = кол-ву преломляющих границ (вот это да!)
     nangles = nrefractions
@@ -45,18 +45,71 @@ def calculate_refraction_for_ray(model, ray, owt):
     return down_coeffs, up_coeffs
 
 
-# TODO сделать расчет к-тов прохождения не по лучам, а по границам
-def calculate_refractions(model, rays, wtype):
-    # rays[0] - это отражения от первой границы, у которых нет к-тов преломления
+def calculate_refraction_vectorized(model, rays, owt):
     depths = model.get_depths()
     reflection_indexes = np.array(list(rays.keys()))
 
-    # for i, d in enumerate(depths[1: ], 1):
-    #     target_rays = []
-    #
-    #     indxtmp = reflection_indexes[reflection_indexes > i]
-    #     for idx in indxtmp:
-    #         target_rays = np.append(target_rays, rays[idx])
+    vp1_list, vs1_list, rho1_list = [], [], []
+    vp2_list, vs2_list, rho2_list = [], [], []
+    falling_angles_list = []
+    rising_angles_list = []
+    rays_indexes_1 = []
+    rays_indexes_2 = []
+    boundary_indexes = []
+
+    for i, d in enumerate(depths[1:-1], 1):
+        vp1_tmp, vs1_tmp, rho1_tmp = model.get_multiple_params(param_names=['vp', 'vs', 'rho'], index_start=i-1,
+                                                                  index_finish=i)
+        vp2_tmp, vs2_tmp, rho2_tmp = model.get_multiple_params(param_names=['vp', 'vs', 'rho'], index_start=i,
+                                                                  index_finish=i + 1)
+
+        refl_indx_tmp = reflection_indexes[reflection_indexes > i]
+
+        falling_angles_tmp = [ray.get_boundary_angle(i) for idx in refl_indx_tmp for ray in rays[idx]]
+        # TODO check rising angles correct!!
+        rising_angles_tmp = [ray.get_boundary_angle(-i-1) for idx in refl_indx_tmp for ray in rays[idx]]
+
+        assert (len(falling_angles_tmp) == len(rising_angles_tmp))
+
+        falling_angles_list = np.append(falling_angles_list, falling_angles_tmp)
+        rising_angles_list = np.append(rising_angles_list, rising_angles_tmp)
+
+        nrays = len(falling_angles_tmp)
+
+        rays_indexes_1_tmp = [[idx]*len(rays[idx]) for idx in refl_indx_tmp]
+        rays_indexes_2_tmp = [np.arange(len(rays[idx])) for idx in refl_indx_tmp]
+
+        vp1_list = np.append(vp1_list, [vp1_tmp] * nrays)
+        vs1_list = np.append(vs1_list, [vs1_tmp] * nrays)
+        rho1_list = np.append(rho1_list, [rho1_tmp] * nrays)
+
+        vp2_list = np.append(vp2_list, [vp2_tmp] * nrays)
+        vs2_list = np.append(vs2_list, [vs2_tmp] * nrays)
+        rho2_list = np.append(rho2_list, [rho2_tmp] * nrays)
+
+        boundary_indexes = np.append(boundary_indexes, [i] * nrays)
+
+        rays_indexes_1 = np.append(rays_indexes_1, rays_indexes_1_tmp)
+        rays_indexes_2 = np.append(rays_indexes_2, rays_indexes_2_tmp)
+
+    if owt == OWT.PdPu:
+        down_coeffs = pdownpdown(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, falling_angles_list)
+        up_coeffs = puppup(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, rising_angles_list)
+
+    elif owt == owt.SVdSVu:
+        down_coeffs = svdownsvdown(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, falling_angles_list)
+        up_coeffs = svupsvup(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, rising_angles_list)
+
+    else:
+        raise ValueError()
+
+    for dc, uc, ri_1, ri_2, bi in zip(down_coeffs, up_coeffs, rays_indexes_1, rays_indexes_2, boundary_indexes):
+        rays[int(ri_1)][int(ri_2)].add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, bi, depths[int(bi)])
+
+
+# TODO сделать расчет к-тов прохождения не по лучам, а по границам
+def calculate_refractions(model, rays, wtype):
+    # rays[0] - это отражения от первой границы, у которых нет к-тов преломления
 
     for bound_ind, rays_depth in rays.items():
         if bound_ind > 1:

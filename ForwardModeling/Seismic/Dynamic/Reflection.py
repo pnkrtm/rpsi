@@ -410,14 +410,14 @@ def calculate_reflections_vectorized(model, rays, element):
     offsets_all = np.array(offsets_all)
 
     # Берем все границы кроме последней
-    vp1_arr = model.get_param(param_name='vp', index_finish=-1)
-    vs1_arr = model.get_param(param_name='vs', index_finish=-1)
-    rho1_arr = model.get_param(param_name='rho', index_finish=-1)
+    vp1_arr = model.get_single_param(param_name='vp', index_finish=-1)
+    vs1_arr = model.get_single_param(param_name='vs', index_finish=-1)
+    rho1_arr = model.get_single_param(param_name='rho', index_finish=-1)
 
     # Берем все границы кроме первой
-    vp2_arr = model.get_param(param_name='vp', index_start=1)
-    vs2_arr = model.get_param(param_name='vs', index_start=1)
-    rho2_arr = model.get_param(param_name='rho', index_start=1)
+    vp2_arr = model.get_single_param(param_name='vp', index_start=1)
+    vs2_arr = model.get_single_param(param_name='vs', index_start=1)
+    rho2_arr = model.get_single_param(param_name='rho', index_start=1)
 
     refection_indexes = np.array(list(rays.keys())) - 1
 
