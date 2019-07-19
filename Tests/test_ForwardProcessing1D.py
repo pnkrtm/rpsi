@@ -3,6 +3,7 @@ import numpy as np
 
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
 from ForwardModeling.RockPhysics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
+from Objects.Data.RDPair import OWT
 
 def get_model_1():
     '''
@@ -169,7 +170,7 @@ def main():
     Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
     nlayers = 8
     dx = 50
-    nx = 20
+    nx = 200
     x_rec = [i*dx for i in range(1, nx)]
 
     time_mark_1 = time.time()
@@ -181,18 +182,14 @@ def main():
     #         )
 
     forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-                               dt=3e-03, trace_len=1500,
+                               dt=3e-03, trace_len=1500, wavetypes=[OWT.PdPu],
             display_stat=True, visualize_res=False,
-            use_p_waves=True, use_s_waves=False,
                                visualize_seismograms=True
             )
 
     time_mark_2 = time.time()
 
     print(f'Calculation time: {time_mark_2 - time_mark_1}')
-
-
-
 
 if __name__ == '__main__':
     main()

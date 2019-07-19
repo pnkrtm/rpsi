@@ -1,19 +1,17 @@
 import numpy as np
-from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpdown, puppup
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpdown, puppup, svdownsvdown, svupsvup
 from Objects.Seismic.Rays import BoundaryType
+from Objects.Data.RDPair import OWT
 
 
-def calculate_refraction_for_ray(model, ray, element):
+def calculate_refraction_for_ray(model, ray, owt):
     """
     Расчет коэффициентов преломления для одного луча
     :param model: Геологическая модель
     :param ray: единичный луч
-    :param element: тип волны (vp или vs). Но сейчас прилетает PdPu
+    :param owt: Observation wavetype.
     :return:
     """
-
-    if 's' in element.lower():
-        raise NotImplementedError("S-waves are not implemented yet! GFY!")
 
     nrefractions = ray.nlayers - 1
     npoints = ray.nlayers * 2 + 1
@@ -36,23 +34,39 @@ def calculate_refraction_for_ray(model, ray, element):
     falling_angles = np.array([ray.get_boundary_angle(i) for i in range(1, nangles+1)])
     rising_angles = np.array([ray.get_boundary_angle(i) for i in range(npoints - 1 - nangles, npoints - 1)])[::-1]
 
-    # TODO восходящие к-ты неправильные
-    down_coeffs = pdownpdown(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, falling_angles)
-    up_coeffs = puppup(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, rising_angles)
+    if owt == OWT.PdPu:
+        down_coeffs = pdownpdown(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, falling_angles)
+        up_coeffs = puppup(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, rising_angles)
+
+    elif owt == owt.SVdSVu:
+        down_coeffs = svdownsvdown(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, falling_angles)
+        up_coeffs = svupsvup(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, rising_angles)
 
     return down_coeffs, up_coeffs
 
 
 # TODO сделать расчет к-тов прохождения не по лучам, а по границам
-def calculate_refractions(model, rays, element):
+def calculate_refractions(model, rays, wtype):
     # rays[0] - это отражения от первой границы, у которых нет к-тов преломления
-    for rays_depth in rays[1:]:
-        for ray in rays_depth:
-            down_coeffs, up_coeffs = calculate_refraction_for_ray(model, ray, element)
+    depths = model.get_depths()
+    reflection_indexes = np.array(list(rays.keys()))
 
-            i = 1
-            for dc, uc in zip(down_coeffs, up_coeffs):
-                ray.add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, i)
-                ray.add_boundary_dynamic(uc, BoundaryType.REFRACTION_UP, i)
+    # for i, d in enumerate(depths[1: ], 1):
+    #     target_rays = []
+    #
+    #     indxtmp = reflection_indexes[reflection_indexes > i]
+    #     for idx in indxtmp:
+    #         target_rays = np.append(target_rays, rays[idx])
 
-                i += 1
+    for bound_ind, rays_depth in rays.items():
+        if bound_ind > 1:
+
+            for ray in rays_depth:
+                down_coeffs, up_coeffs = calculate_refraction_for_ray(model, ray, wtype)
+
+                i = 1
+                for dc, uc in zip(down_coeffs, up_coeffs):
+                    ray.add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, i)
+                    ray.add_boundary_dynamic(uc, BoundaryType.REFRACTION_UP, i)
+
+                    i += 1

@@ -51,7 +51,7 @@ def deriv_eq_to_solve(p, vd, vu, h):
     return res
 
 
-def solve_for_p(p_start, vd, vu, h, x_2, tol=0.1):
+def solve_for_p(p_start, vd, vu, h, x_2, tol=0.001):
     pn = p_start
 
     while True:

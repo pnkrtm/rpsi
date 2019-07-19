@@ -2,7 +2,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from Objects.Models.Models import SeismicModel1D
-from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, pdownpdown, puppup, svdownsvup
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, pdownpdown, puppup, svdownsvup, svdownsvdown, svupsvup
 from ForwardModeling.Seismic.Dynamic.Reflection import zoeppritz_element
 from Objects.Seismic.Observation import Observation, Source, Receiver
 from Objects.Data.RDPair import OWT
@@ -25,22 +25,29 @@ def reflections_p_identity_1():
     receivers = [Receiver(x * dx, 0, 0) for x in range(start_rec, start_rec + nrec)]
     observe = Observation(sources, receivers)
 
+    wavetype = OWT.PdPu
     rays_p = calculate_rays(observe, model, OWT.PdPu)
 
     # индекс интересующей отражающей границы
     refl_index = 2
 
-    angles = np.array([r.get_reflection_angle() for r in rays_p[0]])
+    angles = np.array([r.get_reflection_angle() for r in rays_p[1]])
 
     # curve_1 = pdownpup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
     # curve_1 = puppup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
     # curve_1 = pdownpdown(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
-    curve_1 = svdownsvup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
+    # curve_1 = svdownsvup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
+    # curve_1 = svdownsvdown(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
+    curve_1 = svupsvup(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles)
 
     # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="theta", index=1, element='PdPu')
     # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="theta", index=2, element="PuPu")
     # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, element='PdPd')
-    curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="phi", index=1, element='SdSu')
+    # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="phi", index=1, element='SdSu')
+    # curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="phi", index=1,
+    #                             element='SdSd')
+    curve_2 = zoeppritz_element(vp[0], vs[0], rho[0], vp[1], vs[1], rho[1], angles, angtype="phi", index=2, element='SuSu')
+
     ampl1 = np.array([a.real for a in curve_1])
     ampl2 = np.array([a.real for a in curve_2])
 

@@ -100,47 +100,42 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         ###############
 
 
-    # if visualize_res:
-    #     max_depth = model.get_max_boundary_depth() * 1.2
-    #     dz = 100
-    #     disp_func('Drawing results...')
-    #     fig, axes = plt.subplots(nrows=3, ncols=2)
-    #
-    #     # visualize_model_wellogs(axes[2, 0], model, 'vp')
-    #     visualize_model1D(axes[2, 0], model, observe, max_depth, dz, 'vp', only_boundaries=True)
-    #     visualize_rays_model_1D(axes[2, 0], rays_p)
-    #     axes[2, 0].invert_yaxis()
-    #     # axes[2, 0].set_title('model and rays for p-waves')
-    #
-    #     # visualize_model_wellogs(axes[2, 0], model, 'vs')
-    #     visualize_model1D(axes[2, 1], model, observe, max_depth, dz, 'vs', only_boundaries=True)
-    #     visualize_rays_model_1D(axes[2, 1], rays_s)
-    #     axes[2, 1].invert_yaxis()
-    #     # axes[2, 1].set_title('model and rays for s-waves')
-    #
-    #     visualize_time_curves(axes[1, 0], model, rays_p, observe)
-    #     axes[1, 0].set_title('time curves for p-waves')
-    #     visualize_time_curves(axes[1, 1], model, rays_s, observe)
-    #     axes[1, 1].set_title('time curves for s-waves')
-    #
-    #     if calc_reflection_p:
-    #         visualize_reflection_amplitudes(axes[0, 0], model.get_depths()[1:], rays_p, absc='angle')
-    #         axes[0, 0].set_title('avo for p-waves')
-    #
-    #     if calc_reflection_s:
-    #         visualize_reflection_amplitudes(axes[0, 1], model.get_depths()[1:], rays_s, absc='angle')
-    #         axes[0, 1].set_title('avo for for s-waves')
-    #
-    #     plt.show()
+    if visualize_res:
+        max_depth = model.get_max_boundary_depth() * 1.2
+        dz = 100
+        disp_func('Drawing results...')
+        fig, axes = plt.subplots(nrows=3, ncols=len(result_rays))
 
-    return observe, model, rays_p, rays_s
+        for i, key, value in enumerate(result_rays.items()):
+            # visualize_model_wellogs(axes[2, 0], model, 'vp')
+            ###############HARDCODE ABOUT VEL TYPE!!!!!!!!!
+            visualize_model1D(axes[2, i], model, observe, max_depth, dz, 'vp', only_boundaries=True)
+            visualize_rays_model_1D(axes[2, i], value)
+            axes[2, i].invert_yaxis()
+            # axes[2, 0].set_title('model and rays for p-waves')
+
+            # visualize_model_wellogs(axes[2, 0], model, 'vs')
+            # axes[2, 1].set_title('model and rays for s-waves')
+
+            visualize_time_curves(axes[1, i], model, value, observe)
+            axes[1, i].set_title('time curves for p-waves')
+
+            visualize_reflection_amplitudes(axes[0, i], model.get_depths()[1:], value, absc='angle')
+            axes[0, i].set_title('avo for p-waves')
+
+        plt.show()
+
+    return observe, model, result_rays
 
 
-def create_seismogram(seismogram, rays, observe, times, dt):
+def create_seismogram(rays, observe, tracelen, dt):
+    seismogram = Seismogram()
+    times = [dt * i for i in range(tracelen)]
+
     for j, rec in enumerate(observe.receivers):
         offset = rec.x
         # rays_ = [r for r in np.nditer(rays) if abs(r.x_finish - offset) <= 0.2]
-        rays_ = rays[:, j]
+        rays_ = [rr for r in rays.values() for rr in r if abs(rr.x_finish - offset) <= 0.001]
         trace_i = np.zeros(len(times))
 
         for ray in rays_:
@@ -153,48 +148,47 @@ def create_seismogram(seismogram, rays, observe, times, dt):
             if reflection_index < len(trace_i):
                 trace_i[reflection_index] = r_coeff.real
 
-        signal = ricker(50, 4)
-        signal /= max(signal)
+        signal = ricker(50, 7)
+        signal /= max(abs(signal))
 
         trace_values = np.convolve(trace_i, signal)[0: len(times)].real
 
         seismogram.add_trace(Trace(trace_values, dt, offset))
 
+    return seismogram
+
 
 def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec, dt, trace_len,
+                                wavetypes,
                                display_stat=False, visualize_res=False,
-                               use_p_waves=True, use_s_waves=True,
                                visualize_seismograms=False):
-    observe, model, rays_p, rays_s = forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-                                             display_stat=display_stat, visualize_res=visualize_res,
-                                             calc_rays_p=use_p_waves, calc_rays_s=use_s_waves,
-                                             calc_reflection_p=use_p_waves, calc_reflection_s=use_s_waves,
-                                             calc_refraction_p=use_p_waves, calc_refraction_s=use_s_waves)
+    observe, model, rays = forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
+                                             wavetypes,
+                                             display_stat=display_stat, visualize_res=visualize_res,)
 
-    times = [dt * i for i in range(trace_len)]
+    res_rays = {}
 
-    seismogram_p = None
-    seismogram_s = None
+    for key in rays.keys():
+        # TODO проверить, что сейсмограммы передаются не по ссылке!!
+        seismogram = create_seismogram(rays[key], observe, dt)
 
-    if use_p_waves:
-        seismogram_p = Seismogram()
-        create_seismogram(seismogram_p, rays_p, observe, times, dt)
-
-    if use_s_waves:
-        seismogram_s = Seismogram()
-        create_seismogram(seismogram_s, rays_s, observe, times, dt)
+        res_rays[key] = {
+            "rays": rays[key],
+            "seismogram": seismogram
+        }
 
     if visualize_seismograms:
-        fig, axes = plt.subplots(nrows=1, ncols=2)
+        fig, axes = plt.subplots(nrows=1, ncols=len(rays))
 
-        if use_p_waves:
-            visualize_seismogram(fig, axes[0], seismogram_p, normalize=True, wiggles=False)
-            axes[0].set_title('p-waves seismogram')
+        for i, key in enumerate(res_rays.keys()):
+            if len(rays) == 1:
+                visualize_seismogram(fig, axes, res_rays[key]["seismogram"], normalize=True, wiggles=False)
+                axes.set_title('waves seismogram')
 
-        if use_s_waves:
-            visualize_seismogram(fig, axes[1], seismogram_s, normalize=True, wiggles=False)
-            axes[1].set_title('s-waves seismogram')
+            else:
+                visualize_seismogram(fig, axes[i], res_rays[key]["seismogram"], normalize=True, wiggles=False)
+                axes[i].set_title('waves seismogram')
 
         plt.show()
 
-    return observe, model, rays_p, rays_s, seismogram_p, seismogram_s
+    return observe, model, res_rays
