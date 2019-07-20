@@ -2,7 +2,8 @@ import sys
 sys.path.append('../')
 
 import numpy as np
-from ForwardModeling.ForwardProcessing1D import forward
+from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
+from Objects.Data.RDPair import OWT
 from Inversion.Strategies.Inversion1D import inverse
 from Tests.test_ForwardProcessing1D import get_model_1
 
@@ -14,13 +15,15 @@ def main():
     dx = 100
     nx = 20
     x_rec = [i * dx for i in range(1, nx)]
+    wave_types = [OWT.PdPu]
 
 
     print('Calculating DEM modeling...')
-    observe, model, rays_observed_p, rays_observed_s = \
-        forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f,
-                                                               rho_m, h, x_rec, display_stat=True,
-            visualize_res=False, calc_reflection_p=True, calc_reflection_s=True)
+    observe, model, test_seismic = \
+        forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f,
+                                                               rho_m, h, x_rec,
+                                   dt=3e-03, trace_len=1500, wavetypes=wave_types, display_stat=True,
+            visualize_res=False)
     print('Forward calculated!')
 
     true_model = []

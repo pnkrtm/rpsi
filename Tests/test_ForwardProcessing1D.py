@@ -4,6 +4,11 @@ import numpy as np
 from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
 from ForwardModeling.RockPhysics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
 from Objects.Data.RDPair import OWT
+from Objects.Models.Models import SeismicModel1D
+from Objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
+from Objects.Models.Layer1D import Layer1D, LayerOPT
+from collections import OrderedDict
+
 
 def get_model_1():
     '''
@@ -166,9 +171,171 @@ def get_model_1():
     return Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h
 
 
+def get_model_2():
+    layer_1_dict = OrderedDict({
+                  "name": "xu-payne",
+                  "components": {
+                    "Km": {
+                      "value": 7.3,
+                      "optimize": True,
+                      "min": 5,
+                      "max": 10
+                    },
+					"Gm": {
+                      "value": 2.71,
+                      "optimize": False,
+                      "min": 0.1,
+                      "max": 5
+                    },
+					"rho_m": {
+                      "value": 2.71,
+                      "optimize": False,
+                      "min": 2.5,
+                      "max": 3
+                    },
+                    "Vm": {
+                      "value": 1,
+                      "optimize": False,
+                      "min": 0.7,
+                      "max": 1
+                    },
+                    "Ks": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 7,
+                      "max": 14
+                    },
+					"Gs": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.8
+                    },
+					"rho_s": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "phi_s": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.1
+                    },
+                    "Kf": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 3
+                    },
+                    "rho_f": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.01,
+                      "max": 3
+                    },
+                    "phi": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.2
+                    }
+                  }
+                })
+    layer_2_dict = OrderedDict({
+                  "name": "xu-payne",
+                  "components": {
+                    "Km": {
+                      "value": 21.5,
+                      "optimize": True,
+                      "min": 20,
+                      "max": 25
+                    },
+					"Gm": {
+                      "value": 17.5,
+                      "optimize": False,
+                      "min": 15,
+                      "max": 20
+                    },
+					"rho_m": {
+                      "value": 2.8,
+                      "optimize": False,
+                      "min": 2.5,
+                      "max": 3
+                    },
+                    "Vm": {
+                      "value": 0.85,
+                      "optimize": False,
+                      "min": 0.7,
+                      "max": 1
+                    },
+                    "Ks": {
+                      "value": 9.2,
+                      "optimize": False,
+                      "min": 7,
+                      "max": 14
+                    },
+					"Gs": {
+                      "value": 0.4,
+                      "optimize": False,
+                      "min": 0.1,
+                      "max": 0.8
+                    },
+					"rho_s": {
+                      "value": 2.43,
+                      "optimize": False,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "phi_s": {
+                      "value": 0.05,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.1
+                    },
+                    "Kf": {
+                      "value": 1.8,
+                      "optimize": False,
+                      "min": 1,
+                      "max": 2
+                    },
+                    "rho_f": {
+                      "value": 0.95,
+                      "optimize": False,
+                      "min": 0.01,
+                      "max": 1
+                    },
+                    "phi": {
+                      "value": 0.1,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.2
+                    }
+                  }
+                })
+
+    return layer_1_dict, layer_2_dict
+
+
 def main():
-    Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
-    nlayers = 8
+    # Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
+    layer_1_dict, layer_2_dict = get_model_2()
+    h = 500
+
+    layer_1 = Layer1D(h,
+                      rp_attribute=RockPhysicsAttribute(layer_1_dict["components"], layer_1_dict["name"]),
+                      seism_attribute=None,
+                      opt=LayerOPT.RP)
+
+    layer_2 = Layer1D(-1,
+                      rp_attribute=RockPhysicsAttribute(layer_2_dict["components"], layer_2_dict["name"]),
+                      seism_attribute=None,
+                      opt=LayerOPT.RP)
+
+    model = SeismicModel1D([layer_1, layer_2])
+
+    nlayers = 2
     dx = 50
     nx = 200
     x_rec = [i*dx for i in range(1, nx)]
@@ -181,8 +348,7 @@ def main():
     #         calc_reflection_p=True, calc_reflection_s=False
     #         )
 
-    forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-                               dt=3e-03, trace_len=1500, wavetypes=[OWT.PdPu],
+    forward_with_trace_calcing(model, x_rec, dt=3e-03, trace_len=1500, wavetypes=[OWT.PdPu],
             display_stat=True, visualize_res=False,
                                visualize_seismograms=True
             )

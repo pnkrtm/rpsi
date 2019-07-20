@@ -1,6 +1,6 @@
 import numpy as np
 
-from ForwardModeling.RockPhysics.Models import simple_model_1
+from ForwardModeling.RockPhysics.Models import xu_payne_model
 
 
 def simple_calculate_test():
@@ -18,7 +18,7 @@ def simple_calculate_test():
     phi = 0.1
     phi_s = 0.1
 
-    vp, vs, rho = simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m)
+    vp, vs, rho = xu_payne_model(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m)
 
     print(vp, vs, rho)
 

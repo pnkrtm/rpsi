@@ -1,9 +1,110 @@
 import numpy as np
 from scipy.ndimage.interpolation import shift
 import struct
+from Objects.Models.Layer1D import Layer1D, LayerOPT
+from Objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
+from Objects.Attributes.Seismic.SeismicAttribute import SeismicAttribute
+from collections import OrderedDict
 
 
 class SeismicModel1D:
+    def __init__(self, layers: list):
+        self.layers = layers
+
+    @property
+    def nlayers(self):
+        return len(self.layers)
+
+    def get_depths(self):
+        depths = [0]
+
+        for layer in self.layers:
+            depths.append(layer.h)
+
+            depths[-1] = depths[-1] + depths[-2]
+
+        return depths
+
+    def get_single_param(self, param_name, index_finish=None, index_start=0):
+        if index_finish is None:
+            return np.array([layer[param_name] for layer in self.layers[index_start:]])
+
+        else:
+            return np.array([layer[param_name] for layer in self.layers[index_start: index_finish]])
+
+    def get_multiple_params(self, param_names: list, index_finish=None, index_start=0):
+        return [self.get_single_param(pn, index_finish, index_start) for pn in param_names]
+
+    def find_nearest_value(self, val_list, h_list, h_cur):
+        h_list = np.append([0], h_list)
+        h_nearest = h_list[h_cur >= h_list][-1]
+        nearest_index = h_list.tolist().index(h_nearest)
+
+        return val_list[nearest_index]
+
+    def get_1D_regular_grid(self, param, h_max, dh):
+        nz = int(h_max / dh)
+        axesz = [i*dh for i in range(nz)]
+
+        hh = self.get_single_param("h")
+
+        for i in range(1, len(hh)):
+            hh[i] += hh[i-1]
+
+        values_col = [self.find_nearest_value(self.get_single_param(param), hh, axsz) for axsz in axesz]
+
+        return values_col, axesz
+
+    def get_max_boundary_depth(self):
+        return np.sum([layer.h for layer in self.layers])
+
+    def calculate_rockphysics(self):
+        for i in range(self.nlayers):
+            self.layers[i].calculate_rockphysics()
+
+    def get_reflection_flags(self):
+        return [layer.refl_flag for layer in self.layers]
+
+    def get_optimize_option(self, option_name, vectorize=False, scale=None):
+        res = OrderedDict()
+
+        for i in range(self.nlayers):
+            if self.layers[i].is_optimization:
+
+                if option_name == 'val':
+                    res[i] = self.layers[i].get_optimization_params()
+
+                elif option_name == 'min':
+                    res[i] = self.layers[i].get_optimization_min()
+
+                elif option_name == 'max':
+                    res[i] = self.layers[i].get_optimization_max()
+
+        if scale is not None:
+            vectorize = True
+
+        # if vectorize
+
+    @classmethod
+    def from_vp_vs_rho(cls, h, vp, vs, rho, refl_flags=None, opt_flags=None):
+
+        assert (len(vp) == len(vs) == len(rho) == (len(h)+1))
+
+        if refl_flags is None:
+            refl_flags = np.ones(len(h))
+
+        if opt_flags is None:
+            opt_flags = [LayerOPT.NO] * len(vp)
+
+        layers = []
+        for i in range(len(vp) - 1):
+            layers.append(Layer1D(h[i], None, SeismicAttribute(vp[i], vs[i], rho[i]), refl_flags[i], opt_flags[i]))
+
+        layers.append(Layer1D(99999, None, SeismicAttribute(vp[-1], vs[-1], rho[-1]), refl_flag=None, opt=opt_flags[-1]))
+
+        return cls(layers)
+
+class SeismicModel1D_old:
     def __init__(self, vp=None, vs=None, rho=None, h=None, phi=None, refl_flags=None):
         """
         Seismic model class

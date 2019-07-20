@@ -40,7 +40,7 @@ def func_to_optimize_mp_helper(args):
     return func_to_optimize(**args)
 
 
-def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optimize, params_bounds,
+def func_to_optimize(model_opt, seismograms_observed, params_all, params_to_optimize, params_bounds,
                      start_indexes, stop_indexes,
                      helper, trace_weights=None, normalize=False, show_tol=True):
     try:
@@ -48,10 +48,12 @@ def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optim
 
         params_all_ = change_values_in_params_dict(params_all_, model_opt, params_to_optimize, params_bounds, normalize)
 
-        observe, model, rays_p, rays_s, seismogram_p, seismogram_s = forward_with_trace_calcing(**params_all_)
+        observe, model, seismic = forward_with_trace_calcing(**params_all_)
 
-        error = get_matrices_diff(seismogram_observed, seismogram_p, start_indexes, stop_indexes, trace_weights)
-
+        errors = []
+        for key in seismic.keys():
+            errors.append(get_matrices_diff(seismograms_observed[key], seismic[key]["seismogram"], start_indexes, stop_indexes, trace_weights))
+        error = np.mean(errors)
         # Добавляем минимизацию к-тов оражения
         aip_1 = model.get_single_param('aip', index_finish=-1)
         aip_2 = model.get_single_param('aip', index_start=1)

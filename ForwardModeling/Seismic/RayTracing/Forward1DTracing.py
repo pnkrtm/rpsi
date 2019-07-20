@@ -127,9 +127,9 @@ def calculate_rays_for_layer_mp_helper(args):
 
 def calculate_rays(observ, model, owt):
     rays = OrderedDict()
-
+    refl_flags = model.get_reflection_flags()
     # TODO check multiwaves condition
-    for i, refl in zip(range(1, model.get_number_of_layers()), model.refl_flags):
+    for i, refl in zip(range(1, model.nlayers), refl_flags):
 
         if refl:
             rays[i] = calculate_rays_for_layer(model, observ, owt, i)

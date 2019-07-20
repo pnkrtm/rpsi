@@ -44,7 +44,7 @@ def calculate_refraction_for_ray(model, ray, owt):
 
     return down_coeffs, up_coeffs
 
-
+# TODO проверить правильность расчета углов и соответствующих к-тов прохождения!!
 def calculate_refraction_vectorized(model, rays, owt):
     depths = model.get_depths()
     reflection_indexes = np.array(list(rays.keys()))
@@ -98,6 +98,10 @@ def calculate_refraction_vectorized(model, rays, owt):
 
     elif owt == owt.SVdSVu:
         down_coeffs = svdownsvdown(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, falling_angles_list)
+        up_coeffs = svupsvup(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, rising_angles_list)
+
+    elif owt == OWT.PdSVu:
+        down_coeffs = pdownpdown(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, falling_angles_list)
         up_coeffs = svupsvup(vp1_list, vs1_list, rho1_list, vp2_list, vs2_list, rho2_list, rising_angles_list)
 
     else:

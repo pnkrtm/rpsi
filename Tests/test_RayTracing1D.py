@@ -19,7 +19,7 @@ def test_model1D():
     h = np.array([500, 1000, 1500], 'int')
     refl_flags = [1, 0, 0]
 
-    model = SeismicModel1D(vp, vs, rho, h, refl_flags=refl_flags)
+    model = SeismicModel1D.from_vp_vs_rho(h, vp, vs, rho, refl_flags)
     dz = 100
     dx = dz
     max_depth = 2000

@@ -8,10 +8,10 @@ from ForwardModeling.RockPhysics.Mediums import Gassmann
 from ForwardModeling.RockPhysics.Mediums.DEMSlb import DEM
 from ForwardModeling.RockPhysics.Mediums.VoigtReussHill import voigt
 
-
-def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=0.1):
+# TODO добавить векторизацию!
+def xu_payne_model(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=0.1):
     '''
-    Самый простой вариант модели (для одного слоя!)
+    Модель Шу-Пэйна
     :param Km: Массив модулей сжатия минералов скелета
     :param Gm: Массив модулей сдвига минералов скелета
     :param Ks: Модуль сжатия глин
@@ -76,11 +76,11 @@ def simple_model_1(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None,
     if K_res < 0 or G_res < 0 or rho_res < 0:
         raise BadRPModelException()
 
-    return [Tools.vp_from_KGRho(K_res, G_res, rho_res), Tools.vs_from_GRho(G_res, rho_res), rho_res]
+    return [Tools.vp_from_KGRho(K_res, G_res, rho_res)*1000, Tools.vs_from_GRho(G_res, rho_res)*1000, rho_res*1000]
 
 
 def model_calculation_mp_helper(args):
-    return simple_model_1(*args)
+    return xu_payne_model(*args)
 
 
 def model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=None, mp_cond=False):
@@ -104,18 +104,23 @@ def model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho
 
     else:
         for i in range(nlayers):
-            res_model = simple_model_1(Km[i], Gm[i], Ks[i], Gs[i], Kf[i], phi[i], phi_s[i], rho_s[i], rho_f[i], rho_m[i],
-                                            Vm[i], alpha[i])
+            res_model = xu_payne_model(Km[i], Gm[i], Ks[i], Gs[i], Kf[i], phi[i], phi_s[i], rho_s[i], rho_f[i], rho_m[i],
+                                       Vm[i], alpha[i])
 
             result_models.append(res_model)
 
     result_models = np.array(result_models)
 
-    vp = result_models[:, 0]*1000
-    vs = result_models[:, 1]*1000
-    rho = result_models[:, 2]*1000
+    vp = result_models[:, 0]
+    vs = result_models[:, 1]
+    rho = result_models[:, 2]
 
     return vp, vs, rho
 
 
+def calculate_rockphysics_model(rp_attribute):
+    if rp_attribute.model_name == 'xu-payne':
+        return xu_payne_model(**rp_attribute.get_input_params())
 
+    else:
+        raise ValueError("Unknown model name =(")

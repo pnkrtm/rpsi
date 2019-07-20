@@ -34,24 +34,10 @@ def add_noise_rays(rays, depths):
             r.time += random_noise
 
 
-def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-            wavetypes,
-            display_stat=False, visualize_res=True,
-            noise=False):
+def forward(model, x_rec, wavetypes, display_stat=False, visualize_res=True, noise=False):
     '''
 
-    :param nlayers: Кол-во слоев одномерной модели
-    :param Km: Массив массивов модулей сжатия матрикса (для каждого слоя задается массив из составляющих его минералов)
-    :param Gm: Массив массивов модулей сдвига матрикса (для каждого слоя задается массив из составляющих его минералов)
-    :param Ks: Массив модулей сжатия глины
-    :param Gs: Массив модулей сдвига глины
-    :param Kf: Массив модулей сжатия флюида
-    :param phi: Массив пористости
-    :param phi_s: Массив К глинистости (кол-во глины)
-    :param rho_s: Массив плотностей глин
-    :param rho_f: Массив плотностнй флюида
-    :param rho_m: Массив массивов плотностей минералов матрикса
-    :param h: Массив мощностей
+    :param model: Геологическая модель
     :param x_rec: Массив приемников
     :param wavetypes: Лист с типами волн для работы
     :return:
@@ -67,12 +53,11 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     rp_start_time = time.time()
 
-    vp, vs, rho = model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m)
+    model.calculate_rockphysics()
 
     disp_func('Rockphysics model calculated!')
 
-    # Создание моделей геол среды и среды наблюдения (последнее из источников и приемников)
-    model = SeismicModel1D(vp, vs, rho, h, phi)
+    # Создание среды наблюдения (из источников и приемников)
     sources = [Source(0, 0, 0)]
     receivers = [Receiver(x) for x in x_rec]
     observe = Observation(sources, receivers)
@@ -80,6 +65,7 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
 
     result_rays = {}
 
+    # calculating dynamics
     for wt in wavetypes:
         disp_func(f'Calculating {wt.name}-rays...')
         result_rays[wt] = calculate_rays(observe, model, wt)
@@ -87,7 +73,6 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         if noise:
             add_noise_rays(result_rays[wt], model.get_depths())
 
-        ###### REFACTOR #######
 
         disp_func(f'Calculating {wt.name}-reflections...')
 
@@ -96,9 +81,6 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
         disp_func('Calculating p-refractions...')
 
         calculate_refractions(model, result_rays[wt], 'vp')
-
-        ###############
-
 
     if visualize_res:
         max_depth = model.get_max_boundary_depth() * 1.2
@@ -128,7 +110,7 @@ def forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_r
     return observe, model, result_rays
 
 
-def create_seismogram(rays, observe, tracelen, dt):
+def create_seismogram(rays, observe, dt, tracelen):
     seismogram = Seismogram()
     times = [dt * i for i in range(tracelen)]
 
@@ -158,21 +140,18 @@ def create_seismogram(rays, observe, tracelen, dt):
     return seismogram
 
 
-def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec, dt, trace_len,
-                                wavetypes,
-                               display_stat=False, visualize_res=False,
+def forward_with_trace_calcing(model, x_rec, dt, trace_len, wavetypes, display_stat=False, visualize_res=False,
                                visualize_seismograms=False):
-    observe, model, rays = forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-                                             wavetypes,
-                                             display_stat=display_stat, visualize_res=visualize_res,)
 
-    res_rays = {}
+    observe, model, rays = forward(model, x_rec, wavetypes, display_stat=display_stat, visualize_res=visualize_res,)
+
+    res_seismic = {}
 
     for key in rays.keys():
         # TODO проверить, что сейсмограммы передаются не по ссылке!!
-        seismogram = create_seismogram(rays[key], observe, dt)
+        seismogram = create_seismogram(rays[key], observe, dt, trace_len)
 
-        res_rays[key] = {
+        res_seismic[key] = {
             "rays": rays[key],
             "seismogram": seismogram
         }
@@ -180,15 +159,15 @@ def forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, r
     if visualize_seismograms:
         fig, axes = plt.subplots(nrows=1, ncols=len(rays))
 
-        for i, key in enumerate(res_rays.keys()):
+        for i, key in enumerate(res_seismic.keys()):
             if len(rays) == 1:
-                visualize_seismogram(fig, axes, res_rays[key]["seismogram"], normalize=True, wiggles=False)
+                visualize_seismogram(fig, axes, res_seismic[key]["seismogram"], normalize=True, wiggles=False)
                 axes.set_title('waves seismogram')
 
             else:
-                visualize_seismogram(fig, axes[i], res_rays[key]["seismogram"], normalize=True, wiggles=False)
+                visualize_seismogram(fig, axes[i], res_seismic[key]["seismogram"], normalize=True, wiggles=False)
                 axes[i].set_title('waves seismogram')
 
         plt.show()
 
-    return observe, model, res_rays
+    return observe, model, res_seismic

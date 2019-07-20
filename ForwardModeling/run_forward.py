@@ -27,7 +27,7 @@ def main(model_folder, draw_pics):
 
     forward_input_params.update(params_all_dict)
 
-    observe, model, rays_p, rays_s, seismogram_p, seismogram_s = forward_with_trace_calcing(**forward_input_params)
+    observe, model, res_seismic = forward_with_trace_calcing(**forward_input_params)
 
     write_segy(seismogram_p, os.path.join(model_folder, 'input', 'pwaves.sgy'))
 

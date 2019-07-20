@@ -20,7 +20,7 @@ def test_model1D():
     h = np.array([500, 1000, 1500], 'int')
     refl_flags = [1, 1, 1]
 
-    model = SeismicModel1D(vp, vs, rho, h, refl_flags=refl_flags)
+    model = SeismicModel1D.from_vp_vs_rho(h, vs, vp, rho, refl_flags)
     dz = 100
     dx = dz
     max_depth = 2000
@@ -47,9 +47,9 @@ def test_model1D():
 
     rays_stop_time = time.time()
 
-    tracelen = 1000
+    tracelen = 3000
     dt = 0.005
-    res_seismic[wavetype]["seismogram"] = create_seismogram(res_seismic[wavetype]["rays"], observe, tracelen, dt)
+    res_seismic[wavetype]["seismogram"] = create_seismogram(res_seismic[wavetype]["rays"], observe, dt, tracelen)
 
     print('Rays calcing time = {}'.format(rays_stop_time - raytracing_start_time))
     print('Amplitudes calcing time = {}'.format(rays_stop_time - raytracing_stop_time))
