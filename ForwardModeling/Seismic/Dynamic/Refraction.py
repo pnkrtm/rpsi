@@ -1,7 +1,7 @@
 import numpy as np
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpdown, puppup, svdownsvdown, svupsvup
 from Objects.Seismic.Rays import BoundaryType
-from Objects.Data.RDPair import OWT
+from Objects.Data.WavePlaceholder import OWT
 
 
 def calculate_refraction_for_ray(model, ray, owt):

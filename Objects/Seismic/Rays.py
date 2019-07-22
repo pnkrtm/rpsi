@@ -27,6 +27,9 @@ class Ray():
         raise NotImplementedError
 
     def add_boundary_dynamic(self, value, bound_type: BoundaryType, bound_index: int=-1, bound_depth: float=-1):
+        if abs(value) > 1:
+            value = 9
+
         self.boundaries_dynamics.append(
             {
                 "boundary_index": bound_index,

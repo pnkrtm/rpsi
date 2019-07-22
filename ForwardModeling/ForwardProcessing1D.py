@@ -11,7 +11,7 @@ from Objects.Seismic.Observation import Observation, Source, Receiver
 from Objects.Seismic.Seismogram import Trace, Seismogram
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
 from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections
-from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refractions
+from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refractions, calculate_refraction_vectorized
 from Visualization.Seismic import visualize_model1D, visualize_rays_model_1D, \
     visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram
@@ -80,7 +80,7 @@ def forward(model, x_rec, wavetypes, display_stat=False, visualize_res=True, noi
 
         disp_func('Calculating p-refractions...')
 
-        calculate_refractions(model, result_rays[wt], 'vp')
+        calculate_refraction_vectorized(model, result_rays[wt], wt)
 
     if visualize_res:
         max_depth = model.get_max_boundary_depth() * 1.2
@@ -107,7 +107,7 @@ def forward(model, x_rec, wavetypes, display_stat=False, visualize_res=True, noi
 
         plt.show()
 
-    return observe, model, result_rays
+    return observe, result_rays
 
 
 def create_seismogram(rays, observe, dt, tracelen):
@@ -143,7 +143,7 @@ def create_seismogram(rays, observe, dt, tracelen):
 def forward_with_trace_calcing(model, x_rec, dt, trace_len, wavetypes, display_stat=False, visualize_res=False,
                                visualize_seismograms=False):
 
-    observe, model, rays = forward(model, x_rec, wavetypes, display_stat=display_stat, visualize_res=visualize_res,)
+    observe, rays = forward(model, x_rec, wavetypes, display_stat=display_stat, visualize_res=visualize_res,)
 
     res_seismic = {}
 
@@ -170,4 +170,4 @@ def forward_with_trace_calcing(model, x_rec, dt, trace_len, wavetypes, display_s
 
         plt.show()
 
-    return observe, model, res_seismic
+    return observe, res_seismic

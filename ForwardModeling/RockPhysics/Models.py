@@ -78,7 +78,6 @@ def xu_payne_model(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None,
 
     return [Tools.vp_from_KGRho(K_res, G_res, rho_res)*1000, Tools.vs_from_GRho(G_res, rho_res)*1000, rho_res*1000]
 
-
 def model_calculation_mp_helper(args):
     return xu_payne_model(*args)
 

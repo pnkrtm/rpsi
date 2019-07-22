@@ -5,10 +5,13 @@ from Objects.Attributes.AbstractAttribute import AbstarctAttribute
 class RockPhysicsAttribute(AbstarctAttribute):
     def __init__(self, vals_dict: OrderedDict, model_name):
         self.model_name = model_name
-        self.vals_dict = vals_dict
+        self.vals_dict = vals_dict.copy()
 
     def __getitem__(self, item):
         return self.vals_dict[item]["value"]
+
+    def __setitem__(self, key, value):
+        self.vals_dict[key]["value"] = value
 
     def get_params_to_optimize(self):
         return {key: value["value"] for key, value in self.vals_dict.items() if value["optimize"]}

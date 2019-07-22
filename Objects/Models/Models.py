@@ -10,10 +10,19 @@ from collections import OrderedDict
 class SeismicModel1D:
     def __init__(self, layers: list):
         self.layers = layers
+        self._scale = None
 
     @property
     def nlayers(self):
         return len(self.layers)
+
+    @property
+    def scale(self):
+        return self._scale
+
+    @scale.setter
+    def scale(self, value):
+        self._scale = value
 
     def get_depths(self):
         depths = [0]
@@ -65,8 +74,11 @@ class SeismicModel1D:
     def get_reflection_flags(self):
         return [layer.refl_flag for layer in self.layers]
 
-    def get_optimize_option(self, option_name, vectorize=False, scale=None):
+    def get_optimization_option(self, option_name, vectorize=False):
         res = OrderedDict()
+
+        self.vectorize = vectorize
+        self.opt_indexes = []
 
         for i in range(self.nlayers):
             if self.layers[i].is_optimization:
@@ -80,10 +92,54 @@ class SeismicModel1D:
                 elif option_name == 'max':
                     res[i] = self.layers[i].get_optimization_max()
 
-        if scale is not None:
-            vectorize = True
+                for key in res[i].keys():
+                    self.opt_indexes.append((i, key))
 
-        # if vectorize
+        if self.scale is not None:
+            self.vectorize = True
+
+        if self.vectorize:
+            res = np.hstack([val for val in res.values()])
+            res = [list(d.values()) for d in res]
+            res = np.hstack(res)
+
+        if self.scale is not None:
+            if self.scale == 'minmax':
+                mins = self.get_optimization_option("min", vectorize=True)
+                maxes = self.get_optimization_option("max", vectorize=True)
+
+                res = (res - mins) / (maxes - mins)
+
+            elif self.scale == "minmaxlog":
+                raise NotImplementedError()
+
+            elif self.scale == 'std':
+                raise NotImplementedError()
+
+            else:
+                raise ValueError(f"Unknown scaler {self.scale}")
+
+        return res
+
+    def set_optimization_option(self, values, final=False):
+        if self.scale is not None:
+            if self.scale == 'minmax':
+                mins = self.get_optimization_option("min", vectorize=True)
+                maxes = self.get_optimization_option("max", vectorize=True)
+
+                values = values * (maxes - mins) + mins
+
+            elif self.scale == 'minmaxlog':
+                raise NotImplementedError()
+
+            elif self.scale == 'std':
+                raise NotImplementedError()
+
+            else:
+                raise ValueError(f"Unknown scaler {self.scale}")
+
+        for ind, val in zip(self.opt_indexes, values):
+            self.layers[ind[0]][ind[1]] = val
 
     @classmethod
     def from_vp_vs_rho(cls, h, vp, vs, rho, refl_flags=None, opt_flags=None):

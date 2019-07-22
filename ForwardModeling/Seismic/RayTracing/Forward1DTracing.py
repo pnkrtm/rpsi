@@ -3,7 +3,7 @@ import numpy as np
 from collections import OrderedDict
 
 from Objects.Seismic.Rays import Ray1D
-from Objects.Data.RDPair import OWT, get_down_up_vel_types
+from Objects.Data.WavePlaceholder import OWT, get_down_up_vel_types
 
 
 def eq_to_solve(p, vd, vu, h, x_2):

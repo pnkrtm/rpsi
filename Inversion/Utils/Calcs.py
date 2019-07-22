@@ -30,6 +30,9 @@ def rmse_per_column(matr_obs: np.ndarray, matr_mod: np.ndarray, trace_weights: n
         # obs = observed[ind]
         # mod = modeled[ind]
 
+        obs *= 1
+        mod *= 1
+
         diff_func = lambda x, y: np.sqrt(np.mean((x - y)**2))
         # diff_func = lambda x, y: np.mean((x - y) ** 2)
         # diff_func = lambda x, y: np.mean(abs((x - y) / x))

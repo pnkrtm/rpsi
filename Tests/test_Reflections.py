@@ -5,7 +5,7 @@ from Objects.Models.Models import SeismicModel1D
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, pdownpdown, puppup, svdownsvup, svdownsvdown, svupsvup
 from ForwardModeling.Seismic.Dynamic.Reflection import zoeppritz_element
 from Objects.Seismic.Observation import Observation, Source, Receiver
-from Objects.Data.RDPair import OWT
+from Objects.Data.WavePlaceholder import OWT
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
 
 

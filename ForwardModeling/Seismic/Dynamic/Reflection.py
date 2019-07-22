@@ -3,7 +3,7 @@
 """
 from collections import namedtuple
 from Objects.Seismic.Rays import BoundaryType
-from Objects.Data.RDPair import OWT
+from Objects.Data.WavePlaceholder import OWT
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup
 from utils.vectorizing import vectorize
 

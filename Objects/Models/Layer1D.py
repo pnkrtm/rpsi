@@ -26,6 +26,16 @@ class Layer1D:
         else:
             return self.rp_attribute[item]
 
+    def __setitem__(self, key, value):
+        if key.lower() == 'h':
+            self.h = value
+
+        elif key.lower() in ('vp', 'vs', 'rho'):
+            self.seism_attribute[key] = value
+
+        else:
+            self.rp_attribute[key] = value
+
     @property
     def is_optimization(self):
         if self.opt == LayerOPT.NO:

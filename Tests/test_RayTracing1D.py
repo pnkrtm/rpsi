@@ -4,7 +4,7 @@ import time
 
 from Objects.Models.Models import SeismicModel1D
 from Objects.Seismic.Observation import Observation, Source, Receiver
-from Objects.Data.RDPair import OWT
+from Objects.Data.WavePlaceholder import OWT
 from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
 from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections
 from Visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D
