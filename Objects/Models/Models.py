@@ -105,8 +105,10 @@ class SeismicModel1D:
 
         if self.scale is not None:
             if self.scale == 'minmax':
+                self.scale = None
                 mins = self.get_optimization_option("min", vectorize=True)
                 maxes = self.get_optimization_option("max", vectorize=True)
+                self.scale = "minmax"
 
                 res = (res - mins) / (maxes - mins)
 
@@ -124,8 +126,10 @@ class SeismicModel1D:
     def set_optimization_option(self, values, final=False):
         if self.scale is not None:
             if self.scale == 'minmax':
+                self.scale = None
                 mins = self.get_optimization_option("min", vectorize=True)
                 maxes = self.get_optimization_option("max", vectorize=True)
+                self.scale = "minmax"
 
                 values = values * (maxes - mins) + mins
 

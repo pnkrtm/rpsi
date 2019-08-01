@@ -562,8 +562,11 @@ def main():
     #         calc_rays_p=True, calc_rays_s=True,
     #         calc_reflection_p=True, calc_reflection_s=False
     #         )
-
-    forward_with_trace_calcing(model, x_rec, dt=3e-03, trace_len=1500, wavetypes=[OWT.PdPu],
+    wavetypes = [
+        OWT.PdPu,
+        OWT.PdSVu
+    ]
+    forward_with_trace_calcing(model, x_rec, dt=3e-03, trace_len=1500, wavetypes=wavetypes,
             display_stat=True, visualize_res=False,
                                visualize_seismograms=True
             )

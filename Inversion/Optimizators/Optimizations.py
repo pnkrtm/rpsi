@@ -1,6 +1,8 @@
 import numpy as np
 import random
-from scipy.optimize import fmin_l_bfgs_b, differential_evolution, dual_annealing, newton, fmin_cg, fmin_bfgs, fmin
+from scipy.optimize import fmin_l_bfgs_b, differential_evolution, dual_annealing, newton, fmin_cg, fmin_bfgs, fmin, \
+    minimize
+
 
 from Inversion.Optimizators._differentialevolution import differential_evolution as differential_evolution_parallel
 
@@ -96,6 +98,7 @@ class NelderMeadOptimization:
 
         return xopt
 
+
 class ConjugateGradient:
     def __init__(self, gtol=1e-05, norm=np.inf, epsilon=1.4901161193847656e-08, maxiter=None, full_output=True, disp=False,
                  retall=False, helper=None):
@@ -131,6 +134,52 @@ class ConjugateGradient:
         """
 
         return xopt
+
+
+class TrustConstr:
+    def __init__(self, helper=None, hess=None, hessp=None, tol=None, constraints=(), opt_options=None):
+        self.opt_options = opt_options or {}
+        self.helper = helper
+        self.hess = hess
+        self.hessp = hessp
+        self.constraints = constraints
+        self.tol = tol
+
+    def optimize(self, func, x0, bounds, args=(), callback=None, **kwargs):
+        res = minimize(func, x0, args, method="trust-constr", hess=self.hess, hessp=self.hessp, constraints=self.constraints,
+                       tol=self.tol, bounds=bounds,
+                       callback=callback, options=self.opt_options)
+
+        return res.x
+
+# TODO fix this minimizer!
+class TrustKrylov:
+    def __init__(self, jac=None, hess=None, hessp=None, tol=None, options={'inexact': True},
+                 helper=None):
+        self.jac = jac
+        self.hess = hess
+        self.hessp = hessp
+        self.tol = tol
+        self.options = options
+        self.helper = helper
+
+    def optimize(self, func, x0, args=(), fprime=None, callback=None,**kwargs):
+        res = minimize(func, x0, args, 'trust-krylov',
+                                                                self.jac, self.hess, self.hessp, self.tol,
+                                                                self.options, callback=callback)
+
+        """
+        warnflag : int
+            Integer value with warning status, only returned if full_output is True.
+
+            0 : Success.
+            1 : The maximum number of iterations was exceeded.
+            2 : Gradient and/or function calls were not changing. May indicate
+            that precision was lost, i.e., the routine did not converge.
+
+        """
+
+        return res.x
 
 
 class DifferentialEvolution(BaseOptimization):

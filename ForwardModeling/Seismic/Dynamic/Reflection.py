@@ -4,7 +4,7 @@
 from collections import namedtuple
 from Objects.Seismic.Rays import BoundaryType
 from Objects.Data.WavePlaceholder import OWT
-from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup, pdownsvup
 from utils.vectorizing import vectorize
 
 import numpy as np
@@ -435,6 +435,10 @@ def calculate_reflections_vectorized(model, rays, element):
 
     elif element == OWT.SVdSVu:
         reflection_amplitudes = svdownsvup(vp1_arr, vs1_arr, rho1_arr,
+                                              vp2_arr, vs2_arr, rho2_arr, angles_all)
+
+    elif element == OWT.PdSVu:
+        reflection_amplitudes = pdownsvup(vp1_arr, vs1_arr, rho1_arr,
                                               vp2_arr, vs2_arr, rho2_arr, angles_all)
 
     else:

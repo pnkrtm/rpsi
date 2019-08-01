@@ -100,6 +100,14 @@ def inverse(optimizers, error, placeholders, forward_params, logpath=None, scale
 
     param_bounds = np.column_stack((min_bound.T, max_bound.T))
 
+    if isinstance(error, float):
+        error = [error] * len(optimizers)
+    elif isinstance(error, (list, np.ndarray, tuple)):
+        if len(error) != len(optimizers):
+            raise ValueError("Bad errors list length!")
+    else:
+        raise TypeError("Unknown error type!")
+
     helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error, logpath=logpath)
     helper.in_use = True
 
@@ -125,8 +133,9 @@ def inverse(optimizers, error, placeholders, forward_params, logpath=None, scale
 
         except ErrorAchievedException as e:
             result_model = e.model
+            optimizator_start_params["x0"] = result_model
+            print(f'{str(datetime.datetime.now())} Random error achieved!! =)))')
             helper.log_message(f'{str(datetime.datetime.now())} Random error achieved!! =)))')
-            break
 
 
     helper.log_message(f'{str(datetime.datetime.now())} Optimization finished!')

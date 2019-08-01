@@ -6,3 +6,8 @@ class BadCalcBaseException(Exception):
 class BadRPModelException(BadCalcBaseException):
     def __init__(self):
         super().__init__()
+
+
+class ParamOutOfBoundException(BadCalcBaseException):
+    def __init__(self):
+        super().__init__()

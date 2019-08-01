@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from Objects.Attributes.AbstractAttribute import AbstarctAttribute
+from Exceptions.bad_calcs import ParamOutOfBoundException
 
 
 class RockPhysicsAttribute(AbstarctAttribute):
@@ -11,7 +12,11 @@ class RockPhysicsAttribute(AbstarctAttribute):
         return self.vals_dict[item]["value"]
 
     def __setitem__(self, key, value):
-        self.vals_dict[key]["value"] = value
+        if self.vals_dict[key]["min"] <= value <= self.vals_dict[key]["max"]:
+            self.vals_dict[key]["value"] = value
+
+        else:
+            raise ParamOutOfBoundException()
 
     def get_params_to_optimize(self):
         return {key: value["value"] for key, value in self.vals_dict.items() if value["optimize"]}

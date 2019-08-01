@@ -76,7 +76,7 @@ def process_3_layer():
         )
     ]
 
-    inversed_model = inverse(optimizers, error=0.01, placeholders=placeholders, forward_params=forward_params)
+    inversed_model = inverse(optimizers, error=0.01, placeholders=placeholders, forward_params=forward_params, scale="minmax")
     err = func_to_optimize([experiment_val_Km1], placeholders, forward_params, helper=None, show_tol=False)
     print(1)
 

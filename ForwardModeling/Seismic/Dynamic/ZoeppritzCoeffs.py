@@ -170,6 +170,38 @@ def puppup(vp1, vs1, rho1, vp2, vs2, rho2, theta2=0):
     return rpp
 
 
+def pdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
+    theta1 = np.radians(theta1).astype(complex)
+
+    multiple_angles = False
+    if hasattr(theta1, 'shape') and len(theta1.shape) > 1 and theta1.shape[1] > 1:
+        multiple_angles = True
+
+    if multiple_angles:
+        theta1 = theta1.T
+
+    p = np.sin(theta1) / vp1  # Ray parameter
+    theta2 = np.arcsin(p * vp2)
+    phi1 = np.arcsin(p * vs1)  # Reflected S
+    phi2 = np.arcsin(p * vs2)  # Transmitted S
+
+    a = rho2 * (1 - 2 * np.sin(phi2)**2.) - rho1 * (1 - 2 * np.sin(phi1)**2.)
+    b = rho2 * (1 - 2 * np.sin(phi2)**2.) + 2 * rho1 * np.sin(phi1)**2.
+    c = rho1 * (1 - 2 * np.sin(phi1)**2.) + 2 * rho2 * np.sin(phi2)**2.
+    d = 2 * (rho2 * vs2**2 - rho1 * vs1**2)
+
+    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
+    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
+    G = a - d * np.cos(theta1)/vp1 * np.cos(phi2)/vs2
+    H = a - d * np.cos(theta2)/vp2 * np.cos(phi1)/vs1
+
+    D = E*F + G*H*p**2
+
+    res = -2 * (np.cos(theta1) / vp1) * (a*b + c*d*(np.cos(theta2) / vp2)*(np.cos(phi2) / vs2))*p*vp1*(1/(vs1*D))
+
+    return res
+
+
 def svdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, phi1=0):
     """
     Exact Zoeppritz from expression.

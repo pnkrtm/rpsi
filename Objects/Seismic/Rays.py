@@ -28,7 +28,7 @@ class Ray():
 
     def add_boundary_dynamic(self, value, bound_type: BoundaryType, bound_index: int=-1, bound_depth: float=-1):
         if abs(value) > 1:
-            value = 9
+            value = 1 + np.exp(-abs(value))
 
         self.boundaries_dynamics.append(
             {
