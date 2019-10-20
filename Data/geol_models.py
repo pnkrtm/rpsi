@@ -1,6 +1,7 @@
 from collections import OrderedDict
 
-def get_model_3layered_fluid():
+
+def get_model_3layered_fluid_rp_dicts():
     layer_1_dict = OrderedDict({
                   "name": "xu-payne",
                   "components": {

@@ -78,12 +78,13 @@ class Layer1D:
         self.seism_attribute.rho = rho
 
     def calculate_rockphysics(self):
-        vp, vs, rho = calculate_rockphysics_model(self.rp_attribute)
+        if self.rp_attribute is not None:
+            vp, vs, rho = calculate_rockphysics_model(self.rp_attribute)
 
-        if self.seism_attribute is None:
-            self.seism_attribute = SeismicAttribute(vp, vs, rho)
-        else:
-            self.set_seismic(vp, vs, rho)
+            if self.seism_attribute is None:
+                self.seism_attribute = SeismicAttribute(vp, vs, rho)
+            else:
+                self.set_seismic(vp, vs, rho)
 
     @property
     def vp(self):
