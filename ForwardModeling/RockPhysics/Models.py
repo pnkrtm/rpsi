@@ -6,7 +6,8 @@ from Exceptions.bad_calcs import BadRPModelException
 from ForwardModeling.RockPhysics import Tools
 from ForwardModeling.RockPhysics.Mediums import Gassmann
 from ForwardModeling.RockPhysics.Mediums.DEMSlb import DEM
-from ForwardModeling.RockPhysics.Mediums.VoigtReussHill import voigt
+from ForwardModeling.RockPhysics.Mediums.VoigtReussHill import voigt, reuss
+from ForwardModeling.RockPhysics.Mediums.BGTL import bgtl
 
 # TODO добавить векторизацию!
 def xu_payne_model(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=0.1):
@@ -78,6 +79,46 @@ def xu_payne_model(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None,
 
     return [Tools.vp_from_KGRho(K_res, G_res, rho_res)*1000, Tools.vs_from_GRho(G_res, rho_res)*1000, rho_res*1000]
 
+
+def unconsolidated_model(Ksi, Gsi, rhosi, Ksh, Gsh, rhosh, Kincl, Gincl, rhoincl, Kfl, rhofl, Vsi, Vsh, Vincl, phi):
+    """
+    Модель для расчета донных песчаных осадков, заполненных газом
+    :param Ksi: Модуль сжатия песка
+    :param Gsi: Модуль сдвига песка
+    :param rhosi: Плотность песка
+    :param Ksh: Модуль сжатия глины
+    :param Gsh: Модуль сдвига глины
+    :param rhosh: Плотность глины
+    :param Kincl: Модуль сжатия инклюзий
+    :param Gincl: Модуль сдвига инклюзий
+    :param rhoincl: Плотность инклюзий
+    :param Kfl: Модуль сжатия флюида
+    :param rhofl: Плотность флюида
+    :param Vsi: Количество глины
+    :param Vsh: Количество глины
+    :param Vincl: Количество инклюзий
+    :param phi: Пористость
+    :return:
+    """
+    if not sum((Vsi, Vsh, Vincl, phi)) == 1:
+        raise ValueError("All volumes must be 100% together!")
+
+    Ksish = reuss((Ksi, Ksh), (Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh)))
+    Gsish = reuss((Gsi, Gsh), (Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh)))
+    Vsish = Vsi + Vsh
+
+    Km = reuss((Ksish, Kincl), (Vsish/(Vsish + Vincl), Vincl/(Vsish + Vincl)))
+    Gm = reuss((Gsish, Gincl), (Vsish / (Vsish + Vincl), Vincl / (Vsish + Vincl)))
+    Vm = Vsish + Vincl
+
+    Kfinal, Gfinal = bgtl(Km, Gm, Kfl, phi)
+
+    rho_final = rhosh * Vsh + rhosi * Vsi + rhoincl * Vincl + rhofl * phi
+    # проверить размерности!!!
+    return [Tools.vp_from_KGRho(Kfinal, Gfinal, rho_final) * 1000, Tools.vs_from_GRho(Kfinal, Gfinal, rho_final) * 1000,
+            rho_final * 1000]
+
+
 def model_calculation_mp_helper(args):
     return xu_payne_model(*args)
 
@@ -117,9 +158,13 @@ def model_calculation(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho
     return vp, vs, rho
 
 
+# TODO сделать унверсальный конструткор рокфизических сред!!
 def calculate_rockphysics_model(rp_attribute):
     if rp_attribute.model_name == 'xu-payne':
         return xu_payne_model(**rp_attribute.get_input_params())
+
+    elif rp_attribute.model_name == 'unconsolidated':
+        return unconsolidated_model(**rp_attribute.get_input_params())
 
     else:
         raise ValueError("Unknown model name =(")
