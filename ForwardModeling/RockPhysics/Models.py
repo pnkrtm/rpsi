@@ -103,19 +103,19 @@ def unconsolidated_model(Ksi, Gsi, rhosi, Ksh, Gsh, rhosh, Kincl, Gincl, rhoincl
     if not sum((Vsi, Vsh, Vincl, phi)) == 1:
         raise ValueError("All volumes must be 100% together!")
 
-    Ksish = reuss((Ksi, Ksh), (Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh)))
-    Gsish = reuss((Gsi, Gsh), (Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh)))
+    Ksish = reuss(np.array((Ksi, Ksh)), np.array((Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh))))
+    Gsish = reuss(np.array((Gsi, Gsh)), np.array((Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh))))
     Vsish = Vsi + Vsh
 
-    Km = reuss((Ksish, Kincl), (Vsish/(Vsish + Vincl), Vincl/(Vsish + Vincl)))
-    Gm = reuss((Gsish, Gincl), (Vsish / (Vsish + Vincl), Vincl / (Vsish + Vincl)))
+    Km = reuss(np.array((Ksish, Kincl)), np.array((Vsish/(Vsish + Vincl), Vincl/(Vsish + Vincl))))
+    Gm = reuss(np.array((Gsish, Gincl)), np.array((Vsish / (Vsish + Vincl), Vincl / (Vsish + Vincl))))
     Vm = Vsish + Vincl
 
     Kfinal, Gfinal = bgtl(Km, Gm, Kfl, phi)
 
     rho_final = rhosh * Vsh + rhosi * Vsi + rhoincl * Vincl + rhofl * phi
     # проверить размерности!!!
-    return [Tools.vp_from_KGRho(Kfinal, Gfinal, rho_final) * 1000, Tools.vs_from_GRho(Kfinal, Gfinal, rho_final) * 1000,
+    return [Tools.vp_from_KGRho(Kfinal, Gfinal, rho_final) * 1000, Tools.vs_from_GRho(Gfinal, rho_final) * 1000,
             rho_final * 1000]
 
 
