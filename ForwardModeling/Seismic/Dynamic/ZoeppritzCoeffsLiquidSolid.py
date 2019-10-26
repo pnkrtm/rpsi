@@ -26,7 +26,7 @@ def pdownpup(vp1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
 
     a = vp1*vs2*rho1*rho2
     b = -vp2*vs2*rho2*rho2 + 4*p*p*vp2*vs2**3*rho2**2-4*p*p*np.cos(theta2)*np.cos(phi2)*vs2**4*rho2*rho2 - 4*p**4*vp2*vs2*5*rho2**2
-    c = 2*p*p*vp1*vs2**3*rho1*rho2
+    # c = 2*p*p*vp1*vs2**3*rho1*rho2
     # d = 2*p*np.cos(theta2)*vs2*vs2*rho2
     # E = b*np.cos(theta1) - a*np.cos(theta2)
     # F = p*vp2*(c / (rho1*vp1) - rho2*vs2)

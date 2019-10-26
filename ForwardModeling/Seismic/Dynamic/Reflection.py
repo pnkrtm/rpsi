@@ -5,6 +5,7 @@ from collections import namedtuple
 from Objects.Seismic.Rays import BoundaryType
 from Objects.Data.WavePlaceholder import OWT
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpup, svdownsvup, pdownsvup
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffsLiquidSolid import pdownpup as pdpu_sea
 from utils.vectorizing import vectorize
 
 import numpy as np
@@ -401,8 +402,6 @@ def calculate_reflections_vectorized(model, rays, element):
             angles = [r.get_reflection_angle() for r in depth_rays]
             offsets = [r.x_finish for r in depth_rays]
 
-            angles = np.rad2deg(angles)
-
             angles_all.append(angles)
             offsets_all.append(offsets)
 
@@ -441,8 +440,20 @@ def calculate_reflections_vectorized(model, rays, element):
         reflection_amplitudes = pdownsvup(vp1_arr, vs1_arr, rho1_arr,
                                               vp2_arr, vs2_arr, rho2_arr, angles_all)
 
+    elif element == OWT.PdPu_water:
+        reflection_amplitudes_bottom = pdpu_sea(vp1_arr[0], rho1_arr[0],
+                                         vp2_arr[0], vs2_arr[0], rho2_arr[0], angles_all[0])
+
+        reflection_amplitudes_undbottom = pdownpup(vp1_arr[1:], vs1_arr[1:], rho1_arr[1:],
+                                         vp2_arr[1:], vs2_arr[1:], rho2_arr[1:], angles_all[1:])
+
+        reflection_amplitudes = np.concatenate((
+            [reflection_amplitudes_bottom],
+            reflection_amplitudes_undbottom
+        ))
+
     else:
-        raise NotImplementedError("Another reflection types are not implemented yet!")
+        raise NotImplementedError(f"Reflection type {element} is not implemented yet!")
 
     return reflection_amplitudes
 

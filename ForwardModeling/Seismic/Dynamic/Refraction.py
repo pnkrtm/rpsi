@@ -1,5 +1,6 @@
 import numpy as np
 from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpdown, puppup, svdownsvdown, svupsvup
+from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffsLiquidSolid import pdownpdown as pdpd_sea, puppup as pupu_sea
 from Objects.Seismic.Rays import BoundaryType
 from Objects.Data.WavePlaceholder import OWT
 
@@ -41,6 +42,19 @@ def calculate_refraction_for_ray(model, ray, owt):
     elif owt == owt.SVdSVu:
         down_coeffs = svdownsvdown(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, falling_angles)
         up_coeffs = svupsvup(vp1_arr, vs1_arr, rho1_arr, vp2_arr, vs2_arr, rho2_arr, rising_angles)
+
+    elif owt == owt.PdPu_water:
+        down_coeffs_bottom = pdpd_sea(vp1_arr[0], rho1_arr[0], vp2_arr[0], vs2_arr[0], rho2_arr[0], falling_angles[0])
+        up_coeffs_bottom = pupu_sea(vp1_arr[0], rho1_arr[0], vp2_arr[0], vs2_arr[0], rho2_arr[0], falling_angles[0])
+
+        down_coeffs_underbottom = pdownpdown(vp1_arr[1:], vs1_arr[1:], rho1_arr[1:], vp2_arr[1:], vs2_arr[1:], rho2_arr[1:], falling_angles[1:])
+        up_coeffs_underbottom = puppup(vp1_arr[1:], vs1_arr[1:], rho1_arr[1:], vp2_arr[1:], vs2_arr[1:], rho2_arr[1:], rising_angles[1:])
+
+        down_coeffs = np.concatenate(([down_coeffs_bottom], down_coeffs_underbottom))
+        up_coeffs = np.concatenate(([up_coeffs_bottom], up_coeffs_underbottom))
+
+    else:
+        raise NotImplementedError(f"Refraction type {owt} is not implemented yet!")
 
     return down_coeffs, up_coeffs
 

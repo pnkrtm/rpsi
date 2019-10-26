@@ -109,6 +109,10 @@ class Ray1D(Ray):
         return angle
 
     def get_reflection_angle(self):
+        """
+
+        :return: angle in degrees!!
+        """
         bound_index = len(self.x_points) // 2 + 1
 
         return self.get_boundary_angle(bound_index)

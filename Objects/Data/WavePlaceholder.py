@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, auto
 import numpy as np
 
 
@@ -6,26 +6,34 @@ class OWT(Enum):
     """
     Observation Wave Types
     """
-    PdPu = 0
-    PdSVu = 1
-    SVdPu = 2
-    SVdSVu = 3
-    SHdSHu = 4
+    PdPu = auto()
+    PdSVu = auto()
+    SVdPu = auto()
+    SVdSVu = auto()
+    SHdSHu = auto()
+
+    PdPu_water = auto()
 
 
 def get_down_up_vel_types(odt):
     res = {}
-    if odt in (OWT.PdPu, OWT.PdSVu):
+    if odt in (OWT.PdPu, OWT.PdSVu, OWT.PdPu_water):
         res['down'] = 'vp'
 
-    else:
+    elif odt in (OWT.SVdPu, OWT.SVdSVu, OWT.SHdSHu):
         res['down'] = 'vs'
 
-    if odt in (OWT.PdPu, OWT.SVdPu):
+    else:
+        raise ValueError(f"Unknown rays type {odt} for down velovity")
+
+    if odt in (OWT.PdPu, OWT.SVdPu, OWT.PdPu_water):
         res['up'] = 'vp'
 
-    else:
+    elif odt in (OWT.PdSVu, OWT.SVdSVu, OWT.SHdSHu):
         res['up'] = 'vs'
+
+    else:
+        raise ValueError(f"Unknown rays type {odt} for up velovity")
 
     return res
 
