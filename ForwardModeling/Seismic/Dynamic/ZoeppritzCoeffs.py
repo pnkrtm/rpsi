@@ -106,12 +106,12 @@ def pdownpdown(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
 
     D = E * F + G * H * p ** 2
 
-    rpp = (2 * rho1 * (np.cos(theta1) / vp1) * F * vp1) / (vp2 * D)
+    tpp = (2 * rho1 * (np.cos(theta1) / vp1) * F * vp1) / (vp2 * D)
 
     if multiple_angles:
-        rpp = rpp.T
+        tpp = tpp.T
 
-    return rpp
+    return tpp
 
 
 def puppup(vp1, vs1, rho1, vp2, vs2, rho2, theta2=0):
@@ -162,12 +162,12 @@ def puppup(vp1, vs1, rho1, vp2, vs2, rho2, theta2=0):
 
     D = E * F + G * H * p ** 2
 
-    rpp = (2 * rho2 * (np.cos(theta2) / vp2) * F * vp2) / (vp1* D)
+    tpp = (2 * rho2 * (np.cos(theta2) / vp2) * F * vp2) / (vp1* D)
 
     if multiple_angles:
-        rpp = rpp.T
+        tpp = tpp.T
 
-    return rpp
+    return tpp
 
 
 def pdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
