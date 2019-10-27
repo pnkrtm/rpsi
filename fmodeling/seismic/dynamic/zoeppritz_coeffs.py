@@ -1,9 +1,6 @@
 import numpy as np
 
-from fmodeling.seismic.dynamic import register_boundary
 
-
-@register_boundary
 def pdownpup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
     """
     Exact Zoeppritz from expression.
@@ -61,7 +58,6 @@ def pdownpup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
     return rpp
 
 
-@register_boundary
 def pdownpdown(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
     """
     Exact Zoeppritz from expression.
@@ -118,7 +114,6 @@ def pdownpdown(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
     return tpp
 
 
-@register_boundary
 def puppup(vp1, vs1, rho1, vp2, vs2, rho2, theta2=0):
     """
     Exact Zoeppritz from expression.
@@ -175,7 +170,6 @@ def puppup(vp1, vs1, rho1, vp2, vs2, rho2, theta2=0):
     return tpp
 
 
-@register_boundary
 def pdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
     theta1 = np.radians(theta1).astype(complex)
 
@@ -208,7 +202,6 @@ def pdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
     return res
 
 
-@register_boundary
 def svdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, phi1=0):
     """
     Exact Zoeppritz from expression.
@@ -274,7 +267,6 @@ def svdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, phi1=0):
     return rsvsv
 
 
-@register_boundary
 def svdownsvdown(vp1, vs1, rho1, vp2, vs2, rho2, phi1=0):
     """
     Exact Zoeppritz from expression.
@@ -334,7 +326,6 @@ def svdownsvdown(vp1, vs1, rho1, vp2, vs2, rho2, phi1=0):
     return rsvsv
 
 
-@register_boundary
 def svupsvup(vp1, vs1, rho1, vp2, vs2, rho2, phi2=0):
     """
     Exact Zoeppritz from expression.

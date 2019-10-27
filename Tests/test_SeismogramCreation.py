@@ -8,8 +8,8 @@ from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
 from fmodeling.ForwardProcessing1D import create_seismogram
 from fmodeling.seismic.RayTracing.Forward1DTracing import calculate_rays
-from fmodeling.seismic.dynamic.Reflection import calculate_reflections
-from fmodeling.seismic.dynamic.Refraction import calculate_refractions, calculate_refraction_vectorized
+from fmodeling.seismic.dynamic.reflection import calculate_reflections
+from fmodeling.seismic.dynamic.refraction import calculate_refractions, calculate_refraction_vectorized
 from Visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D, visualize_seismogram
 
 

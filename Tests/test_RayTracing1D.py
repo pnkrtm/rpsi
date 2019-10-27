@@ -6,7 +6,7 @@ from objects.Models.Models import SeismicModel1D
 from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
 from fmodeling.seismic.RayTracing.Forward1DTracing import calculate_rays
-from fmodeling.seismic.dynamic.Reflection import calculate_reflections
+from fmodeling.seismic.dynamic.reflection import calculate_reflections
 from Visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D
 
 

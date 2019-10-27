@@ -8,7 +8,10 @@ class ClassesKeeper:
             setattr(self, K.__name__, K)
 
     def __getitem__(self, item):  # added for backward compatibility
-        return self.__dict__[item]
+        if item in self.__dict__.keys():
+            return self.__dict__[item]
+        else:
+            raise NotImplementedError(f"Class {item} is not implemented :(")
 
     def keys(self):
         return self.__dict__.keys()

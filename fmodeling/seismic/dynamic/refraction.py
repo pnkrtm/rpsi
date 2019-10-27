@@ -1,6 +1,6 @@
 import numpy as np
-from fmodeling.seismic.dynamic.ZoeppritzCoeffs import pdownpdown, puppup, svdownsvdown, svupsvup
-from fmodeling.seismic.dynamic.ZoeppritzCoeffsLiquidSolid import pdownpdown_water as pdpd_sea, puppup_water as pupu_sea
+from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpdown, puppup, svdownsvdown, svupsvup
+from fmodeling.seismic.dynamic.zoeppritz_coeffs_water import pdownpdown_water as pdpd_sea, puppup_water as pupu_sea
 from objects.seismic.rays import BoundaryType
 from objects.seismic.waves import OWT
 

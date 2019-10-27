@@ -1,7 +1,7 @@
 import numpy as np
 
 from objects.Models.Models import SeismicModel1D
-from fmodeling.seismic.dynamic.Reflection import calculate_reflection_for_depth
+from fmodeling.seismic.dynamic.reflection import calculate_reflection_for_depth
 from objects.seismic.observation import Observation, Source, Receiver
 from fmodeling.seismic.RayTracing.Forward1DTracing import calculate_rays
 

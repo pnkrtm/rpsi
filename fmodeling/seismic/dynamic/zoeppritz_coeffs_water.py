@@ -1,5 +1,4 @@
 import numpy as np
-from fmodeling.seismic.dynamic import register_boundary
 
 """
 Expressions for reflection/refraction coefficients in case of liquid-solid boundary
@@ -11,8 +10,7 @@ Guangli Zhang, Chongtao Hao, Chen Yao
 """
 
 
-@register_boundary
-def pdownpup_water(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
+def pdownpup_water(vp1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
     theta1 = np.radians(theta1).astype(complex) # p-wave angle
 
     multiple_angles = False
@@ -41,8 +39,7 @@ def pdownpup_water(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
     return rpp
 
 
-@register_boundary
-def pdownpdown_water(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
+def pdownpdown_water(vp1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
     theta1 = np.radians(theta1).astype(complex)  # p-wave angle
 
     multiple_angles = False
@@ -72,8 +69,7 @@ def pdownpdown_water(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
     return tpp
 
 
-@register_boundary
-def puppup_water(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
+def puppup_water(vp1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0):
     theta1 = np.radians(theta1).astype(complex)  # p-wave angle
 
     multiple_angles = False
