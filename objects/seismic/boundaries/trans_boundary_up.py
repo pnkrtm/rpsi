@@ -27,7 +27,8 @@ class PUpPUpTransmission(TransmissionUp):
     def wave_type_2(self):
         return WT.P
 
-    def calculate_coeff(self, vp1: Union[float, np.ndarray], vs1: Union[float, np.ndarray], rho1: Union[float, np.ndarray],
+    @classmethod
+    def calculate_coeff(cls, vp1: Union[float, np.ndarray], vs1: Union[float, np.ndarray], rho1: Union[float, np.ndarray],
                             vp2: Union[float, np.ndarray], vs2: Union[float, np.ndarray], rho2: Union[float, np.ndarray],
                         theta1: Union[float, np.ndarray] = 0):
         return puppup(vp1, vs1, rho1, vp2, vs2, rho2, theta1)
@@ -42,7 +43,8 @@ class PUpPUpWaterTransmission(TransmissionUp):
     def wave_type_2(self):
         return WT.P
 
-    def calculate_coeff(self, vp1: Union[float, np.ndarray], vs1: Union[float, np.ndarray],
+    @classmethod
+    def calculate_coeff(cls, vp1: Union[float, np.ndarray], vs1: Union[float, np.ndarray],
                         rho1: Union[float, np.ndarray],
                         vp2: Union[float, np.ndarray], vs2: Union[float, np.ndarray], rho2: Union[float, np.ndarray],
                         theta1: Union[float, np.ndarray] = 0):
