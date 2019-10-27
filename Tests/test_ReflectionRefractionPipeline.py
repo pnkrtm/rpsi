@@ -1,9 +1,9 @@
 import numpy as np
 
-from Objects.Models.Models import SeismicModel1D
-from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflection_for_depth
-from Objects.Seismic.Observation import Observation, Source, Receiver
-from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
+from objects.Models.Models import SeismicModel1D
+from fmodeling.seismic.dynamic.Reflection import calculate_reflection_for_depth
+from objects.seismic.observation import Observation, Source, Receiver
+from fmodeling.seismic.RayTracing.Forward1DTracing import calculate_rays
 
 
 def refraction_occuracy():

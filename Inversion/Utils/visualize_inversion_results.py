@@ -1,5 +1,5 @@
 from Inversion.DataIO import read_input_file, write_output_file, read_inversion_result_file, get_results_files_list
-from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
+from fmodeling.ForwardProcessing1D import forward, forward_with_trace_calcing
 from matplotlib import pyplot as plt
 from matplotlib import mlab, rc
 from Visualization.Seismic import visualize_model1D, visualize_model_wellogs, visualize_rays_model_1D, visualize_time_curves, \

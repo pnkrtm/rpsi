@@ -4,7 +4,7 @@ import numpy as np
 
 from Exceptions.bad_calcs import BadCalcBaseException
 from Exceptions.exceptions import ErrorAchievedException
-from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
+from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
 from Inversion.Utils.Tools import OptimizeHelper
 from Inversion.Utils.Calcs import get_matrices_diff
 

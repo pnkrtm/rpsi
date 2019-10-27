@@ -1,12 +1,12 @@
 import time
 import numpy as np
 
-from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from ForwardModeling.RockPhysics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
-from Objects.Data.WavePlaceholder import OWT
-from Objects.Models.Models import SeismicModel1D
-from Objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
-from Objects.Models.Layer1D import Layer1D, LayerOPT
+from fmodeling.ForwardProcessing1D import forward, forward_with_trace_calcing
+from fmodeling.rock_physics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
+from objects.seismic.waves import OWT
+from objects.Models.Models import SeismicModel1D
+from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
+from objects.Models.Layer1D import Layer1D, LayerOPT
 from collections import OrderedDict
 
 

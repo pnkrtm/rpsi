@@ -4,7 +4,7 @@ import gc
 from numpy import linalg
 import time
 
-from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
+from fmodeling.ForwardProcessing1D import forward, forward_with_trace_calcing
 from Inversion.Optimizators.Optimizations import DifferentialEvolution_parallel
 from Inversion.Utils.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException

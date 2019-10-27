@@ -2,14 +2,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-from Objects.Models.Models import SeismicModel1D
-from Objects.Seismic.Seismogram import Seismogram
-from Objects.Seismic.Observation import Observation, Source, Receiver
-from Objects.Data.WavePlaceholder import OWT
-from ForwardModeling.ForwardProcessing1D import create_seismogram
-from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
-from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections
-from ForwardModeling.Seismic.Dynamic.Refraction import calculate_refractions, calculate_refraction_vectorized
+from objects.Models.Models import SeismicModel1D
+from objects.seismic.seismogram import Seismogram
+from objects.seismic.observation import Observation, Source, Receiver
+from objects.seismic.waves import OWT
+from fmodeling.ForwardProcessing1D import create_seismogram
+from fmodeling.seismic.RayTracing.Forward1DTracing import calculate_rays
+from fmodeling.seismic.dynamic.Reflection import calculate_reflections
+from fmodeling.seismic.dynamic.Refraction import calculate_refractions, calculate_refraction_vectorized
 from Visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D, visualize_seismogram
 
 

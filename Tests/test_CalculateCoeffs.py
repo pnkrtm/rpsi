@@ -1,5 +1,5 @@
-from ForwardModeling.Seismic.Dynamic.Reflection import zoeppritz_element
-from ForwardModeling.Seismic.Dynamic.ZoeppritzCoeffs import pdownpdown, puppup, pdownpup
+from fmodeling.seismic.dynamic.Reflection import zoeppritz_element
+from fmodeling.seismic.dynamic.ZoeppritzCoeffs import pdownpdown, puppup, pdownpup
 
 def main():
     vp = [2006.75, 3227.5, 4495.611]

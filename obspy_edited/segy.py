@@ -1071,7 +1071,7 @@ def _internal_iread_su(file, endian=None, unpack_headers=False,
 
 class SUFile(object):
     """
-    Convenience class that internally handles Seismic Unix data files. It
+    Convenience class that internally handles seismic Unix data files. It
     currently can only read IEEE 4 byte float encoded SU data files.
     """
     def __init__(self, file=None, endian=None, unpack_headers=False,
@@ -1204,7 +1204,7 @@ class SUFile(object):
 
 def _read_su(file, endian=None, unpack_headers=False, headonly=False):
     """
-    Reads a Seismic Unix (SU) file and returns a SUFile object.
+    Reads a seismic Unix (SU) file and returns a SUFile object.
     :param file: Open file like object or a string which will be assumed to be
         a filename.
     :type endian: str
@@ -1259,7 +1259,7 @@ def _internal_read_su(file, endian=None, unpack_headers=False, headonly=False):
 
 def autodetect_endian_and_sanity_check_su(file):
     """
-    Takes an open file and tries to determine the endianness of a Seismic
+    Takes an open file and tries to determine the endianness of a seismic
     Unix data file by doing some sanity checks with the unpacked header values.
     Returns False if the sanity checks failed and the endianness otherwise.
     It is assumed that the data is written as 32bit IEEE floating points in

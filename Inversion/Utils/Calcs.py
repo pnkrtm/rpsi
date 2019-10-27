@@ -1,6 +1,6 @@
 import numpy as np
 
-from Objects.Seismic.Seismogram import Seismogram
+from objects.seismic.seismogram import Seismogram
 
 
 def rmse_per_column(matr_obs: np.ndarray, matr_mod: np.ndarray, trace_weights: np.ndarray=None):

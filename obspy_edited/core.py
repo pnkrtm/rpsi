@@ -436,16 +436,16 @@ def _write_segy(stream, filename, data_encoding=None, byteorder=None,
 
 def _is_su(filename):
     """
-    Checks whether or not the given file is a Seismic Unix (SU) file.
+    Checks whether or not the given file is a seismic Unix (SU) file.
 
     :type filename: str
-    :param filename: Seismic Unix file to be checked.
+    :param filename: seismic Unix file to be checked.
     :rtype: bool
-    :return: ``True`` if a Seismic Unix file.
+    :return: ``True`` if a seismic Unix file.
 
     .. note::
         This test is rather shaky because there is no reliable identifier in a
-        Seismic Unix file.
+        seismic Unix file.
     """
     with open(filename, 'rb') as f:
         stat = autodetect_endian_and_sanity_check_su(f)
@@ -458,7 +458,7 @@ def _is_su(filename):
 def _read_su(filename, headonly=False, byteorder=None,
              unpack_trace_headers=False, **kwargs):  # @UnusedVariable
     """
-    Reads a Seismic Unix (SU) file and returns an ObsPy Stream object.
+    Reads a seismic Unix (SU) file and returns an ObsPy Stream object.
 
     .. warning::
         This function should NOT be called directly, it registers via the
@@ -564,7 +564,7 @@ def _read_su(filename, headonly=False, byteorder=None,
 
 def _write_su(stream, filename, byteorder=None, **kwargs):  # @UnusedVariable
     """
-    Writes a Seismic Unix (SU) file from given ObsPy Stream object.
+    Writes a seismic Unix (SU) file from given ObsPy Stream object.
 
     .. warning::
         This function should NOT be called directly, it registers via the
@@ -598,7 +598,7 @@ def _write_su(stream, filename, byteorder=None, **kwargs):  # @UnusedVariable
         # Check the sample interval.
         if trace.stats.delta > MAX_INTERVAL_IN_SECONDS:
             msg = """
-            Seismic Unix supports a maximum interval of %s seconds in between
+            seismic Unix supports a maximum interval of %s seconds in between
             two samples (trace.stats.delta value).
             """.strip()
             msg = msg % MAX_INTERVAL_IN_SECONDS
