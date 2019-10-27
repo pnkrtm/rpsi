@@ -468,6 +468,6 @@ def calculate_reflections(model, rays, owt):
     i = 1
     for dr, da in zip(rays.values(), reflections_amplitudes):
         for ofr, ofa in zip(dr, da):
-            ofr.add_boundary_dynamic(ofa, BoundaryType.REFLECTION, i)
+            ofr.set_boundary_dynamic(ofa, BoundaryType.REFLECTION, i)
 
         i += 1

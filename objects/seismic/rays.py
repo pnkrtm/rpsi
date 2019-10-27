@@ -2,19 +2,13 @@ from enum import Enum
 
 import numpy as np
 from objects.seismic.waves import OWT
-from fmodeling.seismic.dynamic import boundary_types
+from collections import defaultdict
 
 
-class BoundaryType(Enum):
-    REFLECTION = 1
-    REFRACTION_DOWN = 2
-    REFRACTION_UP = 3
-
-
-class Ray():
+class Ray:
     def __init__(self):
         self.p = -1
-        self.boundaries_dynamics = []
+        self.boundaries = {}
 
     @property
     def x_start(self):
@@ -28,21 +22,22 @@ class Ray():
     def reflection_z(self):
         raise NotImplementedError
 
-    def add_boundary_dynamic(self, value, bound_type: BoundaryType, bound_index: int=-1, bound_depth: float=-1):
+    def create_boundaries(self, depths, indexes, types):
+        self.boundaries = {idx: {
+            "boundary_depth": dpth,
+            "boundary_type": t,
+            "coeff": -1
+        } for idx , dpth, t in zip(indexes, depths, types)}
+
+
+    def set_boundary_dynamic(self, index, value):
         if abs(value) > 1:
             value = 1 + np.exp(-abs(value))
 
-        self.boundaries_dynamics.append(
-            {
-                "boundary_index": bound_index,
-                "boundadry_depth": bound_depth,
-                "boundary_type": bound_type,
-                "value": value
-            }
-        )
+        self.boundaries[index]["coeff"] = value
 
     def calculate_dynamic_factor(self):
-        vals = [bd["value"] for bd in self.boundaries_dynamics]
+        vals = [b["coeff"] for b in self.boundaries]
 
         return np.prod(vals)
 
@@ -125,16 +120,7 @@ class Ray1D(Ray):
         return self.get_boundary_angle(bound_index)
 
     def get_boundary_type(self, bound_index):
-        refl_index = len(self.x_points) // 2 + 1
+        return self.boundaries[bound_index]["boundary_type"]
 
-        if bound_index == refl_index:
-            return self._dutype
-
-        elif bound_index > refl_index:
-            if self.dutype == OWT.PdPu_water and bound_index == len(self.x_points) + 1:
-
-
-            if self.dutype in (OWT.PdPu,)
-
-        else:
-            pass
+    def get_all_boundaries_types(self):
+        return [self.get_boundary_type(bi) for bi in self.boundaries.keys()]

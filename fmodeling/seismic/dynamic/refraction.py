@@ -124,7 +124,7 @@ def calculate_refraction_vectorized(model, rays, owt):
         raise ValueError(f"Refraction type {owt} is not implemented yet!")
 
     for dc, uc, ri_1, ri_2, bi in zip(down_coeffs, up_coeffs, rays_indexes_1, rays_indexes_2, boundary_indexes):
-        rays[int(ri_1)][int(ri_2)].add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, bi, depths[int(bi)])
+        rays[int(ri_1)][int(ri_2)].set_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, bi, depths[int(bi)])
 
 
 # TODO сделать расчет к-тов прохождения не по лучам, а по границам
@@ -139,7 +139,7 @@ def calculate_refractions(model, rays, wtype):
 
                 i = 1
                 for dc, uc in zip(down_coeffs, up_coeffs):
-                    ray.add_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, i)
-                    ray.add_boundary_dynamic(uc, BoundaryType.REFRACTION_UP, i)
+                    ray.set_boundary_dynamic(dc, BoundaryType.REFRACTION_DOWN, i)
+                    ray.set_boundary_dynamic(uc, BoundaryType.REFRACTION_UP, i)
 
                     i += 1
