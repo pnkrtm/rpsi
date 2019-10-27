@@ -4,14 +4,11 @@ import time
 import matplotlib.pyplot as plt
 import random as rnd
 
-from fmodeling.rock_physics.Models import model_calculation
-
-from objects.Models.Models import SeismicModel1D
 from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.seismogram import Trace, Seismogram
-from fmodeling.seismic.RayTracing.Forward1DTracing import calculate_rays
+from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
 from fmodeling.seismic.dynamic.reflection import calculate_reflections
-from fmodeling.seismic.dynamic.refraction import calculate_refractions, calculate_refraction_vectorized
+from fmodeling.seismic.dynamic.refraction import calculate_refraction_vectorized
 from Visualization.Seismic import visualize_model1D, visualize_rays_model_1D, \
     visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram

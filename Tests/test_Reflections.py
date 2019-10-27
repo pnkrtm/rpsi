@@ -2,12 +2,11 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from objects.Models.Models import SeismicModel1D
-from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpup, pdownpdown, puppup, svdownsvup, svdownsvdown, \
-    svupsvup, pdownsvup
+from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpup, pdownsvup
 from fmodeling.seismic.dynamic.reflection import zoeppritz_element
 from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
-from fmodeling.seismic.RayTracing.Forward1DTracing import calculate_rays
+from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
 
 
 def reflections_p_identity_1():

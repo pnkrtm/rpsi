@@ -4,6 +4,12 @@ import numpy as np
 from objects.seismic.waves import OWT
 from collections import defaultdict
 
+# TODO выпилить это говно
+class BoundaryType(Enum):
+    REFLECTION = 1
+    REFRACTION_DOWN = 2
+    REFRACTION_UP = 3
+
 
 class Ray:
     def __init__(self):
@@ -28,7 +34,6 @@ class Ray:
             "boundary_type": t,
             "coeff": -1
         } for idx , dpth, t in zip(indexes, depths, types)}
-
 
     def set_boundary_dynamic(self, index, value):
         if abs(value) > 1:

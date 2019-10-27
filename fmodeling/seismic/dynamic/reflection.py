@@ -5,7 +5,7 @@ from collections import namedtuple
 from objects.seismic.rays import BoundaryType
 from objects.seismic.waves import OWT
 from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpup, svdownsvup, pdownsvup
-from fmodeling.seismic.dynamic.zoeppritz_coeffs_water import pdownpup as pdpu_sea
+from fmodeling.seismic.dynamic.zoeppritz_coeffs_water import pdownpup_water
 from utils.vectorizing import vectorize
 
 import numpy as np
@@ -441,7 +441,7 @@ def calculate_reflections_vectorized(model, rays, element):
                                               vp2_arr, vs2_arr, rho2_arr, angles_all)
 
     elif element == OWT.PdPu_water:
-        reflection_amplitudes_bottom = pdpu_sea(vp1_arr[0: 1], rho1_arr[0: 1],
+        reflection_amplitudes_bottom = pdownpup_water(vp1_arr[0: 1], rho1_arr[0: 1],
                                          vp2_arr[0: 1], vs2_arr[0: 1], rho2_arr[0: 1], angles_all[0: 1])
 
         reflection_amplitudes_undbottom = pdownpup(vp1_arr[1:], vs1_arr[1:], rho1_arr[1:],
