@@ -9,6 +9,7 @@ from objects.seismic.seismogram import Trace, Seismogram
 from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
 from fmodeling.seismic.dynamic.reflection import calculate_reflections
 from fmodeling.seismic.dynamic.transmission import calculate_refraction_vectorized
+from fmodeling.seismic.dynamic.bounds import calculate_bounds
 from Visualization.Seismic import visualize_model1D, visualize_rays_model_1D, \
     visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram
@@ -70,14 +71,14 @@ def forward(model, x_rec, wavetypes, display_stat=False, visualize_res=True, noi
         if noise:
             add_noise_rays(result_rays[wt], model.get_depths())
 
-
-        disp_func(f'Calculating {wt.name}-reflections...')
-
-        calculate_reflections(model, result_rays[wt], wt)
-
-        disp_func('Calculating p-refractions...')
-
-        calculate_refraction_vectorized(model, result_rays[wt], wt)
+        calculate_bounds(model, result_rays[wt])
+        # disp_func(f'Calculating {wt.name}-reflections...')
+        #
+        # calculate_reflections(model, result_rays[wt], wt)
+        #
+        # disp_func('Calculating p-refractions...')
+        #
+        # calculate_refraction_vectorized(model, result_rays[wt], wt)
 
     if visualize_res:
         max_depth = model.get_max_boundary_depth() * 1.2
