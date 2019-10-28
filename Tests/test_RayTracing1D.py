@@ -7,6 +7,7 @@ from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
 from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
 from fmodeling.seismic.dynamic.reflection import calculate_reflections
+from fmodeling.seismic.dynamic.bounds import calculate_bounds
 from Visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D
 
 
@@ -17,7 +18,7 @@ def test_model1D():
     vs = np.array([600, 750, 900, 1050])
     rho = np.array([1600, 1700, 1800, 1900])
     h = np.array([500, 1000, 1500], 'int')
-    refl_flags = [0, 0, 1]
+    refl_flags = [0, 1, 0]
 
     model = SeismicModel1D.from_vp_vs_rho(h, vp, vs, rho, refl_flags)
     dz = 100
@@ -37,7 +38,8 @@ def test_model1D():
 
     rays_stop_time = time.time()
 
-    reflections_p = calculate_reflections(model, rays_p, OWT.PdPu)
+    calculate_bounds(model, rays_p)
+    # reflections_p = calculate_reflections(model, rays_p, OWT.PdPu)
     # reflections_s = calculate_reflections(model, rays_s, 'SdSu')
 
     raytracing_stop_time = time.time()
