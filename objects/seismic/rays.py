@@ -3,6 +3,8 @@ from enum import Enum
 import numpy as np
 from objects.seismic.waves import OWT
 from collections import defaultdict
+from typing import Union, List
+from objects.seismic.boundaries.base_boundary import BaseBoundary
 
 # TODO выпилить это говно
 class BoundaryType(Enum):
@@ -28,12 +30,26 @@ class Ray:
     def reflection_z(self):
         raise NotImplementedError
 
-    def create_boundaries(self, depths, indexes, types):
+    def create_boundaries(self, depths: Union[List, np.ndarray], indexes: Union[List, np.ndarray],
+                          bound_indexes: Union[List, np.ndarray], types: Union[List[int], np.ndarray]):
+        """
+        Creating boundaries for ray. Parameters description for next ray transmission/reflection case
+        _________
+        \___/____
+        _\/_____
+
+        :param depths: Each boundaries' depth
+        :param indexes: Sequential array of indexes FOR RAY
+        :param bound_indexes: Array of indexes FOR BOUNDARY
+        :param types: Boundary type
+        :return:
+        """
         self.boundaries = {idx: {
             "boundary_depth": dpth,
+            "boundary_index": bi,
             "boundary_type": t,
             "coeff": -1
-        } for idx , dpth, t in zip(indexes, depths, types)}
+        } for idx , dpth, bi, t in zip(indexes, depths, bound_indexes, types)}
 
     def set_boundary_dynamic(self, index, value):
         if abs(value) > 1:

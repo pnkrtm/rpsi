@@ -34,26 +34,27 @@ def PdPuWater(indexes, bound_indexes, refl_index):
 
     return bounds
 
+
 def strategy_1D(z_points, owt):
     assert len(z_points) % 2 == 1
 
     refl_index = int(len(z_points) / 2)
 
-    indexes = [i for i in range(1, refl_index+1)]
+    bound_indexes = [i for i in range(1, refl_index+1)]
 
-    if len(indexes) > 1:
-        indexes = np.append(indexes, indexes[::-1][1:])
+    if len(bound_indexes) > 1:
+        bound_indexes = np.append(bound_indexes, bound_indexes[::-1][1:])
 
-    bound_indexes = np.arange(1, len(z_points) - 1)
+    indexes = np.arange(1, len(z_points) - 1)
 
     if owt == OWT.PdPu:
-        bounds = PdPu(indexes, bound_indexes, refl_index)
+        bounds = PdPu(bound_indexes, indexes, refl_index)
 
     elif owt == OWT.PdPu_water:
-        bounds = PdPuWater(indexes, bound_indexes, refl_index)
+        bounds = PdPuWater(bound_indexes, indexes, refl_index)
 
     else:
         raise NotImplementedError(f"Strategy {owt} is not implemented yet")
 
     # TODO проверить, что длина массива с индексами совпадает с длиной массива с границами
-    return z_points[1:-1], bound_indexes, bounds
+    return z_points[1:-1], indexes, bound_indexes, bounds
