@@ -58,7 +58,7 @@ class Ray:
         self.boundaries[index]["coeff"] = value
 
     def calculate_dynamic_factor(self):
-        vals = [b["coeff"] for b in self.boundaries]
+        vals = [b["coeff"] for b in self.boundaries.values()]
 
         return np.prod(vals)
 
