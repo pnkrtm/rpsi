@@ -1,8 +1,15 @@
 import time
 import numpy as np
 
-from ForwardModeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from ForwardModeling.RockPhysics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
+from fmodeling.ForwardProcessing1D import forward, forward_with_trace_calcing
+from fmodeling.rock_physics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
+from objects.seismic.waves import OWT
+from objects.Models.Models import SeismicModel1D
+from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
+from objects.Attributes.Seismic.SeismicAttribute import SeismicAttribute
+from objects.Models.Layer1D import Layer1D, LayerOPT
+from collections import OrderedDict
+
 
 def get_model_1():
     '''
@@ -165,11 +172,388 @@ def get_model_1():
     return Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h
 
 
+def get_model_2layered():
+    layer_1_dict = OrderedDict({
+                  "name": "xu-payne",
+                  "components": {
+                    "Km": {
+                      "value": 7.3,
+                      "optimize": True,
+                      "min": 5,
+                      "max": 10
+                    },
+					"Gm": {
+                      "value": 2.71,
+                      "optimize": False,
+                      "min": 0.1,
+                      "max": 5
+                    },
+					"rho_m": {
+                      "value": 2.71,
+                      "optimize": False,
+                      "min": 2.5,
+                      "max": 3
+                    },
+                    "Vm": {
+                      "value": 1,
+                      "optimize": False,
+                      "min": 0.7,
+                      "max": 1
+                    },
+                    "Ks": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 7,
+                      "max": 14
+                    },
+					"Gs": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.8
+                    },
+					"rho_s": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "phi_s": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.1
+                    },
+                    "Kf": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 3
+                    },
+                    "rho_f": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.01,
+                      "max": 3
+                    },
+                    "phi": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.2
+                    }
+                  }
+                })
+    layer_2_dict = OrderedDict({
+                  "name": "xu-payne",
+                  "components": {
+                    "Km": {
+                      "value": 21.5,
+                      "optimize": True,
+                      "min": 20,
+                      "max": 25
+                    },
+					"Gm": {
+                      "value": 17.5,
+                      "optimize": False,
+                      "min": 15,
+                      "max": 20
+                    },
+					"rho_m": {
+                      "value": 2.8,
+                      "optimize": False,
+                      "min": 2.5,
+                      "max": 3
+                    },
+                    "Vm": {
+                      "value": 0.85,
+                      "optimize": False,
+                      "min": 0.7,
+                      "max": 1
+                    },
+                    "Ks": {
+                      "value": 9.2,
+                      "optimize": False,
+                      "min": 7,
+                      "max": 14
+                    },
+					"Gs": {
+                      "value": 0.4,
+                      "optimize": False,
+                      "min": 0.1,
+                      "max": 0.8
+                    },
+					"rho_s": {
+                      "value": 2.43,
+                      "optimize": False,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "phi_s": {
+                      "value": 0.05,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.1
+                    },
+                    "Kf": {
+                      "value": 1.8,
+                      "optimize": False,
+                      "min": 1,
+                      "max": 2
+                    },
+                    "rho_f": {
+                      "value": 0.95,
+                      "optimize": False,
+                      "min": 0.01,
+                      "max": 1
+                    },
+                    "phi": {
+                      "value": 0.1,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.2
+                    }
+                  }
+                })
+
+    return layer_1_dict, layer_2_dict
+
+def get_model_3layered():
+    layer_1_dict = OrderedDict({
+                  "name": "xu-payne",
+                  "components": {
+                    "Km": {
+                      "value": 7.3,
+                      "optimize": True,
+                      "min": 5,
+                      "max": 10
+                    },
+					"Gm": {
+                      "value": 2.71,
+                      "optimize": False,
+                      "min": 0.1,
+                      "max": 5
+                    },
+					"rho_m": {
+                      "value": 2.71,
+                      "optimize": False,
+                      "min": 2.5,
+                      "max": 3
+                    },
+                    "Vm": {
+                      "value": 1,
+                      "optimize": False,
+                      "min": 0.7,
+                      "max": 1
+                    },
+                    "Ks": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 7,
+                      "max": 14
+                    },
+					"Gs": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.8
+                    },
+					"rho_s": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "phi_s": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.1
+                    },
+                    "Kf": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 3
+                    },
+                    "rho_f": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.01,
+                      "max": 3
+                    },
+                    "phi": {
+                      "value": 0,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.2
+                    }
+                  }
+                })
+    layer_2_dict = OrderedDict({
+                  "name": "xu-payne",
+                  "components": {
+                    "Km": {
+                      "value": 21.5,
+                      "optimize": True,
+                      "min": 20,
+                      "max": 25
+                    },
+					"Gm": {
+                      "value": 17.5,
+                      "optimize": False,
+                      "min": 15,
+                      "max": 20
+                    },
+					"rho_m": {
+                      "value": 2.8,
+                      "optimize": False,
+                      "min": 2.5,
+                      "max": 3
+                    },
+                    "Vm": {
+                      "value": 0.85,
+                      "optimize": False,
+                      "min": 0.7,
+                      "max": 1
+                    },
+                    "Ks": {
+                      "value": 9.2,
+                      "optimize": False,
+                      "min": 7,
+                      "max": 14
+                    },
+					"Gs": {
+                      "value": 0.4,
+                      "optimize": False,
+                      "min": 0.1,
+                      "max": 0.8
+                    },
+					"rho_s": {
+                      "value": 2.43,
+                      "optimize": False,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "phi_s": {
+                      "value": 0.05,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.1
+                    },
+                    "Kf": {
+                      "value": 1.8,
+                      "optimize": False,
+                      "min": 1,
+                      "max": 2
+                    },
+                    "rho_f": {
+                      "value": 0.95,
+                      "optimize": False,
+                      "min": 0.01,
+                      "max": 1
+                    },
+                    "phi": {
+                      "value": 0.1,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.2
+                    }
+                  }
+                })
+
+    layer_3_dict = OrderedDict({
+        "name": "xu-payne",
+                "components":
+        {"Km": {
+                      "value": 22,
+                      "optimize": True,
+                      "min": 20,
+                      "max": 25
+                    },
+					"Gm": {
+                      "value": 10.7,
+                      "optimize": False,
+                      "min": 5,
+                      "max": 15
+                    },
+					"rho_m": {
+                      "value": 2.85,
+                      "optimize": False,
+                      "min": 2.5,
+                      "max": 3
+                    },
+                    "Vm": {
+                      "value": 1,
+                      "optimize": False,
+                      "min": 0.7,
+                      "max": 1
+                    },
+                    "Ks": {
+                      "value": 9.2,
+                      "optimize": False,
+                      "min": 7,
+                      "max": 14
+                    },
+					"Gs": {
+                      "value": 0.4,
+                      "optimize": False,
+                      "min": 0.1,
+                      "max": 0.8
+                    },
+					"rho_s": {
+                      "value": 2.43,
+                      "optimize": False,
+                      "min": 2.2,
+                      "max": 2.6
+                    },
+                    "phi_s": {
+                      "value": 0.0,
+                      "optimize": False,
+                      "min": 0.00,
+                      "max": 0.1
+                    },
+                    "Kf": {
+                      "value": 1.8,
+                      "optimize": False,
+                      "min": 1,
+                      "max": 2
+                    },
+                    "rho_f": {
+                      "value": 0.95,
+                      "optimize": False,
+                      "min": 0.01,
+                      "max": 1
+                    },
+                    "phi": {
+                      "value": 0.1,
+                      "optimize": False,
+                      "min": 0.001,
+                      "max": 0.2
+                    }}})
+
+    return layer_1_dict, layer_2_dict, layer_3_dict
+
 def main():
-    Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
-    nlayers = 8
+    # Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
+    layer_1_dict, layer_2_dict = get_model_2layered()
+    h = 500
+
+    layer_1 = Layer1D(h,
+                      rp_attribute=RockPhysicsAttribute(layer_1_dict["components"], layer_1_dict["name"]),
+                      seism_attribute=None,
+                      opt=LayerOPT.RP)
+
+    layer_2 = Layer1D(-1,
+                      rp_attribute=RockPhysicsAttribute(layer_2_dict["components"], layer_2_dict["name"]),
+                      seism_attribute=None,
+                      opt=LayerOPT.RP)
+
+    model = SeismicModel1D([layer_1, layer_2])
+
+    nlayers = 2
     dx = 50
-    nx = 20
+    nx = 200
     x_rec = [i*dx for i in range(1, nx)]
 
     time_mark_1 = time.time()
@@ -179,11 +563,12 @@ def main():
     #         calc_rays_p=True, calc_rays_s=True,
     #         calc_reflection_p=True, calc_reflection_s=False
     #         )
-
-    forward_with_trace_calcing(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, h, x_rec,
-                               dt=3e-03, trace_len=1500,
+    wavetypes = [
+        OWT.PdPu
+        # OWT.PdSVu
+    ]
+    forward_with_trace_calcing(model, x_rec, dt=3e-03, trace_len=1500, wavetypes=wavetypes,
             display_stat=True, visualize_res=False,
-            use_p_waves=True, use_s_waves=False,
                                visualize_seismograms=True
             )
 
@@ -191,8 +576,68 @@ def main():
 
     print(f'Calculation time: {time_mark_2 - time_mark_1}')
 
+def water_case_test():
+    h = [
+        67.5,
+        22.5,
+        40,
+    ]
 
+    layer_1_seism = {
+        'vp': 1500,
+        'vs': 0,
+        'rho': 1000
+    }
+
+    layer_2_seism = {
+        'vp': 1600,
+        'vs': 200,
+        'rho': 1300
+    }
+
+    layer_3_seism = {
+        'vp': 2600,
+        'vs': 1000,
+        'rho': 2000
+    }
+
+    layer_4_seism = {
+        'vp': 3000,
+        'vs': 1200,
+        'rho': 2200
+    }
+
+    layer_1 = Layer1D(h[0],
+                      rp_attribute=None,
+                      seism_attribute=SeismicAttribute(**layer_1_seism),
+                      opt=LayerOPT.NO)
+    layer_2 = Layer1D(h[1],
+                      seism_attribute=SeismicAttribute(**layer_2_seism),
+                      rp_attribute=None,
+                      opt=LayerOPT.NO)
+    layer_3 = Layer1D(h[2],
+                      rp_attribute=None,
+                      seism_attribute=SeismicAttribute(**layer_3_seism),
+                      opt=LayerOPT.NO)
+    layer_4 = Layer1D(-1,
+                      rp_attribute=None,
+                      seism_attribute=SeismicAttribute(**layer_4_seism),
+                      opt=LayerOPT.NO)
+
+    model = SeismicModel1D([layer_1, layer_2, layer_3, layer_4])
+
+    dx = 2
+    nx = 100
+    x_rec = [i * dx for i in range(1, nx + 1)]
+    wave_types = [OWT.PdPu_water]
+
+    observe, test_seismic = \
+        forward_with_trace_calcing(model, x_rec,
+                                   dt=1e-04, trace_len=2000, wavetypes=wave_types, display_stat=True,
+                                   visualize_res=False, visualize_seismograms=True)
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    water_case_test()
+

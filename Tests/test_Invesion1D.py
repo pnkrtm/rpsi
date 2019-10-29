@@ -1,60 +1,87 @@
 import sys
 sys.path.append('../')
 
-import numpy as np
-from ForwardModeling.ForwardProcessing1D import forward
-from Inversion.Strategies.Inversion1D import inverse
-from Tests.test_ForwardProcessing1D import get_model_1
+from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
+from Inversion.Strategies.SeismDiffInversion1D import inverse
+from Inversion.Optimizators.Optimizations import LBFGSBOptimization
+from Tests.test_ForwardProcessing1D import get_model_2layered
+from objects.Data.WavePlaceholder import WaveDataPlaceholder
+from objects.seismic.waves import OWT
+from objects.Models.Models import SeismicModel1D
+from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
+from objects.Models.Layer1D import Layer1D, LayerOPT
 
 import time
 
-def main():
-    Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
-    nlayers = 8
-    dx = 100
-    nx = 20
-    x_rec = [i * dx for i in range(1, nx)]
 
+def main():
+    # Km, Gm, rho_m, Ks, Gs, rho_s, Kf, rho_f, phi, phi_s, h = get_model_1()
+    layer_1_dict, layer_2_dict = get_model_2layered()
+    h = 500
+
+    layer_1 = Layer1D(h,
+                      rp_attribute=RockPhysicsAttribute(layer_1_dict["components"], layer_1_dict["name"]),
+                      seism_attribute=None,
+                      opt=LayerOPT.RP)
+
+    layer_2 = Layer1D(-1,
+                      rp_attribute=RockPhysicsAttribute(layer_2_dict["components"], layer_2_dict["name"]),
+                      seism_attribute=None,
+                      opt=LayerOPT.RP)
+
+    dx = 100
+    nx = 2
+    x_rec = [i * dx for i in range(1, nx)]
+    wave_types = [OWT.PdPu]
+    model = SeismicModel1D([layer_1, layer_2])
 
     print('Calculating DEM modeling...')
-    observe, model, rays_observed_p, rays_observed_s = \
-        forward(nlayers, Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f,
-                                                               rho_m, h, x_rec, display_stat=True,
-            visualize_res=False, calc_reflection_p=True, calc_reflection_s=True)
+    observe, test_seismic = \
+        forward_with_trace_calcing(model, x_rec,
+                                   dt=3e-03, trace_len=1500, wavetypes=wave_types, display_stat=True,
+            visualize_res=False)
     print('Forward calculated!')
 
-    true_model = []
-    true_model = np.append(true_model, Kf)
-    true_model = np.append(true_model, phi)
-    true_model = np.append(true_model, phi_s)
-    true_model = np.append(true_model, rho_s)
-    true_model = np.append(true_model, rho_f)
-    true_model = np.append(true_model, rho_m)
-
-    data_start_ = \
-    [
-        [(0, 3)]*nlayers,  # Kf
-        [(0, 0.2)]*nlayers,  # phi
-        [(0, 0.2)]*nlayers,  # phi_s
-        [(2.2, 2.6)]*nlayers,  # rho_s
-        [(0, 3)]*nlayers,  # rho_f
-        [(2, 3)]*nlayers,  # rho_m
-    ]
-
-    data_start = [item for sublist in data_start_ for item in sublist]
-
-    # for d in data_start_:
-    #     data_start = np.append(data_start, d)
+    print('Calculating inversion...')
 
     inversion_start_time = time.time()
-    print('Calculating inversion...')
-    inversed_model = inverse(nlayers, Km, Gm, Ks, Gs, h, x_rec,
-                             rays_observed_p, rays_observed_s,
-                             reflection_observed_p, reflection_observed_s,
-                             data_start,
-                             opt_type='de',
-            use_rays_p=True, use_rays_s=True,
-    use_reflection_p = True, use_reflection_s = True)
+
+    forward_params = {
+        "model": model,
+        "x_rec": x_rec,
+        "dt": 3e-03,
+        "trace_len": 1500,
+        "wavetypes": wave_types,
+        "display_stat": False,
+        "visualize_res": False
+    }
+
+    placeholders = {}
+    for wt in wave_types:
+        placeholders[wt] = WaveDataPlaceholder(
+            wt,
+            test_seismic[wt]["rays"],
+            test_seismic[wt]["seismogram"]
+        )
+
+    optimizers = [
+        LBFGSBOptimization(
+            maxiter=15000,
+            maxfun=15000,
+            factr=10000,
+            maxls=50,
+            epsilon=0.0001
+        )
+    ]
+
+    model.layers[0]['Km'] = 5
+    model.layers[1]['Km'] = 20
+
+    # from Inversion.Strategies.SeismDiffInversion1D import func_to_optimize
+    # assert func_to_optimize(forward_params['model'].get_optimization_option('val', vectorize=True), placeholders,
+    #                  forward_params, helper=None, show_tol=False) < 0.01
+
+    inversed_model = inverse(optimizers, error=0.0001, placeholders=placeholders, forward_params=forward_params)
 
     print('Inversion calculated!')
     inversion_end_time = time.time()
@@ -62,7 +89,6 @@ def main():
     print('Inversion duration in minutes: {}'.format((inversion_end_time - inversion_start_time)/60))
 
     print(inversed_model)
-    print(np.column_stack((true_model, inversed_model)))
 
 
 if __name__ == '__main__':

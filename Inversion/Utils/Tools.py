@@ -3,12 +3,13 @@ import os
 import logging
 
 class OptimizeHelper:
-    def __init__(self, nerrors=20, in_use=True, error_to_stop=0.01, std_to_stop=0.001, logpath: str=None):
+    def __init__(self, nerrors=20, in_use=True, error_to_stop=(0.01,), std_to_stop=0.001, logpath: str=None):
         self.nerrors = nerrors
         self.errors_list = []
         self.iter = 0
         self.in_use = in_use
         self.error_to_stop = error_to_stop
+        self.error_stop_ind = 0
         self.std_to_stop = std_to_stop
         self.logger_name = None
 
@@ -47,7 +48,8 @@ class OptimizeHelper:
             mean = self.get_mean()
             std = self.get_std()
 
-            if mean < self.error_to_stop and std < self.std_to_stop:
+            if mean < self.error_to_stop[self.error_stop_ind] and std < self.std_to_stop:
+                self.error_stop_ind += 1
                 return True
 
         return False

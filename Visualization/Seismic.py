@@ -23,7 +23,7 @@ def visualize_model1D(plt, model, observe, max_depth, dz, vel_type, only_boundar
 
 
 def visualize_model_wellogs(plt, model, vel_type, linestyle='-', linewidth=4, legend_label='default label', scale=1):
-    v = model.get_param(vel_type)
+    v = model.get_single_param(vel_type)
     v = np.array(list(itertools.chain(*zip(v, v)))) * scale
 
     depths = model.get_depths()[1:]
@@ -35,7 +35,7 @@ def visualize_model_wellogs(plt, model, vel_type, linestyle='-', linewidth=4, le
 
 
 def visualize_rays_model_1D(plt, rays, linewidth=1):
-    for depth_rays in rays:
+    for depth_rays in rays.values():
         for ray in depth_rays:
             plt.plot(ray.x_points, ray.z_points, 'k', linewidth=linewidth)
 
@@ -46,7 +46,7 @@ def visualize_time_curves(plt, model, rays, observe, depth_index=None, linewidth
     depths = model.get_depths()
     i = 1
 
-    for d, depth_rays in zip(depths[1:], rays):
+    for depth_rays in rays.values():
         if depth_index is not None and (i-1) != depth_index:
             i += 1
             continue

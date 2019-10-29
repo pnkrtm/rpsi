@@ -4,9 +4,9 @@ import numpy as np
 
 from Exceptions.bad_calcs import BadCalcBaseException
 from Exceptions.exceptions import ErrorAchievedException
-from ForwardModeling.ForwardProcessing1D import forward_with_trace_calcing
+from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
 from Inversion.Utils.Tools import OptimizeHelper
-from Objects.Seismogram import Seismogram
+from Inversion.Utils.Calcs import get_matrices_diff
 
 
 def get_params_dict_copy(params_all):
@@ -35,86 +35,30 @@ def change_values_in_params_dict(params_all, params_vals, params_keys, params_bo
     return params_all
 
 
-def rmse_per_column(matr_obs: np.ndarray, matr_mod: np.ndarray, trace_weights: np.ndarray=None):
-    if trace_weights is None:
-        # trace_weights = np.ones(matr_obs.shape[0])
-        trace_weights = np.arange(0, matr_obs.shape[0])
-        # trace_weights = trace_weights**2
-        trace_weights = trace_weights / trace_weights.sum()
-
-    def calculate_increments(values):
-        arr_1 = values[1::]
-        arr_2 = values[:-1]
-
-        return arr_1 - arr_2
-
-    def calcing_per_trace(observed, modeled):
-        use_increments = False
-
-        ind1 = np.nonzero(observed)[0]
-        ind2 = np.nonzero(modeled)[0]
-
-        ind = list(set(ind1) | set(ind2))
-
-        obs = observed
-        mod = modeled
-
-        # obs = observed[ind]
-        # mod = modeled[ind]
-
-        diff_func = lambda x, y: np.sqrt(np.mean((x - y)**2))
-        # diff_func = lambda x, y: np.mean((x - y) ** 2)
-        # diff_func = lambda x, y: np.mean(abs((x - y) / x))
-
-        diff = diff_func(obs, mod)
-
-        if use_increments:
-            incr_obs = calculate_increments(obs)
-            incr_mod = calculate_increments(mod)
-
-            diff = 0.5 * diff + 0.5 * diff_func(incr_obs, incr_mod)
-
-        return diff
-
-    diffs = [calcing_per_trace(mo, mm) for mo, mm in zip(matr_obs, matr_mod)]
-
-    return np.average(diffs, weights=trace_weights)
-
-
-def get_matrices_diff(seism_observed: Seismogram, seism_modeled: Seismogram,
-                      indexes_start: np.ndarray, indexes_stop: np.ndarray, weights: np.ndarray=None):
-    vals_obs = seism_observed.get_values_matrix()
-    vals_mod = seism_modeled.get_values_matrix()
-
-    vals_obs = np.array([vo[indexes_start[j]: indexes_stop[j]] for j, vo in enumerate(vals_obs)])
-    vals_mod = np.array([vm[indexes_start[j]: indexes_stop[j]] for j, vm in enumerate(vals_mod)])
-
-    return rmse_per_column(vals_obs, vals_mod, weights)
-
-
 def func_to_optimize_mp_helper(args):
 
     return func_to_optimize(**args)
 
 
-def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optimize, params_bounds,
-                     start_indexes, stop_indexes,
-                     helper, trace_weights=None, normalize=False, show_tol=True):
+def func_to_optimize(model_opt, placeholders, forward_params, helper=None, show_tol=True):
     try:
-        params_all_ = get_params_dict_copy(params_all)
+        forward_params['model'].set_optimization_option(model_opt)
 
-        params_all_ = change_values_in_params_dict(params_all_, model_opt, params_to_optimize, params_bounds, normalize)
+        observe, seismic = forward_with_trace_calcing(**forward_params)
 
-        observe, model, rays_p, rays_s, seismogram_p, seismogram_s = forward_with_trace_calcing(**params_all_)
+        errors = []
+        for key in seismic.keys():
+            ph = placeholders[key]
 
-        error = get_matrices_diff(seismogram_observed, seismogram_p, start_indexes, stop_indexes, trace_weights)
-
+            errors.append(get_matrices_diff(ph.seismogram, seismic[key]["seismogram"], ph.start_indexes,
+                                            ph.stop_indexes, ph.trace_weights))
+        error = np.mean(errors)
         # Добавляем минимизацию к-тов оражения
-        aip_1 = model.get_param('aip', index_finish=-1)
-        aip_2 = model.get_param('aip', index_start=1)
+        aip_1 = forward_params['model'].get_single_param('aip', index_finish=-1)
+        aip_2 = forward_params['model'].get_single_param('aip', index_start=1)
         rp = (aip_2 - aip_1) / (aip_2 + aip_1)
 
-        error = 1.0 * error + 0.0 * np.sum(abs(rp))
+        error = 1 * error + 0 * np.sum(abs(rp))
 
         if np.isnan(error):
             error = 99999
@@ -139,29 +83,31 @@ def func_to_optimize(model_opt, seismogram_observed, params_all, params_to_optim
     return error
 
 
-def inverse(optimizers, error, params_all, params_to_optimize, params_bounds,
-            seismogram_observed_p, seismogram_observed_s,
-            start_indexes, stop_indexes,
-            trace_weights=None, normalize=True, logpath=None):
+def inverse(optimizers, error, placeholders, forward_params, logpath=None, scale=None):
     """
     Функция единичной инверсии одной точки
-    :param optimizers: массив применяемых оптимизаторов
-    :param error: значение ошибки, при которой инверсия останавливатеся
-    :param params_all: словарь аргументов для решения ПЗ
-    :param params_to_optimize: словарь параметров, которые необходимо подбирать
-    :param params_bounds: границы подбора параметров
-    :param seismogram_observed_p: наблюденные данные p-волн
-    :param seismogram_observed_s: наблюденные данные s-волн
-    :param start_indexes: массив индексов, ограничивающих сверху область сейсмограммы для расчета невязки
-    :param stop_indexes: массив индексов, ограничивающих снизу область сейсмограммы для расчета невязки
-    :param trace_weights: массив весов для трасс
-    :param normalize: флаг, указывающий нужно ли нормировать подбираемые параметры
-    :param logpath: путь до файла, в который пишутся логи
+
     :return:
     """
     show_tol = True
 
-    data_start = params_bounds
+    forward_params['model'].scale = scale
+
+    data_start = forward_params['model'].get_optimization_option('val', vectorize=True)
+
+    min_bound = forward_params['model'].get_optimization_option('min', vectorize=True)
+    max_bound = forward_params['model'].get_optimization_option('max', vectorize=True)
+
+    param_bounds = np.column_stack((min_bound.T, max_bound.T))
+
+    if isinstance(error, float):
+        error = [error] * len(optimizers)
+    elif isinstance(error, (list, np.ndarray, tuple)):
+        if len(error) != len(optimizers):
+            raise ValueError("Bad errors list length!")
+    else:
+        raise TypeError("Unknown error type!")
+
     helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error, logpath=logpath)
     helper.in_use = True
 
@@ -170,22 +116,12 @@ def inverse(optimizers, error, params_all, params_to_optimize, params_bounds,
 
     helper.log_message(f"{str(datetime.datetime.now())} Optimization starts!")
 
-    args = tuple([seismogram_observed_p, params_all, params_to_optimize,
-            params_bounds, start_indexes, stop_indexes,
-                 helper, trace_weights, normalize, show_tol])
-
-    if normalize:
-        data_start_opt = [[0, 1]] * len(data_start)
-        param_bounds_opt = [[0, 1]] * len(data_start)
-
-    else:
-        data_start_opt = data_start
-        param_bounds_opt = params_bounds
+    args = (placeholders, forward_params, helper, show_tol)
 
     optimizator_start_params = {
         "func": func_to_optimize,
-        "x0": data_start_opt,
-        "bounds": param_bounds_opt,
+        "x0": data_start,
+        "bounds": param_bounds,
         "args": args
     }
 
@@ -197,11 +133,10 @@ def inverse(optimizers, error, params_all, params_to_optimize, params_bounds,
 
         except ErrorAchievedException as e:
             result_model = e.model
+            optimizator_start_params["x0"] = result_model
+            print(f'{str(datetime.datetime.now())} Random error achieved!! =)))')
             helper.log_message(f'{str(datetime.datetime.now())} Random error achieved!! =)))')
-            break
 
-    if normalize:
-        result_model = [b[0] + (b[1] - b[0]) * rm for rm, b in zip(result_model, params_bounds)]
 
     helper.log_message(f'{str(datetime.datetime.now())} Optimization finished!')
 

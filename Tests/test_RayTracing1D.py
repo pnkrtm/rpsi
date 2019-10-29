@@ -2,10 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-from Objects.Models.Models import SeismicModel1D
-from Objects.Observation import Observation, Source, Receiver
-from ForwardModeling.Seismic.RayTracing.Forward1DTracing import calculate_rays
-from ForwardModeling.Seismic.Dynamic.Reflection import calculate_reflections
+from objects.Models.Models import SeismicModel1D
+from objects.seismic.observation import Observation, Source, Receiver
+from objects.seismic.waves import OWT
+from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
+from fmodeling.seismic.dynamic.reflection import calculate_reflections
+from fmodeling.seismic.dynamic.bounds import calculate_bounds
 from Visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D
 
 
@@ -16,8 +18,9 @@ def test_model1D():
     vs = np.array([600, 750, 900, 1050])
     rho = np.array([1600, 1700, 1800, 1900])
     h = np.array([500, 1000, 1500], 'int')
+    refl_flags = [0, 1, 0]
 
-    model = SeismicModel1D(vp, vs, rho, h)
+    model = SeismicModel1D.from_vp_vs_rho(h, vp, vs, rho, refl_flags)
     dz = 100
     dx = dz
     max_depth = 2000
@@ -30,12 +33,13 @@ def test_model1D():
     receivers = [Receiver(x*dx, 0, 0) for x in range(1, 20)]
     observe = Observation(sources, receivers)
 
-    rays_p = calculate_rays(observe, model, 'vp')
+    rays_p = calculate_rays(observe, model, OWT.PdPu)
     # rays_s = calculate_rays(observe, model, 'vs')
 
     rays_stop_time = time.time()
 
-    reflections_p = calculate_reflections(model, rays_p, 'PdPu')
+    calculate_bounds(model, rays_p)
+    # reflections_p = calculate_reflections(model, rays_p, OWT.PdPu)
     # reflections_s = calculate_reflections(model, rays_s, 'SdSu')
 
     raytracing_stop_time = time.time()
@@ -44,16 +48,16 @@ def test_model1D():
     print('Amplitudes calcing time = {}'.format(raytracing_stop_time - rays_stop_time))
     print('Raytracing evaluation time = {}'.format(raytracing_stop_time - raytracing_start_time))
 
-    fig, axes = plt.subplots(nrows=2, ncols=2)
+    fig, axes = plt.subplots(nrows=2, ncols=1)
 
-    visualize_model1D(axes[1, 0], model, observe, max_depth, dz, 'vp')
-    visualize_rays_model_1D(axes[1, 0], rays_p)
+    visualize_model1D(axes[1], model, observe, max_depth, dz, 'vp')
+    visualize_rays_model_1D(axes[1], rays_p)
     # axes[1, 0].title('model and rays for p-waves')
 
-    visualize_model1D(axes[1, 1], model, observe, max_depth, dz, 'vs')
+    # visualize_model1D(axes[1, 1], model, observe, max_depth, dz, 'vs')
     # visualize_rays_model_1D(axes[1, 1], rays_s)
 
-    visualize_time_curves(axes[0, 0], model, rays_p, observe)
+    visualize_time_curves(axes[0], model, rays_p, observe)
     # visualize_time_curves(axes[0, 1], model, rays_s, observe)
 
     plt.show()

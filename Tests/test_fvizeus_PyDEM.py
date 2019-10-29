@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 # Cython implementation
 # from cDEM import DEM
 # Python implementation
-from ForwardModeling.RockPhysics.Mediums.DEM import DEM
-from ForwardModeling.RockPhysics.Mediums import Gassmann
+from fmodeling.rock_physics.Mediums.DEM import DEM
+from fmodeling.rock_physics.Mediums import Gassmann
 
 # Matrix properties
 Km = 77.0 # GPa
