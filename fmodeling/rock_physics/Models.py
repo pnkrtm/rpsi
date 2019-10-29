@@ -80,7 +80,7 @@ def xu_payne_model(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None,
     return [Tools.vp_from_KGRho(K_res, G_res, rho_res)*1000, Tools.vs_from_GRho(G_res, rho_res)*1000, rho_res*1000]
 
 
-def unconsolidated_model(Ksi, Gsi, rhosi, Ksh, Gsh, rhosh, Kincl, Gincl, rhoincl, Kfl, rhofl, Vsi, Vsh, Vincl, phi):
+def unconsolidated_model(Ksi, Gsi, rhosi, Ksh, Gsh, rhosh, Kincl, Gincl, rhoincl, Kfl, rhofl, Vsh, Vincl, phi):
     """
     Модель для расчета донных песчаных осадков, заполненных газом
     :param Ksi: Модуль сжатия песка
@@ -94,26 +94,24 @@ def unconsolidated_model(Ksi, Gsi, rhosi, Ksh, Gsh, rhosh, Kincl, Gincl, rhoincl
     :param rhoincl: Плотность инклюзий
     :param Kfl: Модуль сжатия флюида
     :param rhofl: Плотность флюида
-    :param Vsi: Количество глины
     :param Vsh: Количество глины
     :param Vincl: Количество инклюзий
     :param phi: Пористость
     :return:
     """
-    if not sum((Vsi, Vsh, Vincl, phi)) == 1:
-        raise ValueError("All volumes must be 100% together!")
+    Vsi = 1 - Vsh
 
-    Ksish = reuss(np.array((Ksi, Ksh)), np.array((Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh))))
-    Gsish = reuss(np.array((Gsi, Gsh)), np.array((Vsi / (Vsi + Vsh), Vsh / (Vsi + Vsh))))
-    Vsish = Vsi + Vsh
+    Ksish = reuss(np.array((Ksi, Ksh)), np.array((Vsi, Vsh)))
+    Gsish = reuss(np.array((Gsi, Gsh)), np.array((Vsi, Vsh)))
+    Vsish = 1 - Vincl
 
-    Km = reuss(np.array((Ksish, Kincl)), np.array((Vsish/(Vsish + Vincl), Vincl/(Vsish + Vincl))))
-    Gm = reuss(np.array((Gsish, Gincl)), np.array((Vsish / (Vsish + Vincl), Vincl / (Vsish + Vincl))))
-    Vm = Vsish + Vincl
+    Km = reuss(np.array((Ksish, Kincl)), np.array((Vsish, Vincl)))
+    Gm = reuss(np.array((Gsish, Gincl)), np.array((Vsish, Vincl)))
+    Vm = 1 - phi
 
     Kfinal, Gfinal = bgtl(Km, Gm, Kfl, phi)
 
-    rho_final = rhosh * Vsh + rhosi * Vsi + rhoincl * Vincl + rhofl * phi
+    rho_final = rhosh * (Vsh*Vsish*Vm) + rhosi * (Vsi*Vsish*Vm) + rhoincl * (Vincl*Vm) + rhofl * phi
     # проверить размерности!!!
     return [Tools.vp_from_KGRho(Kfinal, Gfinal, rho_final) * 1000, Tools.vs_from_GRho(Gfinal, rho_final) * 1000,
             rho_final * 1000]
