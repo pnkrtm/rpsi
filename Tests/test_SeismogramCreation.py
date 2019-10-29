@@ -7,8 +7,7 @@ from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
 from fmodeling.ForwardProcessing1D import create_seismogram
 from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
-from fmodeling.seismic.dynamic.reflection import calculate_reflections
-from fmodeling.seismic.dynamic.transmission import calculate_refraction_vectorized
+from fmodeling.seismic.dynamic.bounds import calculate_bounds
 from Visualization.Seismic import visualize_model1D, visualize_rays_model_1D, visualize_seismogram
 
 
@@ -40,9 +39,7 @@ def test_model1D():
 
     raytracing_stop_time = time.time()
 
-    calculate_reflections(model, res_seismic[wavetype]["rays"], wavetype)
-    # calculate_refractions(model, res_seismic[wavetype]["rays"], wavetype)
-    calculate_refraction_vectorized(model, res_seismic[wavetype]["rays"], wavetype)
+    calculate_bounds(model, res_seismic[wavetype]["rays"])
 
     rays_stop_time = time.time()
 

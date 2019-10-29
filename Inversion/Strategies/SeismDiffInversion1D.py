@@ -58,7 +58,7 @@ def func_to_optimize(model_opt, placeholders, forward_params, helper=None, show_
         aip_2 = forward_params['model'].get_single_param('aip', index_start=1)
         rp = (aip_2 - aip_1) / (aip_2 + aip_1)
 
-        error = 0.7 * error + 0.3 * np.sum(abs(rp))
+        error = 1 * error + 0 * np.sum(abs(rp))
 
         if np.isnan(error):
             error = 99999

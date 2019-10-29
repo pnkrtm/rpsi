@@ -30,7 +30,7 @@ def main():
                       opt=LayerOPT.RP)
 
     dx = 100
-    nx = 20
+    nx = 2
     x_rec = [i * dx for i in range(1, nx)]
     wave_types = [OWT.PdPu]
     model = SeismicModel1D([layer_1, layer_2])
@@ -77,7 +77,11 @@ def main():
     model.layers[0]['Km'] = 5
     model.layers[1]['Km'] = 20
 
-    inversed_model = inverse(optimizers, error=0.01, placeholders=placeholders, forward_params=forward_params)
+    # from Inversion.Strategies.SeismDiffInversion1D import func_to_optimize
+    # assert func_to_optimize(forward_params['model'].get_optimization_option('val', vectorize=True), placeholders,
+    #                  forward_params, helper=None, show_tol=False) < 0.01
+
+    inversed_model = inverse(optimizers, error=0.0001, placeholders=placeholders, forward_params=forward_params)
 
     print('Inversion calculated!')
     inversion_end_time = time.time()

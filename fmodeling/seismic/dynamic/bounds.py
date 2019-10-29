@@ -62,5 +62,3 @@ def calculate_bounds(model, rays):
 
     for i, bc in enumerate(boundary_coeffs):
         rays_[ray_indexes[i]].set_boundary_dynamic(indexes[i], bc)
-
-    print(1)
