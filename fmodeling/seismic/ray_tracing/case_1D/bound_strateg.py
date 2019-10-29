@@ -23,11 +23,10 @@ def PdPuWater(indexes, bound_indexes, refl_index):
         down_bounds_1 = [PDownPDownWaterTransmission(1)]
         down_bounds_2 = [PDownPDownTransmission(i) for i in indexes[(bound_indexes < refl_index) & (bound_indexes > 1)]]
 
-        last_idx = indexes[-1]
-        up_bounds_2 = [PUpPUpTransmission(i) for i in indexes[(bound_indexes > refl_index) & (bound_indexes < last_idx)]]
-        up_bounds_1 = [PUpPUpWaterTransmission(last_idx)]
+        up_bounds_2 = [PUpPUpTransmission(i) for i in indexes[(bound_indexes > refl_index) & (bound_indexes < bound_indexes[-1])]]
+        up_bounds_1 = [PUpPUpWaterTransmission(indexes[-1])]
 
-        bounds = np.concatenate((down_bounds_1, down_bounds_2, PDownPUpReflection(refl_index), up_bounds_2, up_bounds_1))
+        bounds = np.concatenate((down_bounds_1, down_bounds_2, [PDownPUpReflection(refl_index)], up_bounds_2, up_bounds_1))
 
     else:
         bounds = [PDownPUpWaterReflection(refl_index)]

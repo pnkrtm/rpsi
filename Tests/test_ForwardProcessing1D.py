@@ -6,6 +6,7 @@ from fmodeling.rock_physics.Tools import G_from_KPoissonRatio, G_from_VsDensity,
 from objects.seismic.waves import OWT
 from objects.Models.Models import SeismicModel1D
 from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
+from objects.Attributes.Seismic.SeismicAttribute import SeismicAttribute
 from objects.Models.Layer1D import Layer1D, LayerOPT
 from collections import OrderedDict
 
@@ -575,5 +576,68 @@ def main():
 
     print(f'Calculation time: {time_mark_2 - time_mark_1}')
 
+def water_case_test():
+    h = [
+        67.5,
+        22.5,
+        40,
+    ]
+
+    layer_1_seism = {
+        'vp': 1500,
+        'vs': 0,
+        'rho': 1000
+    }
+
+    layer_2_seism = {
+        'vp': 1600,
+        'vs': 200,
+        'rho': 1300
+    }
+
+    layer_3_seism = {
+        'vp': 2600,
+        'vs': 1000,
+        'rho': 2000
+    }
+
+    layer_4_seism = {
+        'vp': 3000,
+        'vs': 1200,
+        'rho': 2200
+    }
+
+    layer_1 = Layer1D(h[0],
+                      rp_attribute=None,
+                      seism_attribute=SeismicAttribute(**layer_1_seism),
+                      opt=LayerOPT.NO)
+    layer_2 = Layer1D(h[1],
+                      seism_attribute=SeismicAttribute(**layer_2_seism),
+                      rp_attribute=None,
+                      opt=LayerOPT.NO)
+    layer_3 = Layer1D(h[2],
+                      rp_attribute=None,
+                      seism_attribute=SeismicAttribute(**layer_3_seism),
+                      opt=LayerOPT.NO)
+    layer_4 = Layer1D(-1,
+                      rp_attribute=None,
+                      seism_attribute=SeismicAttribute(**layer_4_seism),
+                      opt=LayerOPT.NO)
+
+    model = SeismicModel1D([layer_1, layer_2, layer_3, layer_4])
+
+    dx = 2
+    nx = 100
+    x_rec = [i * dx for i in range(1, nx + 1)]
+    wave_types = [OWT.PdPu_water]
+
+    observe, test_seismic = \
+        forward_with_trace_calcing(model, x_rec,
+                                   dt=1e-04, trace_len=2000, wavetypes=wave_types, display_stat=True,
+                                   visualize_res=False, visualize_seismograms=True)
+
+
 if __name__ == '__main__':
-    main()
+    # main()
+    water_case_test()
+
