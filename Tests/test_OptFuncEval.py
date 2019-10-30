@@ -2,15 +2,15 @@ import time
 import numpy as np
 
 from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
-from Inversion.Strategies.SeismDiffInversion1D import inverse
-from Inversion.Optimizators.Optimizations import LBFGSBOptimization, DifferentialEvolution
+from inversion.Strategies.SeismDiffInversion1D import inverse
+from inversion.optimizators.optimizations import LBFGSBOptimization, DifferentialEvolution
 from Tests.test_ForwardProcessing1D import get_model_2layered, get_model_3layered
 from objects.Data.WavePlaceholder import WaveDataPlaceholder
 from objects.seismic.waves import OWT
 from objects.Models.Models import SeismicModel1D
 from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
 from objects.Models.Layer1D import Layer1D, LayerOPT
-from Inversion.Strategies.SeismDiffInversion1D import func_to_optimize
+from inversion.Strategies.SeismDiffInversion1D import func_to_optimize
 
 
 def process_3_layer():

@@ -2,9 +2,10 @@ import numpy as np
 import random
 from scipy.optimize import fmin_l_bfgs_b, differential_evolution, dual_annealing, newton, fmin_cg, fmin_bfgs, fmin, \
     minimize
+from ax import optimize
 
 
-from Inversion.Optimizators._differentialevolution import differential_evolution as differential_evolution_parallel
+from inversion.optimizators._differentialevolution import differential_evolution as differential_evolution_parallel
 
 
 class BaseOptimization:
@@ -286,6 +287,37 @@ class DualAnnealing:
                                 no_local_search=self.no_local_search, callback=self.callback, x0=x0)
 
         return result.x
+
+class AxOptimizer:
+    def __init__(self, num_evals=30, log_scale=False):
+        self._num_evals = num_evals
+        self._log_scale = log_scale
+
+    def optimize(self, func, bounds, args=(), x0=None, **kwargs):
+
+        def optimizing_func(x):
+            return func(list(x.values()), *args)
+
+        parameters = [{
+            "name": f"x{i}",
+            "type": "range",
+            "bounds": [float(b[0]), float(b[1])],
+            "value_type": "float",
+            "log_scale": self._log_scale
+        } for i, b in enumerate(bounds)]
+
+        best_parameters, best_values, experiment, model = optimize(
+            experiment_name="optimization",
+            objective_name="seismic_metrics",
+            evaluation_function=optimizing_func,
+            parameters=parameters,
+            total_trials=self._num_evals,
+            minimize=True
+        )
+
+        return list(best_parameters.values())
+
+
 
 
 optimizers_dict = {

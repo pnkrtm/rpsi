@@ -1,8 +1,8 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from Inversion.DataIO import read_input_fp_file, read_input_ip_file
-from Inversion.Strategies.SeismDiffInversion1D import func_to_optimize
+from inversion.DataIO import read_input_fp_file, read_input_ip_file
+from inversion.Strategies.SeismDiffInversion1D import func_to_optimize
 
 
 def single_param_visualize():

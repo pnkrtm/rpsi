@@ -5,7 +5,7 @@ import warnings
 
 import numpy as np
 
-from Inversion.Optimizators.Optimizations import optimizers_dict
+from inversion.optimizators.optimizations import optimizers_dict
 from objects.seismic.seismogram import Seismogram, Trace
 from obspy_edited import segy
 
@@ -241,7 +241,7 @@ def write_output_file(model_folder, params_all_, inversed_model, params_to_optim
         rows.append('{}_true[{}] = {}, {}_inversed[{}] = {}\n'.format(key, val, true_val,
                                                                         key, val, m))
     if inverse_duration is not None:
-        rows.append('Inversion duration: {} min\n'.format(inverse_duration))
+        rows.append('inversion duration: {} min\n'.format(inverse_duration))
 
     err_average = np.average(errs)
 

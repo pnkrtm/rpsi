@@ -2,8 +2,8 @@ import sys
 sys.path.append('../')
 
 from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
-from Inversion.Strategies.SeismDiffInversion1D import inverse
-from Inversion.Optimizators.Optimizations import LBFGSBOptimization
+from inversion.Strategies.SeismDiffInversion1D import inverse
+from inversion.optimizators.optimizations import LBFGSBOptimization, AxOptimizer
 from Tests.test_ForwardProcessing1D import get_model_2layered
 from objects.Data.WavePlaceholder import WaveDataPlaceholder
 from objects.seismic.waves import OWT
@@ -74,19 +74,25 @@ def main():
         )
     ]
 
+    # optimizers = [
+    #     AxOptimizer(num_evals=20)
+    # ]
+
     model.layers[0]['Km'] = 5
     model.layers[1]['Km'] = 20
 
-    # from Inversion.Strategies.SeismDiffInversion1D import func_to_optimize
+    # true values: 7.3 and 21.5
+
+    # from inversion.Strategies.SeismDiffInversion1D import func_to_optimize
     # assert func_to_optimize(forward_params['model'].get_optimization_option('val', vectorize=True), placeholders,
     #                  forward_params, helper=None, show_tol=False) < 0.01
 
     inversed_model = inverse(optimizers, error=0.0001, placeholders=placeholders, forward_params=forward_params)
 
-    print('Inversion calculated!')
+    print('inversion calculated!')
     inversion_end_time = time.time()
 
-    print('Inversion duration in minutes: {}'.format((inversion_end_time - inversion_start_time)/60))
+    print('inversion duration: {} seconds'.format((inversion_end_time - inversion_start_time)))
 
     print(inversed_model)
 

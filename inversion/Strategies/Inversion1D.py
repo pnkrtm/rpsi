@@ -5,8 +5,8 @@ from numpy import linalg
 import time
 
 from fmodeling.ForwardProcessing1D import forward, forward_with_trace_calcing
-from Inversion.Optimizators.Optimizations import DifferentialEvolution_parallel
-from Inversion.Utils.Tools import OptimizeHelper
+from inversion.optimizators.optimizations import DifferentialEvolution_parallel
+from inversion.Utils.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException
 
 

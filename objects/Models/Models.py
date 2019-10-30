@@ -112,6 +112,9 @@ class SeismicModel1D:
 
                 res = (res - mins) / (maxes - mins)
 
+            elif self.scale == 'lg':
+                res = np.log10(res)
+
             elif self.scale == "minmaxlog":
                 raise NotImplementedError()
 
@@ -132,6 +135,9 @@ class SeismicModel1D:
                 self.scale = "minmax"
 
                 values = values * (maxes - mins) + mins
+
+            elif self.scale == 'lg':
+                values = np.power(10, values)
 
             elif self.scale == 'minmaxlog':
                 raise NotImplementedError()

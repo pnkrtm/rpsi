@@ -2,7 +2,7 @@ import os
 import argparse
 
 from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
-from Inversion.DataIO import read_input_fp_file, write_segy
+from inversion.DataIO import read_input_fp_file, write_segy
 from Visualization.Drawing import draw_seismogram
 
 

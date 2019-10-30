@@ -1,6 +1,6 @@
 import numpy as np
 
-from Inversion.DataIO import read_segy
+from inversion.DataIO import read_segy
 
 def insert_zeros(trace, tt=None):
     """Insert zero locations in data trace and tt vector based on linear fit"""
