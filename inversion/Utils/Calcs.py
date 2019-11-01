@@ -24,18 +24,38 @@ def rmse_per_column(matr_obs: np.ndarray, matr_mod: np.ndarray, trace_weights: n
 
         ind = list(set(ind1) | set(ind2))
 
-        obs = observed
-        mod = modeled
+        # obs = observed
+        # mod = modeled
 
-        # obs = observed[ind]
-        # mod = modeled[ind]
+        obs = observed[ind]
+        mod = modeled[ind]
 
         obs *= 1
         mod *= 1
 
-        diff_func = lambda x, y: np.sqrt(np.mean((x - y)**2))
-        # diff_func = lambda x, y: np.mean((x - y) ** 2)
-        # diff_func = lambda x, y: np.mean(abs((x - y) / x))
+        mse= lambda x, y: np.mean((x - y) ** 2)
+
+        # rmae
+        def rmae(obs, mod):
+            arr = abs((obs - mod) / obs)
+
+            return np.mean(arr[np.isfinite(arr)])
+
+        rmse = lambda x, y: np.sqrt(np.mean((x - y) ** 2))
+
+        def rrmse(obs, mod):
+            arr = rmse(obs, mod)
+
+            return arr / np.mean(obs)
+
+        def rmsre(obs, mod):
+            arr = ((obs - mod) / obs) ** 2
+
+            arr = arr[np.isfinite(arr)]
+
+            return np.sqrt(np.mean(arr))
+
+        diff_func = rmsre
 
         diff = diff_func(obs, mod)
 
