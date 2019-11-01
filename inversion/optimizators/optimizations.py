@@ -18,7 +18,7 @@ class BaseOptimization:
 
 class LBFGSBOptimization(BaseOptimization):
     def __init__(self, approx_grad=True, m=10, factr=1e10, pgtol=1e-8, epsilon=1e-6, maxiter=200, bounds=None,
-                 maxfun=15000, maxls=20, helper=None):
+                 maxfun=15000, maxls=20, helper=None, iprint=-1, disp=0):
         super().__init__(helper)
         self.approx_grad = approx_grad
         self.m = m
@@ -34,12 +34,20 @@ class LBFGSBOptimization(BaseOptimization):
 
         self.maxfun = maxfun
         self.maxls = maxls
+        self.iprint = iprint
+        self.disp = disp
 
     def optimize(self, func, x0, bounds, args=(), **kwargs):
 
         x, f, d = fmin_l_bfgs_b(func=func, x0=x0, args=args, approx_grad=self.approx_grad, m=self.m, factr=self.factr,
                                pgtol=self.pgtol, epsilon=self.epsilon, maxiter=self.maxiter, bounds=bounds,
-                               maxfun=self.maxfun, maxls=self.maxls)
+                               maxfun=self.maxfun, maxls=self.maxls, iprint=self.iprint, disp=self.disp)
+
+        print("L-BFGS-B stat:")
+
+        for key, value in d.items():
+            print(f"{key}: {value}")
+        print()
 
         if self.helper is not None:
             self.helper.log_message("L-BFGS-B optimizer finished!")

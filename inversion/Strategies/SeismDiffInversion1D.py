@@ -100,16 +100,21 @@ def inverse(optimizers, error, placeholders, forward_params, logpath=None, scale
 
     param_bounds = np.column_stack((min_bound.T, max_bound.T))
 
-    if isinstance(error, float):
-        error = [error] * len(optimizers)
-    elif isinstance(error, (list, np.ndarray, tuple)):
-        if len(error) != len(optimizers):
-            raise ValueError("Bad errors list length!")
-    else:
-        raise TypeError("Unknown error type!")
+    if error is not None:
+        if isinstance(error, float):
+            error = [error] * len(optimizers)
+        elif isinstance(error, (list, np.ndarray, tuple)):
+            if len(error) != len(optimizers):
+                raise ValueError("Bad errors list length!")
+        else:
+            raise TypeError("Unknown error type!")
 
-    helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error, logpath=logpath)
-    helper.in_use = True
+        helper = OptimizeHelper(nerrors=len(data_start), error_to_stop=error, logpath=logpath)
+        helper.in_use = True
+
+    else:
+        helper = OptimizeHelper(nerrors=len(data_start), logpath=logpath)
+        helper.in_use = False
 
     for i in range(len(optimizers)):
         optimizers[i].helper = helper

@@ -2,6 +2,7 @@ import numpy as np
 import os
 import logging
 
+
 class OptimizeHelper:
     def __init__(self, nerrors=20, in_use=True, error_to_stop=(0.01,), std_to_stop=0.001, logpath: str=None):
         self.nerrors = nerrors

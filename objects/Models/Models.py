@@ -110,7 +110,7 @@ class SeismicModel1D:
                 maxes = self.get_optimization_option("max", vectorize=True)
                 self.scale = "minmax"
 
-                res = (res - mins) / (maxes - mins)
+                res = (res - mins + 1e-9) / (maxes - mins)
 
             elif self.scale == 'lg':
                 res = np.log10(res)
