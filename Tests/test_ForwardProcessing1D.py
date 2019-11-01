@@ -631,10 +631,14 @@ def water_case_test():
     x_rec = [i * dx for i in range(1, nx + 1)]
     wave_types = [OWT.PdPu_water]
 
+    start_time = time.time()
     observe, test_seismic = \
         forward_with_trace_calcing(model, x_rec,
                                    dt=1e-04, trace_len=2000, wavetypes=wave_types, display_stat=True,
                                    visualize_res=False, visualize_seismograms=True)
+    end_time = time.time()
+
+    print(end_time - start_time)
 
 
 if __name__ == '__main__':

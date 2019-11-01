@@ -240,6 +240,12 @@ class DifferentialEvolution(BaseOptimization):
                                         disp=self.disp, polish=self.polish, init=self.init, atol=self.atol,
                                         updating=self.updating, workers=self.workers)
 
+        print("DE stat:")
+
+        for key, value in result.items():
+            print(f"{key}: {value}")
+        print()
+
         if self.helper is not None:
             self.helper.log_message("DE optimizer finished!")
             self.helper.log_message(result.message)

@@ -10,6 +10,7 @@ from objects.seismic.waves import OWT
 from objects.Models.Models import SeismicModel1D
 from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
 from objects.Models.Layer1D import Layer1D, LayerOPT
+from inversion.Strategies.SeismDiffInversion1D import func_to_optimize
 
 import time
 
@@ -95,6 +96,11 @@ def main():
     print('inversion duration: {} seconds'.format((inversion_end_time - inversion_start_time)))
 
     print(inversed_model)
+
+    func_to_opt_start_time = time.time()
+    func_to_optimize(forward_params['model'].get_optimization_option('val', vectorize=True), placeholders,
+                     forward_params, helper=None, show_tol=False)
+    print(f'Func to optimize evaluation time: {time.time() - func_to_opt_start_time} seconds')
 
 
 if __name__ == '__main__':
