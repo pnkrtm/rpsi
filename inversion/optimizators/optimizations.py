@@ -3,6 +3,7 @@ import random
 from scipy.optimize import fmin_l_bfgs_b, differential_evolution, dual_annealing, newton, fmin_cg, fmin_bfgs, fmin, \
     minimize
 from ax import optimize
+from datetime import datetime
 
 
 from inversion.optimizators._differentialevolution import differential_evolution as differential_evolution_parallel
@@ -53,7 +54,7 @@ class LBFGSBOptimization(BaseOptimization):
             self.helper.log_message("L-BFGS-B optimizer finished!")
             self.helper.log_message(str(d))
 
-        return x
+        return x, [f, d]
 
 class BFGSOptimization(BaseOptimization):
     def __init__(self, gtol=1e-05, norm=np.inf, epsilon=1.4901161193847656e-08, maxiter=None,
@@ -234,6 +235,11 @@ class DifferentialEvolution(BaseOptimization):
         elif self.init == "random_min":
             self.create_random_inits(bounds)
 
+        def foo(xk, convergence):
+            print(datetime.now())
+
+        callback = foo
+
         result = differential_evolution(func, bounds, args=args, strategy=self.strategy, maxiter=self.maxiter,
                                         popsize=self.popsize, tol=self.tol, mutation=self.mutation,
                                         recombination=self.recombination, seed=self.seed, callback=callback,
@@ -251,7 +257,7 @@ class DifferentialEvolution(BaseOptimization):
             self.helper.log_message(result.message)
             self.helper.log_message(f"DE statistics: error={result.fun}, niterations={result.nit}, nfuncevaluations={result.nfev}")
 
-        return result.x
+        return result.x, result
 
 
 class DifferentialEvolution_parallel():
@@ -329,7 +335,7 @@ class AxOptimizer:
             minimize=True
         )
 
-        return list(best_parameters.values())
+        return list(best_parameters.values()), {}
 
 
 

@@ -3,7 +3,7 @@ sys.path.append('../')
 
 from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
 from inversion.Strategies.SeismDiffInversion1D import inverse
-from inversion.optimizators.optimizations import LBFGSBOptimization, AxOptimizer
+from inversion.optimizators.optimizations import LBFGSBOptimization, AxOptimizer, DifferentialEvolution
 from Tests.test_ForwardProcessing1D import get_model_2layered
 from objects.Data.WavePlaceholder import WaveDataPlaceholder
 from objects.seismic.waves import OWT
@@ -75,6 +75,21 @@ def main():
         )
     ]
 
+    optimizers_de = [
+        DifferentialEvolution(
+            popsize=5,
+            maxiter=50000,
+            init="latinhypercube",
+            strategy="best1bin",
+            disp=True,
+            polish=False,
+            tol=0.00001,
+            mutation=1.5,
+            recombination=0.6,
+            workers=8
+        )
+    ]
+
     # optimizers = [
     #     AxOptimizer(num_evals=20)
     # ]
@@ -88,7 +103,7 @@ def main():
     # assert func_to_optimize(forward_params['model'].get_optimization_option('val', vectorize=True), placeholders,
     #                  forward_params, helper=None, show_tol=False) < 0.01
 
-    inversed_model = inverse(optimizers, error=0.0001, placeholders=placeholders, forward_params=forward_params)
+    inversed_model, stats = inverse(optimizers_de, error=0.0001, placeholders=placeholders, forward_params=forward_params)
 
     print('inversion calculated!')
     inversion_end_time = time.time()

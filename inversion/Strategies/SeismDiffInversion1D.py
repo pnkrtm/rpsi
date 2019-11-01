@@ -130,11 +130,16 @@ def inverse(optimizers, error, placeholders, forward_params, logpath=None, scale
         "args": args
     }
 
+    opt_stats = []
+    result_model = None
+
     for opt in optimizers:
         try:
-            result_model = opt.optimize(**optimizator_start_params)
+            result_model, stats = opt.optimize(**optimizator_start_params)
             helper.log_message(f"{str(datetime.datetime.now())} Optimizer finished!")
             optimizator_start_params["x0"] = result_model
+
+            opt_stats.append(stats)
 
         except ErrorAchievedException as e:
             result_model = e.model
@@ -145,7 +150,7 @@ def inverse(optimizers, error, placeholders, forward_params, logpath=None, scale
 
     helper.log_message(f'{str(datetime.datetime.now())} Optimization finished!')
 
-    return result_model
+    return result_model, stats
 
 
 def inverse_per_layer(optimizers, error, params_all, params_to_optimize, params_bounds,
