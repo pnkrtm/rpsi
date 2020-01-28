@@ -37,20 +37,27 @@ def pdownpup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
     phi1 = np.arcsin(p * vs1)  # Reflected S
     phi2 = np.arcsin(p * vs2)  # Transmitted S
 
-    a = rho2 * (1 - 2 * np.sin(phi2)**2.) - rho1 * (1 - 2 * np.sin(phi1)**2.)
-    b = rho2 * (1 - 2 * np.sin(phi2)**2.) + 2 * rho1 * np.sin(phi1)**2.
-    c = rho1 * (1 - 2 * np.sin(phi1)**2.) + 2 * rho2 * np.sin(phi2)**2.
+    sinphi1 = np.sin(phi1)
+    sinphi2 = np.sin(phi2)
+    cosphi1 = np.cos(phi1)
+    cosphi2 = np.cos(phi2)
+    costheta1 = np.cos(theta1)
+    costheta2 = np.cos(theta2)
+
+    a = rho2 * (1 - 2 * sinphi2**2.) - rho1 * (1 - 2 * sinphi1**2.)
+    b = rho2 * (1 - 2 * sinphi2**2.) + 2 * rho1 * sinphi1**2.
+    c = rho1 * (1 - 2 * sinphi1**2.) + 2 * rho2 * sinphi2**2.
     d = 2 * (rho2 * vs2**2 - rho1 * vs1**2)
 
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1)/vp1 * np.cos(phi2)/vs2
-    H = a - d * np.cos(theta2)/vp2 * np.cos(phi1)/vs1
+    E = (b * costheta1 / vp1) + (c * costheta2 / vp2)
+    F = (b * cosphi1 / vs1) + (c * cosphi2 / vs2)
+    G = a - d * costheta1/vp1 * cosphi2/vs2
+    H = a - d * costheta2/vp2 * cosphi1/vs1
 
     D = E*F + G*H*p**2
 
-    rpp = (1/D) * (F*(b*(np.cos(theta1)/vp1) - c*(np.cos(theta2)/vp2)) \
-                   - H*p**2 * (a + d*(np.cos(theta1)/vp1)*(np.cos(phi2)/vs2)))
+    rpp = (1/D) * (F*(b*(costheta1/vp1) - c*(costheta2/vp2)) \
+                   - H*p**2 * (a + d*(costheta1/vp1)*(cosphi2/vs2)))
 
     if multiple_angles:
         rpp = rpp.T
@@ -94,19 +101,26 @@ def pdownpdown(vp1, vs1, rho1, vp2, vs2, rho2, theta1=0):
     phi1 = np.arcsin(p * vs1)  # Reflected S
     phi2 = np.arcsin(p * vs2)  # Transmitted S
 
-    a = rho2 * (1 - 2 * np.sin(phi2) ** 2.) - rho1 * (1 - 2 * np.sin(phi1) ** 2.)
-    b = rho2 * (1 - 2 * np.sin(phi2) ** 2.) + 2 * rho1 * np.sin(phi1) ** 2.
-    c = rho1 * (1 - 2 * np.sin(phi1) ** 2.) + 2 * rho2 * np.sin(phi2) ** 2.
+    sinphi1 = np.sin(phi1)
+    sinphi2 = np.sin(phi2)
+    cosphi1 = np.cos(phi1)
+    cosphi2 = np.cos(phi2)
+    costheta1 = np.cos(theta1)
+    costheta2 = np.cos(theta2)
+
+    a = rho2 * (1 - 2 * sinphi2 ** 2.) - rho1 * (1 - 2 * sinphi1 ** 2.)
+    b = rho2 * (1 - 2 * sinphi2 ** 2.) + 2 * rho1 * sinphi1 ** 2.
+    c = rho1 * (1 - 2 * sinphi1 ** 2.) + 2 * rho2 * sinphi2 ** 2.
     d = 2 * (rho2 * vs2 ** 2 - rho1 * vs1 ** 2)
 
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1) / vp1 * np.cos(phi2) / vs2
-    H = a - d * np.cos(theta2) / vp2 * np.cos(phi1) / vs1
+    E = (b * costheta1 / vp1) + (c * costheta2 / vp2)
+    F = (b * cosphi1 / vs1) + (c * cosphi2 / vs2)
+    G = a - d * costheta1 / vp1 * cosphi2 / vs2
+    H = a - d * costheta2 / vp2 * cosphi1 / vs1
 
     D = E * F + G * H * p ** 2
 
-    tpp = (2 * rho1 * (np.cos(theta1) / vp1) * F * vp1) / (vp2 * D)
+    tpp = (2 * rho1 * (costheta1 / vp1) * F * vp1) / (vp2 * D)
 
     if multiple_angles:
         tpp = tpp.T
@@ -150,19 +164,26 @@ def puppup(vp1, vs1, rho1, vp2, vs2, rho2, theta2=0):
     phi1 = np.arcsin(p * vs1)  # Reflected S
     phi2 = np.arcsin(p * vs2)  # Transmitted S
 
-    a = rho2 * (1 - 2 * np.sin(phi2) ** 2.) - rho1 * (1 - 2 * np.sin(phi1) ** 2.)
-    b = rho2 * (1 - 2 * np.sin(phi2) ** 2.) + 2 * rho1 * np.sin(phi1) ** 2.
-    c = rho1 * (1 - 2 * np.sin(phi1) ** 2.) + 2 * rho2 * np.sin(phi2) ** 2.
+    sinphi1 = np.sin(phi1)
+    sinphi2 = np.sin(phi2)
+    cosphi1 = np.cos(phi1)
+    cosphi2 = np.cos(phi2)
+    costheta1 = np.cos(theta1)
+    costheta2 = np.cos(theta2)
+
+    a = rho2 * (1 - 2 * sinphi2 ** 2.) - rho1 * (1 - 2 * sinphi1 ** 2.)
+    b = rho2 * (1 - 2 * sinphi2 ** 2.) + 2 * rho1 * sinphi1 ** 2.
+    c = rho1 * (1 - 2 * sinphi1 ** 2.) + 2 * rho2 * sinphi2 ** 2.
     d = 2 * (rho2 * vs2 ** 2 - rho1 * vs1 ** 2)
 
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1) / vp1 * np.cos(phi2) / vs2
-    H = a - d * np.cos(theta2) / vp2 * np.cos(phi1) / vs1
+    E = (b * costheta1 / vp1) + (c * costheta2 / vp2)
+    F = (b * cosphi1 / vs1) + (c * cosphi2 / vs2)
+    G = a - d * costheta1 / vp1 * cosphi2 / vs2
+    H = a - d * costheta2 / vp2 * cosphi1 / vs1
 
     D = E * F + G * H * p ** 2
 
-    tpp = (2 * rho2 * (np.cos(theta2) / vp2) * F * vp2) / (vp1* D)
+    tpp = (2 * rho2 * (costheta2 / vp2) * F * vp2) / (vp1* D)
 
     if multiple_angles:
         tpp = tpp.T
@@ -185,19 +206,26 @@ def pdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, theta1: np.ndarray=0 ):
     phi1 = np.arcsin(p * vs1)  # Reflected S
     phi2 = np.arcsin(p * vs2)  # Transmitted S
 
-    a = rho2 * (1 - 2 * np.sin(phi2)**2.) - rho1 * (1 - 2 * np.sin(phi1)**2.)
-    b = rho2 * (1 - 2 * np.sin(phi2)**2.) + 2 * rho1 * np.sin(phi1)**2.
-    c = rho1 * (1 - 2 * np.sin(phi1)**2.) + 2 * rho2 * np.sin(phi2)**2.
+    sinphi1 = np.sin(phi1)
+    sinphi2 = np.sin(phi2)
+    cosphi1 = np.cos(phi1)
+    cosphi2 = np.cos(phi2)
+    costheta1 = np.cos(theta1)
+    costheta2 = np.cos(theta2)
+
+    a = rho2 * (1 - 2 * sinphi2**2.) - rho1 * (1 - 2 * sinphi1**2.)
+    b = rho2 * (1 - 2 * sinphi2**2.) + 2 * rho1 * sinphi1**2.
+    c = rho1 * (1 - 2 * sinphi1**2.) + 2 * rho2 * sinphi2**2.
     d = 2 * (rho2 * vs2**2 - rho1 * vs1**2)
 
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1)/vp1 * np.cos(phi2)/vs2
-    H = a - d * np.cos(theta2)/vp2 * np.cos(phi1)/vs1
+    E = (b * costheta1 / vp1) + (c * costheta2 / vp2)
+    F = (b * cosphi1 / vs1) + (c * cosphi2 / vs2)
+    G = a - d * costheta1/vp1 * cosphi2/vs2
+    H = a - d * costheta2/vp2 * cosphi1/vs1
 
     D = E*F + G*H*p**2
 
-    res = -2 * (np.cos(theta1) / vp1) * (a*b + c*d*(np.cos(theta2) / vp2)*(np.cos(phi2) / vs2))*p*vp1*(1/(vs1*D))
+    res = -2 * (costheta1 / vp1) * (a*b + c*d*(costheta2 / vp2)*(cosphi2 / vs2))*p*vp1*(1/(vs1*D))
 
     return res
 
@@ -241,23 +269,30 @@ def svdownsvup(vp1, vs1, rho1, vp2, vs2, rho2, phi1=0):
 
     phi2 = np.arcsin(p * vs2)  # Transmitted S
 
-    a = rho2 * (1 - 2 * np.sin(phi2) ** 2.) - rho1 * (1 - 2 * np.sin(phi1) ** 2.)
-    b = rho2 * (1 - 2 * np.sin(phi2) ** 2.) + 2 * rho1 * np.sin(phi1) ** 2.
-    c = rho1 * (1 - 2 * np.sin(phi1) ** 2.) + 2 * rho2 * np.sin(phi2) ** 2.
+    sinphi1 = np.sin(phi1)
+    sinphi2 = np.sin(phi2)
+    cosphi1 = np.cos(phi1)
+    cosphi2 = np.cos(phi2)
+    costheta1 = np.cos(theta1)
+    costheta2 = np.cos(theta2)
+
+    a = rho2 * (1 - 2 * sinphi2 ** 2.) - rho1 * (1 - 2 * sinphi1 ** 2.)
+    b = rho2 * (1 - 2 * sinphi2 ** 2.) + 2 * rho1 * sinphi1 ** 2.
+    c = rho1 * (1 - 2 * sinphi1 ** 2.) + 2 * rho2 * sinphi2 ** 2.
     d = 2 * (rho2 * vs2 ** 2 - rho1 * vs1 ** 2)
 
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1) / vp1 * np.cos(phi2) / vs2
-    H = a - d * np.cos(theta2) / vp2 * np.cos(phi1) / vs1
+    E = (b * costheta1 / vp1) + (c * costheta2 / vp2)
+    F = (b * cosphi1 / vs1) + (c * cosphi2 / vs2)
+    G = a - d * costheta1 / vp1 * cosphi2 / vs2
+    H = a - d * costheta2 / vp2 * cosphi1 / vs1
 
     D = E * F + G * H * p ** 2
 
-    coeff_1 = b * np.cos(phi1) / vs1 - c * np.cos(phi2) / vs2
-    coeff_2 = a + d * (np.cos(theta2) / vp2) * (np.cos(phi1) / vs1)
+    coeff_1 = b * cosphi1 / vs1 - c * cosphi2 / vs2
+    coeff_2 = a + d * (costheta2 / vp2) * (cosphi1 / vs1)
 
-    # rsvsv = -((b * np.cos(phi1) / vs1 - c * np.cos(phi2) / vs2) * E
-    #           - (a + d * (np.cos(theta2) / vp2) * (np.cos(phi1) / vs1)) * G * p * p) / D
+    # rsvsv = -((b * cosphi1 / vs1 - c * cosphi2 / vs2) * E
+    #           - (a + d * (costheta2 / vp2) * (cosphi1 / vs1)) * G * p * p) / D
 
     rsvsv = -(coeff_1 * E - coeff_2 * G * p * p) / D
 
@@ -306,19 +341,26 @@ def svdownsvdown(vp1, vs1, rho1, vp2, vs2, rho2, phi1=0):
 
     phi2 = np.arcsin(p * vs2)  # Transmitted S
 
-    a = rho2 * (1 - 2 * np.sin(phi2) ** 2.) - rho1 * (1 - 2 * np.sin(phi1) ** 2.)
-    b = rho2 * (1 - 2 * np.sin(phi2) ** 2.) + 2 * rho1 * np.sin(phi1) ** 2.
-    c = rho1 * (1 - 2 * np.sin(phi1) ** 2.) + 2 * rho2 * np.sin(phi2) ** 2.
+    sinphi1 = np.sin(phi1)
+    sinphi2 = np.sin(phi2)
+    cosphi1 = np.cos(phi1)
+    cosphi2 = np.cos(phi2)
+    costheta1 = np.cos(theta1)
+    costheta2 = np.cos(theta2)
+
+    a = rho2 * (1 - 2 * sinphi2 ** 2.) - rho1 * (1 - 2 * sinphi1 ** 2.)
+    b = rho2 * (1 - 2 * sinphi2 ** 2.) + 2 * rho1 * sinphi1 ** 2.
+    c = rho1 * (1 - 2 * sinphi1 ** 2.) + 2 * rho2 * sinphi2 ** 2.
     d = 2 * (rho2 * vs2 ** 2 - rho1 * vs1 ** 2)
 
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1) / vp1 * np.cos(phi2) / vs2
-    H = a - d * np.cos(theta2) / vp2 * np.cos(phi1) / vs1
+    E = (b * costheta1 / vp1) + (c * costheta2 / vp2)
+    F = (b * cosphi1 / vs1) + (c * cosphi2 / vs2)
+    G = a - d * costheta1 / vp1 * cosphi2 / vs2
+    H = a - d * costheta2 / vp2 * cosphi1 / vs1
 
     D = E * F + G * H * p ** 2
 
-    rsvsv = 2 * rho1 * (np.cos(phi1) / vs1) * E * vs1 / (vs2 * D)
+    rsvsv = 2 * rho1 * (cosphi1 / vs1) * E * vs1 / (vs2 * D)
 
     if multiple_angles:
         rsvsv = rsvsv.T
@@ -365,19 +407,26 @@ def svupsvup(vp1, vs1, rho1, vp2, vs2, rho2, phi2=0):
 
     phi1 = np.arcsin(p * vs1)  # Transmitted S
 
-    a = rho2 * (1 - 2 * np.sin(phi2) ** 2.) - rho1 * (1 - 2 * np.sin(phi1) ** 2.)
-    b = rho2 * (1 - 2 * np.sin(phi2) ** 2.) + 2 * rho1 * np.sin(phi1) ** 2.
-    c = rho1 * (1 - 2 * np.sin(phi1) ** 2.) + 2 * rho2 * np.sin(phi2) ** 2.
+    sinphi1 = np.sin(phi1)
+    sinphi2 = np.sin(phi2)
+    cosphi1 = np.cos(phi1)
+    cosphi2 = np.cos(phi2)
+    costheta1 = np.cos(theta1)
+    costheta2 = np.cos(theta2)
+
+    a = rho2 * (1 - 2 * sinphi2 ** 2.) - rho1 * (1 - 2 * sinphi1 ** 2.)
+    b = rho2 * (1 - 2 * sinphi2 ** 2.) + 2 * rho1 * sinphi1 ** 2.
+    c = rho1 * (1 - 2 * sinphi1 ** 2.) + 2 * rho2 * sinphi2 ** 2.
     d = 2 * (rho2 * vs2 ** 2 - rho1 * vs1 ** 2)
 
-    E = (b * np.cos(theta1) / vp1) + (c * np.cos(theta2) / vp2)
-    F = (b * np.cos(phi1) / vs1) + (c * np.cos(phi2) / vs2)
-    G = a - d * np.cos(theta1) / vp1 * np.cos(phi2) / vs2
-    H = a - d * np.cos(theta2) / vp2 * np.cos(phi1) / vs1
+    E = (b * costheta1 / vp1) + (c * costheta2 / vp2)
+    F = (b * cosphi1 / vs1) + (c * cosphi2 / vs2)
+    G = a - d * costheta1 / vp1 * cosphi2 / vs2
+    H = a - d * costheta2 / vp2 * cosphi1 / vs1
 
     D = E * F + G * H * p ** 2
 
-    rsvsv = 2 * rho2 * (np.cos(phi2) / vs2) * E * vs2 / (vs1 * D)
+    rsvsv = 2 * rho2 * (cosphi2 / vs2) * E * vs2 / (vs1 * D)
 
     if multiple_angles:
         rsvsv = rsvsv.T
