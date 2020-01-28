@@ -1,7 +1,7 @@
 from typing import Union
 import numpy as np
 
-from fmodeling.Utils.classes_keeper import ClassesKeeper
+from fmodeling.utils.classes_keeper import ClassesKeeper
 
 boundary_types = ClassesKeeper()
 

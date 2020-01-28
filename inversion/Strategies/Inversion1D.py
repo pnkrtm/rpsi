@@ -4,7 +4,7 @@ import gc
 from numpy import linalg
 import time
 
-from fmodeling.ForwardProcessing1D import forward, forward_with_trace_calcing
+from fmodeling.forward_proc_1D import forward, forward_with_trace_calcing
 from inversion.optimizators.optimizations import DifferentialEvolution_parallel
 from inversion.Utils.Tools import OptimizeHelper
 from Exceptions.exceptions import ErrorAchievedException
@@ -267,66 +267,6 @@ def func_to_optimize_seismogram_universal(model_opt, params_all, params_to_optim
         raise ErrorAchievedException(model_opt)
 
     return error
-
-
-
-def func_to_optimize(model_opt, nlayers, Km, Gm, Ks, Gs, h, x_rec,
-                     rays_observed_p, rays_observed_s,
-                     reflection_observed_p, reflection_observed_s,
-                     use_rays_p, use_rays_s, use_reflection_p=False, use_reflection_s=False):
-
-    forward_start_time = time.time()
-
-    observe, model, rays_p, rays_s, reflection_p, reflection_s = forward(nlayers, Km, Gm, Ks, Gs,
-                                             model_opt[0:nlayers], # Kf
-                                             model_opt[nlayers:2*nlayers], # phi
-                                             model_opt[2*nlayers:3*nlayers], # phi_s
-                                             model_opt[3*nlayers:4*nlayers], # rho_s
-                                             model_opt[4*nlayers:5*nlayers], # rho_f
-                                             model_opt[5*nlayers:6*nlayers], # rho_m
-                                             h, x_rec,
-                                             display_stat=False, visualize_res=False,
-                                             calc_rays_p=use_rays_p, calc_rays_s=use_rays_s,
-                                             calc_reflection_p=use_reflection_p, calc_reflection_s=use_reflection_s
-                                             )
-
-    depths = model.get_depths()
-
-    error_start_time = time.time()
-
-    errs = []
-
-    for d in depths[1:]:
-        if use_rays_p:
-            rays_p_ = [r for r in rays_p if r.reflection_z == d]
-            rays_p_o = [r for r in rays_observed_p if r.reflection_z == d]
-
-            errs.append(get_time_differences(rays_p_o, rays_p_))
-
-        if use_rays_s:
-            rays_s_ = [r for r in rays_s if r.reflection_z == d]
-            rays_s_o = [r for r in rays_observed_s if r.reflection_z == d]
-
-            errs.append(get_time_differences(rays_s_o, rays_s_))
-
-    if use_reflection_p:
-        for rp, rop in zip(reflection_p, reflection_observed_p):
-            errs.append(get_reflection_differences(rop, rp))
-
-    if use_reflection_s:
-        for rs, ros in zip(reflection_s, reflection_observed_s):
-            errs.append(get_reflection_differences(ros, rs))
-
-
-    error_end_time = time.time()
-
-    # print('DEM time = {}'.format(error_start_time - forward_start_time))
-    # print('error time = {}'.format(error_end_time - error_start_time))
-    # print('all_time = {}'.format(error_end_time - forward_start_time))
-
-    print(np.average(errs))
-
-    return np.average(errs)
 
 
 def inverse_universal(optimizers, error, params_all, params_to_optimize, params_bounds,

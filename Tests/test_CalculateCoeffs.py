@@ -20,6 +20,20 @@ def main():
 
     print(refr_down_z, refl_z, refr_up_z)
 
+def time_calculation():
+    vp = [2006.75, 3227.5, 4495.611]
+    vs = [1000, 1952.64, 2695]
+    rho = [2710, 2596.5, 2850]
+
+    theta = [22.56, 38.11, 38.11]
+
+    import time
+    t1 = time.time()
+    refl = pdownpup(vp[1], vs[1], rho[1], vp[2], vs[2], rho[2], [theta[1]]*1000)
+    t2 = time.time()
+    print(f"Time evaluation: {t2 - t1}")
+
 
 if __name__ == '__main__':
-    main()
+    # main()
+    time_calculation()

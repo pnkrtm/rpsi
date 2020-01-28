@@ -145,3 +145,9 @@ class Ray1D(Ray):
 
     def get_all_boundaries_types(self):
         return [self.get_boundary_type(bi) for bi in self.boundaries.keys()]
+
+    def to_json(self):
+        res = self.__dict__
+
+        return res
+

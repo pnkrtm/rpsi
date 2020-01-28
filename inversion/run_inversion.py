@@ -10,7 +10,7 @@ sys.path.append('../')
 from inversion.DataIO import write_output_file, read_input_fp_file, read_input_ip_file, create_res_folder, write_segy
 from Visualization.Drawing import draw_seismogram, draw_dos_seismograms
 from Visualization.Models import visualize_model
-from fmodeling.ForwardProcessing1D import forward_with_trace_calcing
+from fmodeling.forward_proc_1D import forward_with_trace_calcing
 from inversion.Utils.visualize_inversion_results import write_averaged_result, plot_histogram_by_all_results
 from inversion.Strategies.SeismDiffInversion1D import inverse
 

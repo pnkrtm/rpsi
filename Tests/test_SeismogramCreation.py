@@ -5,7 +5,7 @@ import time
 from objects.Models.Models import SeismicModel1D
 from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
-from fmodeling.ForwardProcessing1D import create_seismogram
+from fmodeling.forward_proc_1D import create_seismogram
 from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
 from fmodeling.seismic.dynamic.bounds import calculate_bounds
 from Visualization.Seismic import visualize_model1D, visualize_rays_model_1D, visualize_seismogram
