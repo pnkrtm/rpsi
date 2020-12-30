@@ -28,7 +28,10 @@ class Ray:
 
     @property
     def reflection_z(self):
-        raise NotImplementedError
+        raise NotImplementedError()
+
+    def get_divergence_factor(self):
+        raise NotImplementedError()
 
     def create_boundaries(self, depths: Union[List, np.ndarray], indexes: Union[List, np.ndarray],
                           bound_indexes: Union[List, np.ndarray], types: Union[List[int], np.ndarray]):
@@ -57,8 +60,11 @@ class Ray:
 
         self.boundaries[index]["coeff"] = value
 
-    def calculate_dynamic_factor(self):
+    def calculate_dynamic_factor(self, use_divergence=True):
         vals = [b["coeff"] for b in self.boundaries.values()]
+
+        if use_divergence:
+            vals += [1 / self.get_divergence_factor()]
 
         return np.prod(vals)
 
@@ -139,6 +145,20 @@ class Ray1D(Ray):
         bound_index = len(self.x_points) // 2 + 1
 
         return self.get_boundary_angle(bound_index)
+
+    def get_divergence_factor(self):
+        dx_arr = np.diff(self.x_points[0: self.nlayers + 1])
+        dz_arr = np.diff(self.z_points[0: self.nlayers + 1])
+
+        dray_arr = np.sqrt(dx_arr**2 + dz_arr**2)
+
+        cos_arr = dz_arr / dray_arr
+        cos2_arr = cos_arr * cos_arr
+        tan_arr = dx_arr / dz_arr
+
+        d_factor = 2 / tan_arr[0] * np.sqrt(np.sum(dz_arr * tan_arr) * np.sum(dz_arr * tan_arr / cos2_arr))
+
+        return d_factor
 
     def get_boundary_type(self, bound_index):
         return self.boundaries[bound_index]["boundary_type"]
