@@ -1,2 +1,2 @@
 # rpsi
-Rock Physics Seismic inversion
+Rock Physics Seismic Inversion
