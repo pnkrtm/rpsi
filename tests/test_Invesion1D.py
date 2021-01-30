@@ -1,7 +1,7 @@
 import sys
 sys.path.append('../')
 
-from fmodeling.forward_proc_1D import forward_with_trace_calcing
+from fmodelling.forward_proc_1D import forward_with_trace_calcing
 from inversion.Strategies.SeismDiffInversion1D import inverse
 from inversion.optimizators.optimizations import LBFGSBOptimization, AxOptimizer, DifferentialEvolution
 from tests.test_ForwardProcessing1D import get_model_2layered

@@ -4,8 +4,8 @@
 from collections import namedtuple
 from objects.seismic.rays import BoundaryType
 from objects.seismic.waves import OWT
-from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpup, svdownsvup, pdownsvup
-from fmodeling.seismic.dynamic.zoeppritz_coeffs_water import pdownpup_water
+from fmodelling.seismic.dynamic.zoeppritz_coeffs import pdownpup, svdownsvup, pdownsvup
+from fmodelling.seismic.dynamic.zoeppritz_coeffs_water import pdownpup_water
 from utils.vectorizing import vectorize
 
 import numpy as np

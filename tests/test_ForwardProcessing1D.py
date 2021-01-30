@@ -1,8 +1,8 @@
 import time
 import numpy as np
 
-from fmodeling.forward_proc_1D import forward, forward_with_trace_calcing
-from fmodeling.rock_physics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
+from fmodelling.forward_proc_1D import forward, forward_with_trace_calcing
+from fmodelling.rock_physics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
 from objects.seismic.waves import OWT
 from objects.models.Models import SeismicModel1D
 from objects.attributes.rock_physics.RockPhysicsAttribute import RockPhysicsAttribute

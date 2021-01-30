@@ -1,7 +1,7 @@
 import numpy as np
 from numba import jit
 
-from fmodeling.utils.RungeKutta45 import rkdumb
+from fmodelling.utils.RungeKutta45 import rkdumb
 
 
 def CalculateCoeffs(k, mu, k_incl, mu_incl, asp_curr):

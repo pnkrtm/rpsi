@@ -1,8 +1,8 @@
 import time
 import numpy as np
 
-from fmodeling.rock_physics.mediums.DEM import DEM
-from fmodeling.rock_physics.mediums.DEMSlb import DEM as DEMSlb
+from fmodelling.rock_physics.mediums.DEM import DEM
+from fmodelling.rock_physics.mediums.DEMSlb import DEM as DEMSlb
 
 def main():
     # Matrix properties

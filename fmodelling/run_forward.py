@@ -1,7 +1,7 @@
 import os
 import argparse
 
-from fmodeling.forward_proc_1D import forward_with_trace_calcing
+from fmodelling.forward_proc_1D import forward_with_trace_calcing
 from inversion.DataIO import read_input_fp_file, write_segy
 from visualization.Drawing import draw_seismogram
 

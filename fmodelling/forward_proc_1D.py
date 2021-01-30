@@ -6,10 +6,10 @@ import random as rnd
 
 from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.seismogram import Trace, Seismogram
-from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
-from fmodeling.seismic.dynamic.reflection import calculate_reflections
-from fmodeling.seismic.dynamic.transmission import calculate_refraction_vectorized
-from fmodeling.seismic.dynamic.bounds import calculate_bounds
+from fmodelling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
+from fmodelling.seismic.dynamic.reflection import calculate_reflections
+from fmodelling.seismic.dynamic.transmission import calculate_refraction_vectorized
+from fmodelling.seismic.dynamic.bounds import calculate_bounds
 from visualization.Seismic import visualize_model1D, visualize_rays_model_1D, \
     visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram

@@ -1,7 +1,7 @@
 import time
 import numpy as np
 
-from fmodeling.forward_proc_1D import forward_with_trace_calcing
+from fmodelling.forward_proc_1D import forward_with_trace_calcing
 from inversion.Strategies.SeismDiffInversion1D import inverse
 from inversion.optimizators.optimizations import LBFGSBOptimization, DifferentialEvolution
 from tests.test_ForwardProcessing1D import get_model_2layered, get_model_3layered

@@ -5,7 +5,7 @@ from collections import OrderedDict
 from objects.seismic.rays import Ray1D
 from objects.data.WavePlaceholder import get_down_up_vel_types
 from objects.seismic.waves import OWT
-from fmodeling.seismic.ray_tracing.case_1D.bound_strateg import strategy_1D
+from fmodelling.seismic.ray_tracing.case_1D.bound_strateg import strategy_1D
 
 
 def eq_to_solve(p, vd, vu, h, x_2):

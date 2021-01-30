@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from inversion.DataIO import create_start_stop_indexes
-from fmodeling.forward_proc_1D import forward_with_trace_calcing
+from fmodelling.forward_proc_1D import forward_with_trace_calcing
 from tests.test_ForwardProcessing1D import get_model_1
 from visualization.Seismic import visualize_seismogram
 

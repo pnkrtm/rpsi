@@ -5,9 +5,9 @@ import time
 from objects.models.Models import SeismicModel1D
 from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
-from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
-from fmodeling.seismic.dynamic.reflection import calculate_reflections
-from fmodeling.seismic.dynamic.bounds import calculate_bounds
+from fmodelling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
+from fmodelling.seismic.dynamic.reflection import calculate_reflections
+from fmodelling.seismic.dynamic.bounds import calculate_bounds
 from visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D
 
 

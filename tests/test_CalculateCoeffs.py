@@ -1,5 +1,5 @@
-from fmodeling.seismic.dynamic.reflection import zoeppritz_element
-from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpdown, puppup, pdownpup
+from fmodelling.seismic.dynamic.reflection import zoeppritz_element
+from fmodelling.seismic.dynamic.zoeppritz_coeffs import pdownpdown, puppup, pdownpup
 
 def main():
     vp = [2006.75, 3227.5, 4495.611]
