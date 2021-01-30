@@ -2,8 +2,8 @@ import datetime
 
 import numpy as np
 
-from Exceptions.bad_calcs import BadCalcBaseException
-from Exceptions.exceptions import ErrorAchievedException
+from exceptions.bad_calcs import BadCalcBaseException
+from exceptions.exceptions import ErrorAchievedException
 from fmodeling.forward_proc_1D import forward_with_trace_calcing
 from inversion.Utils.Tools import OptimizeHelper
 from inversion.Utils.Calcs import get_matrices_diff

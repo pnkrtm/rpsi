@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from objects.Attributes.AbstractAttribute import AbstarctAttribute
-from Exceptions.bad_calcs import ParamOutOfBoundException
+from exceptions.bad_calcs import ParamOutOfBoundException
 
 
 class RockPhysicsAttribute(AbstarctAttribute):

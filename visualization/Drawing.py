@@ -1,6 +1,6 @@
 from matplotlib import pyplot as plt
 
-from Visualization.Seismic import visualize_seismogram
+from visualization.Seismic import visualize_seismogram
 
 
 def draw_seismogram(seismogram, pic_header, filename, gain=1,  additional_lines: list=None, colorbar: bool=False,

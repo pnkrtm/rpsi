@@ -8,7 +8,7 @@ from objects.seismic.waves import OWT
 from fmodeling.seismic.ray_tracing.case_1D.forward_tracing1D import calculate_rays
 from fmodeling.seismic.dynamic.reflection import calculate_reflections
 from fmodeling.seismic.dynamic.bounds import calculate_bounds
-from Visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D
+from visualization.Seismic import visualize_model1D, visualize_time_curves, visualize_rays_model_1D
 
 
 def test_model1D():

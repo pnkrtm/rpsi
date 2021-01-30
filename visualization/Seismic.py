@@ -1,6 +1,6 @@
 import numpy as np
 import itertools
-from Visualization.Wigles import wiggle
+from visualization.Wigles import wiggle
 
 
 def visualize_model1D(plt, model, observe, max_depth, dz, vel_type, only_boundaries=False):

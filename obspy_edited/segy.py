@@ -94,11 +94,11 @@ class SEGYFile(object):
             being read. Defaults to False.
         :type headonly: bool
         :param headonly: Determines whether or not the actual data records
-            will be read and unpacked. Has a huge impact on memory usage. Data
+            will be read and unpacked. Has a huge impact on memory usage. data
             can be read and unpacked on-the-fly after reading the file.
             Defaults to False.
         :type read_traces: bool
-        :param read_traces: Data traces will only be read if this is set to
+        :param read_traces: data traces will only be read if this is set to
             ``True``. The data will be completely ignored if this is set to
             ``False``.
         """
@@ -326,7 +326,7 @@ class SEGYFile(object):
             being read. Defaults to False.
         :type headonly: bool
         :param headonly: Determines whether or not the actual data records
-            will be read and unpacked. Has a huge impact on memory usage. Data
+            will be read and unpacked. Has a huge impact on memory usage. data
             can be read and unpacked on-the-fly after reading the file.
             Defaults to False.
         :type yield_each_trace: bool
@@ -509,7 +509,7 @@ class SEGYTrace(object):
             determined using fstat which is slow.
         :param headonly: bool
         :param headonly: Determines whether or not the actual data records
-            will be read and unpacked. Has a huge impact on memory usage. Data
+            will be read and unpacked. Has a huge impact on memory usage. data
             can be read and unpacked on-the-fly after reading the file.
             Defaults to False.
         """
@@ -545,7 +545,7 @@ class SEGYTrace(object):
             being read. Defaults to False.
         :type headonly: bool
         :param headonly: Determines whether or not the actual data records
-            will be read and unpacked. Has a huge impact on memory usage. Data
+            will be read and unpacked. Has a huge impact on memory usage. data
             can be read and unpacked on-the-fly after reading the file.
             Defaults to False.
         """
@@ -866,7 +866,7 @@ def _read_segy(file, endian=None, textual_header_encoding=None,
         Defaults to False.
     :type headonly: bool
     :param headonly: Determines whether or not the actual data records will be
-        read and unpacked. Has a huge impact on memory usage. Data can be read
+        read and unpacked. Has a huge impact on memory usage. data can be read
         and unpacked on-the-fly after reading the file. Defaults to False.
     """
     # Open the file if it is not a file like object.
@@ -904,7 +904,7 @@ def _internal_read_segy(file, endian=None, textual_header_encoding=None,
         Defaults to False.
     :type headonly: bool
     :param headonly: Determines whether or not the actual data records will be
-        read and unpacked. Has a huge impact on memory usage. Data can be read
+        read and unpacked. Has a huge impact on memory usage. data can be read
         and unpacked on-the-fly after reading the file. Defaults to False.
     """
     return SEGYFile(file, endian=endian,
@@ -951,7 +951,7 @@ def iread_segy(file, endian=None, textual_header_encoding=None,
         Defaults to False.
     :type headonly: bool
     :param headonly: Determines whether or not the actual data records will be
-        read and unpacked. Has a huge impact on memory usage. Data can be read
+        read and unpacked. Has a huge impact on memory usage. data can be read
         and unpacked on-the-fly after reading the file. Defaults to False.
     """
     # Open the file if it is not a file like object.
@@ -1028,7 +1028,7 @@ def iread_su(file, endian=None, unpack_headers=False, headonly=False):
         Defaults to False.
     :type headonly: bool
     :param headonly: Determines whether or not the actual data records will be
-        read and unpacked. Has a huge impact on memory usage. Data can be read
+        read and unpacked. Has a huge impact on memory usage. data can be read
         and unpacked on-the-fly after reading the file. Defaults to False.
     """
     # Open the file if it is not a file like object.
@@ -1089,11 +1089,11 @@ class SUFile(object):
             being read. Defaults to False.
         :type headonly: bool
         :param headonly: Determines whether or not the actual data records
-            will be read and unpacked. Has a huge impact on memory usage. Data
+            will be read and unpacked. Has a huge impact on memory usage. data
             can be read and unpacked on-the-fly after reading the file.
             Defaults to False.
         :type read_traces: bool
-        :param read_traces: Data traces will only be read if this is set to
+        :param read_traces: data traces will only be read if this is set to
             ``True``. The data will be completely ignored if this is set to
             ``False``.
         """

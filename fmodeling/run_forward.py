@@ -3,7 +3,7 @@ import argparse
 
 from fmodeling.forward_proc_1D import forward_with_trace_calcing
 from inversion.DataIO import read_input_fp_file, write_segy
-from Visualization.Drawing import draw_seismogram
+from visualization.Drawing import draw_seismogram
 
 
 def main(model_folder, draw_pics):

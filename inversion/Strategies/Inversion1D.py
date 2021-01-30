@@ -7,7 +7,7 @@ import time
 from fmodeling.forward_proc_1D import forward, forward_with_trace_calcing
 from inversion.optimizators.optimizations import DifferentialEvolution_parallel
 from inversion.Utils.Tools import OptimizeHelper
-from Exceptions.exceptions import ErrorAchievedException
+from exceptions.exceptions import ErrorAchievedException
 
 
 def get_time_differences(rays_observed, rays_synthetic, weights=None, metrics='rmse'):

@@ -2,7 +2,7 @@ from inversion.DataIO import read_input_file, write_output_file, read_inversion_
 from fmodeling.forward_proc_1D import forward, forward_with_trace_calcing
 from matplotlib import pyplot as plt
 from matplotlib import mlab, rc
-from Visualization.Seismic import visualize_model1D, visualize_model_wellogs, visualize_rays_model_1D, visualize_time_curves, \
+from visualization.Seismic import visualize_model1D, visualize_model_wellogs, visualize_rays_model_1D, visualize_time_curves, \
     visualize_reflection_amplitudes, visualize_seismogram
 
 import os

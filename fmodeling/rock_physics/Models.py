@@ -2,12 +2,12 @@ import multiprocessing as mp
 
 import numpy as np
 
-from Exceptions.bad_calcs import BadRPModelException
+from exceptions.bad_calcs import BadRPModelException
 from fmodeling.rock_physics import Tools
-from fmodeling.rock_physics.Mediums import Gassmann
-from fmodeling.rock_physics.Mediums.DEMSlb import DEM
-from fmodeling.rock_physics.Mediums.VoigtReussHill import voigt, reuss
-from fmodeling.rock_physics.Mediums.BGTL import bgtl
+from fmodeling.rock_physics.mediums import Gassmann
+from fmodeling.rock_physics.mediums.DEMSlb import DEM
+from fmodeling.rock_physics.mediums.VoigtReussHill import voigt, reuss
+from fmodeling.rock_physics.mediums.BGTL import bgtl
 
 # TODO добавить векторизацию!
 def xu_payne_model(Km, Gm, Ks, Gs, Kf, phi, phi_s, rho_s, rho_f, rho_m, Vm=None, alpha=0.1):

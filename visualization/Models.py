@@ -1,6 +1,6 @@
 import os
 from matplotlib import pyplot as  plt
-from Visualization.Seismic import visualize_model_wellogs
+from visualization.Seismic import visualize_model_wellogs
 
 
 def visualize_wellog(model_obs, model_inv, param_type: str, title: str, xlabel: str, ylabel:str, file_name: str,):
