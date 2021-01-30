@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-from objects.Models.Models import SeismicModel1D
+from objects.models.Models import SeismicModel1D
 from objects.seismic.observation import Observation, Source, Receiver
 from objects.seismic.waves import OWT
 from fmodeling.forward_proc_1D import create_seismogram

@@ -4,10 +4,10 @@ import numpy as np
 from fmodeling.forward_proc_1D import forward, forward_with_trace_calcing
 from fmodeling.rock_physics.Tools import G_from_KPoissonRatio, G_from_VsDensity, K_from_VpVsDensity
 from objects.seismic.waves import OWT
-from objects.Models.Models import SeismicModel1D
-from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
-from objects.Attributes.Seismic.SeismicAttribute import SeismicAttribute
-from objects.Models.Layer1D import Layer1D, LayerOPT
+from objects.models.Models import SeismicModel1D
+from objects.attributes.rock_physics.RockPhysicsAttribute import RockPhysicsAttribute
+from objects.attributes.seismic.SeismicAttribute import SeismicAttribute
+from objects.models.Layer1D import Layer1D, LayerOPT
 from collections import OrderedDict
 
 

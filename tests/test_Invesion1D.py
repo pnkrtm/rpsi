@@ -4,12 +4,12 @@ sys.path.append('../')
 from fmodeling.forward_proc_1D import forward_with_trace_calcing
 from inversion.Strategies.SeismDiffInversion1D import inverse
 from inversion.optimizators.optimizations import LBFGSBOptimization, AxOptimizer, DifferentialEvolution
-from Tests.test_ForwardProcessing1D import get_model_2layered
-from objects.Data.WavePlaceholder import WaveDataPlaceholder
+from tests.test_ForwardProcessing1D import get_model_2layered
+from objects.data.WavePlaceholder import WaveDataPlaceholder
 from objects.seismic.waves import OWT
-from objects.Models.Models import SeismicModel1D
-from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
-from objects.Models.Layer1D import Layer1D, LayerOPT
+from objects.models.Models import SeismicModel1D
+from objects.attributes.rock_physics.RockPhysicsAttribute import RockPhysicsAttribute
+from objects.models.Layer1D import Layer1D, LayerOPT
 from inversion.Strategies.SeismDiffInversion1D import func_to_optimize
 
 import time

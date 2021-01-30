@@ -1,7 +1,7 @@
 import numpy as np
 from matplotlib import pyplot as plt
 
-from objects.Models.Models import SeismicModel1D
+from objects.models.Models import SeismicModel1D
 from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpup, pdownsvup
 from fmodeling.seismic.dynamic.reflection import zoeppritz_element
 from objects.seismic.observation import Observation, Source, Receiver

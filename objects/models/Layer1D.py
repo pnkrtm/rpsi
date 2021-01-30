@@ -1,6 +1,6 @@
 from enum import Enum
 from fmodeling.rock_physics.Models import calculate_rockphysics_model
-from objects.Attributes.Seismic.SeismicAttribute import SeismicAttribute
+from objects.attributes.seismic.SeismicAttribute import SeismicAttribute
 
 class LayerOPT(Enum):
     NO = 0

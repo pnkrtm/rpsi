@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from objects.Attributes.AbstractAttribute import AbstarctAttribute
+from objects.attributes.AbstractAttribute import AbstarctAttribute
 
 
 class SeismicAttribute:

@@ -3,7 +3,7 @@ import numpy as np
 from collections import OrderedDict
 
 from objects.seismic.rays import Ray1D
-from objects.Data.WavePlaceholder import get_down_up_vel_types
+from objects.data.WavePlaceholder import get_down_up_vel_types
 from objects.seismic.waves import OWT
 from fmodeling.seismic.ray_tracing.case_1D.bound_strateg import strategy_1D
 

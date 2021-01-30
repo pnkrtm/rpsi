@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.ndimage.interpolation import shift
 import struct
-from objects.Models.Layer1D import Layer1D, LayerOPT
-from objects.Attributes.RockPhysics.RockPhysicsAttribute import RockPhysicsAttribute
-from objects.Attributes.Seismic.SeismicAttribute import SeismicAttribute
+from objects.models.Layer1D import Layer1D, LayerOPT
+from objects.attributes.rock_physics.RockPhysicsAttribute import RockPhysicsAttribute
+from objects.attributes.seismic.SeismicAttribute import SeismicAttribute
 from collections import OrderedDict
 
 
