@@ -2,8 +2,8 @@ from typing import Union
 
 import numpy as np
 
-from fmodeling.seismic.dynamic.zoeppritz_coeffs import pdownpup
-from fmodeling.seismic.dynamic.zoeppritz_coeffs_water import pdownpup_water
+from fmodelling.seismic.dynamic.zoeppritz_coeffs import pdownpup
+from fmodelling.seismic.dynamic.zoeppritz_coeffs_water import pdownpup_water
 from objects.seismic.boundaries.base_boundary import BaseBoundary
 from objects.seismic.boundaries.base_boundary import register_boundary
 from objects.seismic.waves import WD, WT

@@ -252,7 +252,7 @@ def write_output_file(model_folder, params_all_, inversed_model, params_to_optim
 
 
 def write_segy(seismogram, filename):
-    segy_obj = segy._read_segy("../Files/example.sgy")
+    segy_obj = segy._read_segy("../files/example.sgy")
     tmp_name = "tmp_segy.sgy"
     ntraces = seismogram.ntraces
 

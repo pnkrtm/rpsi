@@ -1,7 +1,7 @@
 *.pyc
 *.xml
 .idea/
-Tests/delete.py
+tests/delete.py
 work_models/model_3/pictures/
 work_models/model_3/backup/result_13
 work_models/model_3/backup/
@@ -145,7 +145,7 @@ Icon
 # Thumbnails
 ._*
 
-# Files that might appear in the root of a volume
+# files that might appear in the root of a volume
 .DocumentRevisions-V100
 .fseventsd
 .Spotlight-V100
