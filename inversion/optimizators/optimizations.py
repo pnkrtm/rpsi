@@ -2,7 +2,7 @@ import numpy as np
 import random
 from scipy.optimize import fmin_l_bfgs_b, differential_evolution, dual_annealing, newton, fmin_cg, fmin_bfgs, fmin, \
     minimize
-from ax import optimize
+# from ax import optimize
 from datetime import datetime
 
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from fmodelling.rock_physics.Models import xu_payne_model
+from fmodeling.rock_physics.Models import xu_payne_model
 
 
 def simple_calculate_test():
